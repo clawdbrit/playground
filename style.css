@@ -108,7 +108,7 @@ body {
   isolation: isolate; /* Creates stacking context for pseudo-elements */
 }
 
-/* Stack effect - sheets underneath */
+/* Stack effect - clean stack like real Post-its */
 .note::before,
 .note::after {
   content: "";
@@ -123,15 +123,15 @@ body {
 }
 
 .note::before {
-  background: #ffb3ba; /* pink */
-  transform: rotate(2deg) translateY(4px);
-  box-shadow: 0 2px 8px rgba(180,100,120,.15);
+  background: #fff9b1;
+  transform: translateY(3px);
+  box-shadow: 0 1px 2px rgba(0,0,0,.08);
 }
 
 .note::after {
-  background: #bae1ff; /* light blue */
-  transform: rotate(-1.5deg) translateY(8px);
-  box-shadow: 0 2px 8px rgba(100,140,180,.12);
+  background: #fff9b1;
+  transform: translateY(6px);
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
 }
 
 .note-title {

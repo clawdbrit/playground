@@ -7,84 +7,57 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="wrap">
-      <header class="header">
-        <div class="brand">WalletMemo</div>
-        <div class="tag">a sticky note for your Wallet</div>
-      </header>
+    <div class="hero-text">
+      <div class="hero-title">WalletMemo</div>
+      <div class="hero-tagline">A sticky note for your Apple Wallet</div>
+    </div>
 
-      <section class="grid">
-        <div class="card note">
-          <div class="note-top">
-            <div class="pill">Sticky Note Pass</div>
-            <div class="tiny">Shows up in Apple Wallet as a pass</div>
-          </div>
+    <main class="container">
+      <div class="note">
+        <div class="note-title">Memo</div>
+        <textarea
+          id="memo"
+          class="textarea"
+          placeholder="Buy oat milk&#10;Text mom&#10;Don't forget…"
+          maxlength="140"
+        ></textarea>
+        <div class="char-count"><span id="count">0</span>/140</div>
+      </div>
 
-          <label class="label" for="memo">Your memo</label>
-          <textarea id="memo" class="textarea" rows="6" placeholder="Buy oat milk. Text mom. Don’t forget…" maxlength="140"></textarea>
-
-          <div class="row">
-            <div class="hint"><span id="count">0</span>/140</div>
-            <button id="save" class="btn" type="button">Save</button>
-          </div>
-
-          <div class="divider"></div>
-
-          <div class="cta">
-            <div class="cta-title">Apple Wallet test</div>
-            <div class="cta-sub">
-              Step 1 is hosting a sample pass file. Step 2 is generating a custom pass from this memo.
-            </div>
-
-            <button class="btn secondary" disabled style="opacity:.5;cursor:not-allowed;">
-              Coming Soon
-            </button>
-            <div class="tiny">
-              Pass signing requires an Apple Developer account. Check back soon!
-            </div>
-          </div>
-        </div>
-
-        <div class="card preview">
-          <div class="preview-title">Preview</div>
-          <div class="preview-note" id="preview">Your memo will appear here.</div>
-          <div class="tiny">
-            This is just a visual preview. The real Wallet version is a PassKit pass (.pkpass).
-          </div>
-        </div>
-      </section>
-
-      <footer class="footer">
-        <span>Domain: walletmemo.com</span>
-        <span class="dot">•</span>
-        <span>Hosted on GitHub Pages</span>
-      </footer>
+      <button class="wallet-btn" id="wallet-btn">
+        <svg class="wallet-icon" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="4" rx="1" fill="#5EB5F7"/>
+          <rect x="3" y="7" width="18" height="4" rx="1" fill="#F9D74A"/>
+          <rect x="3" y="10" width="18" height="4" rx="1" fill="#F2A158"/>
+          <path d="M3 13h18v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z" fill="#F25C54"/>
+          <path d="M3 14c0 0 4 3 9 3s9-3 9-3" stroke="#D94A43" stroke-width="0.5" fill="none"/>
+        </svg>
+        <span id="wallet-text">Add to Apple Wallet</span>
+      </button>
     </main>
 
     <script>
       const memo = document.getElementById("memo");
-      const preview = document.getElementById("preview");
       const count = document.getElementById("count");
-      const save = document.getElementById("save");
+      const walletBtn = document.getElementById("wallet-btn");
+      const walletText = document.getElementById("wallet-text");
+      const walletIcon = walletBtn.querySelector(".wallet-icon");
 
-      const KEY = "walletmemo_text_v1";
-
-      function render(val) {
-        preview.textContent = val?.trim() ? val : "Your memo will appear here.";
-        count.textContent = String(val?.length ?? 0);
-      }
-
-      memo.addEventListener("input", (e) => render(e.target.value));
-
-      save.addEventListener("click", () => {
-        localStorage.setItem(KEY, memo.value);
-        save.textContent = "Saved";
-        setTimeout(() => (save.textContent = "Save"), 900);
+      memo.addEventListener("input", (e) => {
+        count.textContent = e.target.value.length;
       });
 
-      const existing = localStorage.getItem(KEY) || "";
-      memo.value = existing;
-      render(existing);
+      walletBtn.addEventListener("click", () => {
+        walletBtn.classList.add("coming-soon-btn");
+        walletIcon.style.display = "none";
+        walletText.textContent = "Coming Soon";
+
+        setTimeout(() => {
+          walletBtn.classList.remove("coming-soon-btn");
+          walletIcon.style.display = "";
+          walletText.textContent = "Add to Apple Wallet";
+        }, 2000);
+      });
     </script>
   </body>
 </html>

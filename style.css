@@ -111,6 +111,7 @@ body {
     0 6px 16px rgba(180,160,60,.18),
     0 24px 48px rgba(120,100,30,.22);
   position: relative;
+  isolation: isolate; /* Creates stacking context for pseudo-elements */
 }
 
 /* Stack effect - sheets underneath */

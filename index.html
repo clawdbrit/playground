@@ -3,24 +3,114 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>WalletMemo</title>
+    <title>Wallet Memo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-  </head>
+      </head>
   <body>
-    <canvas id="pen-canvas"></canvas>
     <div class="hero-text">
-      <div class="hero-title">WalletMemo</div>
+      <div class="hero-title">Wallet Memo</div>
       <div class="hero-tagline">A sticky note for your Apple Wallet</div>
     </div>
 
     <main class="container">
-      <div class="note-wrapper">
-        <div class="note">
+      <div class="note-wrapper" id="note-wrapper">
+        <!-- Shadow layer (behind note) -->
+        <img src="./assets/paper-stuff/shadow-layer.svg" class="note-shadow" id="note-shadow" alt="">
+        <!-- Sticky note SVG - inlined for dynamic color updates -->
+        <svg class="note-paper" id="note-paper" data-state="one" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g filter="url(#noteFilter)">
+            <path id="note-shape" d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#noteGradient)"/>
+          </g>
+          <defs>
+            <filter id="noteFilter" x="0.00156212" y="-0.000391006" width="286.2" height="269.7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+              <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+              <feOffset/>
+              <feGaussianBlur stdDeviation="5.14583"/>
+              <feColorMatrix id="shadowColor1" type="matrix" values="0 0 0 0 0.101961 0 0 0 0 0.55098 0 0 0 0 1 0 0 0 0.1 0"/>
+              <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+              <feOffset dy="10"/>
+              <feGaussianBlur stdDeviation="14.3"/>
+              <feColorMatrix id="shadowColor2" type="matrix" values="0 0 0 0 0 0 0 0 0 0.334596 0 0 0 0 0.608357 0 0 0 0.09 0"/>
+              <feBlend mode="normal" in2="effect1_dropShadow" result="effect2_dropShadow"/>
+              <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+              <feOffset dy="0.2"/>
+              <feComposite in2="hardAlpha" operator="out"/>
+              <feColorMatrix id="shadowColor3" type="matrix" values="0 0 0 0 0.425615 0 0 0 0 0.695906 0 0 0 0 0.842314 0 0 0 1 0"/>
+              <feBlend mode="normal" in2="effect2_dropShadow" result="effect3_dropShadow"/>
+              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+              <feTurbulence type="fractalNoise" baseFrequency="1.6666666269302368 1.6666666269302368" stitchTiles="stitch" numOctaves="3" result="noise" seed="6167"/>
+              <feComponentTransfer in="noise" result="coloredNoise1">
+                <feFuncR type="linear" slope="2" intercept="-0.5"/>
+                <feFuncG type="linear" slope="2" intercept="-0.5"/>
+                <feFuncB type="linear" slope="2" intercept="-0.5"/>
+                <feFuncA type="discrete" tableValues="1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+              </feComponentTransfer>
+              <feComposite operator="in" in2="shape" in="coloredNoise1" result="noise1Clipped"/>
+              <feComponentTransfer in="noise1Clipped" result="color1">
+                <feFuncA type="table" tableValues="0 0.06"/>
+              </feComponentTransfer>
+              <feMerge result="effect4_noise">
+                <feMergeNode in="shape"/>
+                <feMergeNode in="color1"/>
+              </feMerge>
+              <feBlend mode="normal" in="effect4_noise" in2="effect3_dropShadow" result="effect4_noise"/>
+            </filter>
+            <linearGradient id="noteGradient" x1="153.102" y1="231.1" x2="143.601" y2="18.5996" gradientUnits="userSpaceOnUse">
+              <stop id="grad-stop-0" stop-color="#9DD5EE"/>
+              <stop id="grad-stop-1" offset="0.255906" stop-color="#98C4DA"/>
+              <stop id="grad-stop-2" offset="0.812358" stop-color="#9BC8E7"/>
+              <stop id="grad-stop-3" offset="0.864881" stop-color="#ACD7E9"/>
+              <stop id="grad-stop-4" offset="0.954264" stop-color="#B8E3F3"/>
+              <stop id="grad-stop-5" offset="1" stop-color="#C4E9F5"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="note" id="sticky-note">
+          <!-- Ellipsis menu button -->
+          <button class="note-menu-btn" id="menu-btn">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
+            </svg>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div class="note-dropdown" id="note-dropdown">
+            <button class="dropdown-item" id="change-color-btn">
+              <span class="color-icon" id="color-icon"></span>
+              Change Color
+            </button>
+            <div class="color-submenu" id="color-submenu">
+              <div class="color-swatch" data-color="blue" style="background: #B4DCE8;"></div>
+              <div class="color-swatch" data-color="yellow" style="background: #EAD264;"></div>
+              <div class="color-swatch" data-color="pink" style="background: #ECBDC5;"></div>
+            </div>
+            <button class="dropdown-item" id="add-stamp-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="10" rx="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Add Stamp
+            </button>
+            <button class="dropdown-item" id="draw-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 19l7-7 3 3-7 7-3-3z"/>
+                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/>
+                <path d="M2 2l7.586 7.586"/>
+              </svg>
+              Draw on Note
+            </button>
+          </div>
+
+          <!-- Drawing layer for finished drawings -->
+          <canvas class="note-drawing-layer" id="note-drawing-layer"></canvas>
+
           <textarea
             id="memo"
             class="textarea"
@@ -28,333 +118,516 @@
             maxlength="140"
           ></textarea>
         </div>
+        <!-- Drawing toolbar -->
+        <div class="drawing-toolbar" id="drawing-toolbar">
+          <button class="toolbar-btn clear" id="clear-drawing">Clear</button>
+          <button class="toolbar-btn cancel" id="cancel-drawing">Cancel</button>
+          <button class="toolbar-btn done" id="done-drawing">Done</button>
+        </div>
       </div>
 
       <div class="wallet-wrapper">
-        <button class="wallet-btn" id="wallet-btn">
-          <svg class="wallet-icon" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="4" width="18" height="4" rx="1" fill="#5EB5F7"/>
-            <rect x="3" y="7" width="18" height="4" rx="1" fill="#F9D74A"/>
-            <rect x="3" y="10" width="18" height="4" rx="1" fill="#F2A158"/>
-            <path d="M3 13h18v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6z" fill="#F25C54"/>
-            <path d="M3 14c0 0 4 3 9 3s9-3 9-3" stroke="#D94A43" stroke-width="0.5" fill="none"/>
-          </svg>
-          <span id="wallet-text">Add to Apple Wallet</span>
-        </button>
-        <div class="coming-soon-label">
-          <lottie-player
-            src="./arrow.json"
-            class="arrow-lottie"
-            autoplay
-          ></lottie-player>
-          <span class="coming-soon-text">Coming soon!</span>
+        <div class="wallet-buttons">
+          <a href="#" class="wallet-btn-link" id="apple-wallet-btn">
+            <img id="apple-wallet-img" src="./assets/wallet-buttons/apple-wallet-buttons/Locale=EN.svg" alt="Add to Apple Wallet">
+          </a>
+          <a href="#" class="wallet-btn-link" id="google-wallet-btn">
+            <img id="google-wallet-img" src="./assets/wallet-buttons/google-wallet-buttons/Locale=EN, Type=Primary.svg" alt="Add to Google Wallet">
+          </a>
         </div>
+        <div class="wallet-message" id="wallet-message">Coming soon!</div>
       </div>
     </main>
 
     <script>
-      const walletBtn = document.getElementById("wallet-btn");
-      const walletText = document.getElementById("wallet-text");
-      const walletIcon = walletBtn.querySelector(".wallet-icon");
-
-      walletBtn.addEventListener("click", () => {
-        walletBtn.classList.add("coming-soon-btn");
-        walletIcon.style.display = "none";
-        walletText.textContent = "Coming Soon";
-
-        setTimeout(() => {
-          walletBtn.classList.remove("coming-soon-btn");
-          walletIcon.style.display = "";
-          walletText.textContent = "Add to Apple Wallet";
-        }, 2000);
-      });
-    </script>
-
-    <script>
-      // 3D Pen Scene
+      // Language detection for wallet buttons
       (function() {
-        const canvas = document.getElementById('pen-canvas');
-        const scene = new THREE.Scene();
+        const appleImg = document.getElementById('apple-wallet-img');
+        const googleImg = document.getElementById('google-wallet-img');
 
-        // Camera - top-down view looking at desk surface
-        const camera = new THREE.OrthographicCamera(
-          window.innerWidth / -100,
-          window.innerWidth / 100,
-          window.innerHeight / 100,
-          window.innerHeight / -100,
-          0.1,
-          1000
-        );
-        camera.position.set(0, 20, 0);
-        camera.lookAt(0, 0, 0);
+        // Map browser language codes to button locale codes
+        const appleLocaleMap = {
+          'ar': 'AR', 'az': 'AZ', 'bg': 'BG', 'zh-CN': 'CN', 'zh': 'CN',
+          'cs': 'CZ', 'de': 'DE', 'da': 'DK', 'et': 'EE', 'en': 'EN',
+          'es': 'ES', 'es-MX': 'ESMX', 'fi': 'FI', 'fr': 'FR', 'fr-CA': 'CAFR',
+          'el': 'GR', 'he': 'HB', 'zh-HK': 'HK', 'hr': 'HR', 'hu': 'HU',
+          'id': 'ID', 'hi': 'IN', 'it': 'IT', 'ja': 'JP', 'ko': 'KR',
+          'si': 'LK', 'lt': 'LT', 'mt': 'MT', 'ms': 'MY', 'nl': 'NL',
+          'no': 'NO', 'nb': 'NO', 'fil': 'PH', 'pl': 'PL', 'pt': 'PT',
+          'pt-BR': 'PTBR', 'ro': 'RO', 'ru': 'RU', 'sv': 'SE', 'sl': 'SI',
+          'sk': 'SK', 'th': 'TH', 'tr': 'TR', 'zh-TW': 'TWPC', 'uk': 'UA', 'vi': 'VN',
+          'ca': 'CAES'
+        };
 
-        // Renderer
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        const googleLocaleMap = {
+          'ar': 'AR', 'az': 'AZ', 'bg': 'BG', 'bn': 'BN', 'pt-BR': 'BR',
+          'bs': 'BS', 'ca': 'CA', 'cs': 'CZ', 'de': 'DE', 'da': 'DK',
+          'en': 'EN', 'es': 'esES', 'es-US': 'esUS', 'es-MX': 'esUS',
+          'et': 'ET', 'fi': 'FI', 'fr': 'FR', 'el': 'GR', 'he': 'HE',
+          'hr': 'HR', 'hu': 'HU', 'hy': 'AM', 'id': 'ID',
+          'it': 'IT', 'ja': 'JP', 'ka': 'KA', 'kk': 'KK',
+          'ky': 'KY', 'lo': 'LO', 'lt': 'LT', 'lv': 'LV',
+          'mk': 'MK', 'mn': 'MN', 'ms': 'MY', 'nl': 'NL',
+          'no': 'NO', 'nb': 'NO', 'pl': 'PL', 'pt': 'PT', 'ro': 'RO',
+          'ru': 'RU', 'sk': 'SK', 'sl': 'SL', 'sq': 'SQ', 'sr': 'SR',
+          'sv': 'SE', 'sw': 'SW', 'th': 'TH', 'tr': 'TR', 'uk': 'UA',
+          'uz': 'UZ', 'vi': 'VI', 'zh': 'zhHK', 'zh-CN': 'zhHK',
+          'zh-TW': 'zhTW', 'zh-HK': 'zhHK'
+        };
 
-        // Lighting - soft overhead with angled key light for shadows
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-        scene.add(ambientLight);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        directionalLight.position.set(3, 15, 3);
-        directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 2048;
-        directionalLight.shadow.mapSize.height = 2048;
-        directionalLight.shadow.camera.near = 0.5;
-        directionalLight.shadow.camera.far = 50;
-        directionalLight.shadow.camera.left = -15;
-        directionalLight.shadow.camera.right = 15;
-        directionalLight.shadow.camera.top = 15;
-        directionalLight.shadow.camera.bottom = -15;
-        directionalLight.shadow.bias = -0.001;
-        scene.add(directionalLight);
-
-        // Desk surface plane (white, receives shadows)
-        const deskGeo = new THREE.PlaneGeometry(50, 50);
-        const deskMat = new THREE.MeshStandardMaterial({
-          color: 0xf5f5f5,
-          roughness: 0.9,
-          metalness: 0
-        });
-        const desk = new THREE.Mesh(deskGeo, deskMat);
-        desk.rotation.x = -Math.PI / 2;
-        desk.position.y = 0;
-        desk.receiveShadow = true;
-        scene.add(desk);
-
-        // Create pen group
-        const pen = new THREE.Group();
-
-        // Pen body (main cylinder) - RED
-        const bodyGeo = new THREE.CylinderGeometry(0.18, 0.2, 4, 32);
-        const bodyMat = new THREE.MeshStandardMaterial({
-          color: 0xc41e3a,
-          roughness: 0.3,
-          metalness: 0.1
-        });
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.castShadow = true;
-        pen.add(body);
-
-        // Pen grip section (slightly wider, rubberized look) - darker red
-        const gripGeo = new THREE.CylinderGeometry(0.21, 0.21, 0.8, 32);
-        const gripMat = new THREE.MeshStandardMaterial({
-          color: 0x8b1538,
-          roughness: 0.7,
-          metalness: 0
-        });
-        const grip = new THREE.Mesh(gripGeo, gripMat);
-        grip.position.y = -1.2;
-        grip.castShadow = true;
-        pen.add(grip);
-
-        // Pen tip cone (rotated so point faces down)
-        const tipGeo = new THREE.ConeGeometry(0.15, 0.6, 32);
-        const tipMat = new THREE.MeshStandardMaterial({
-          color: 0x333333,
-          roughness: 0.4,
-          metalness: 0.3
-        });
-        const tip = new THREE.Mesh(tipGeo, tipMat);
-        tip.rotation.x = Math.PI; // Flip so point faces down
-        tip.position.y = -2.3;
-        tip.castShadow = true;
-        pen.add(tip);
-
-        // Ballpoint
-        const ballGeo = new THREE.SphereGeometry(0.04, 16, 16);
-        const ballMat = new THREE.MeshStandardMaterial({
-          color: 0x111111,
-          roughness: 0.2,
-          metalness: 0.8
-        });
-        const ball = new THREE.Mesh(ballGeo, ballMat);
-        ball.position.y = -2.58;
-        pen.add(ball);
-
-        // Click button top - red accent
-        const buttonGeo = new THREE.CylinderGeometry(0.1, 0.12, 0.25, 32);
-        const buttonMat = new THREE.MeshStandardMaterial({
-          color: 0xe63946,
-          roughness: 0.3,
-          metalness: 0.2
-        });
-        const button = new THREE.Mesh(buttonGeo, buttonMat);
-        button.position.y = 2.1;
-        button.castShadow = true;
-        pen.add(button);
-
-        // Metal clip
-        const clipShape = new THREE.Shape();
-        clipShape.moveTo(0, 0);
-        clipShape.lineTo(0.08, 0);
-        clipShape.lineTo(0.08, 2.2);
-        clipShape.lineTo(0.12, 2.4);
-        clipShape.lineTo(0.04, 2.4);
-        clipShape.lineTo(0, 2.2);
-        clipShape.lineTo(0, 0);
-
-        const clipExtrudeSettings = { depth: 0.02, bevelEnabled: false };
-        const clipGeo = new THREE.ExtrudeGeometry(clipShape, clipExtrudeSettings);
-        const clipMat = new THREE.MeshStandardMaterial({
-          color: 0xcccccc,
-          roughness: 0.2,
-          metalness: 0.9
-        });
-        const clip = new THREE.Mesh(clipGeo, clipMat);
-        clip.position.set(0.19, -0.2, -0.01);
-        clip.castShadow = true;
-        pen.add(clip);
-
-        // Position and rotate pen - lying flat on surface
-        pen.rotation.x = Math.PI / 2; // Lay flat
-        pen.rotation.z = Math.PI / 5; // Slight angle
-        pen.position.set(3, 0.2, 3);
-
-        scene.add(pen);
-
-        // Drawing system - ink lines on the desk
-        const inkLines = [];
-        let currentLine = null;
-        let currentLinePoints = [];
-        const inkMaterial = new THREE.LineBasicMaterial({
-          color: 0x1a1a1a,
-          linewidth: 2
-        });
-
-        function getPenTipPosition() {
-          // Get the world position of the pen tip
-          const tipOffset = new THREE.Vector3(0, -2.6, 0);
-          tipOffset.applyQuaternion(pen.quaternion);
-          return pen.position.clone().add(tipOffset);
+        function getLocale(langMap, fallback) {
+          const lang = navigator.language || navigator.userLanguage;
+          // Try exact match first (e.g., "pt-BR")
+          if (langMap[lang]) return langMap[lang];
+          // Try base language (e.g., "pt" from "pt-BR")
+          const baseLang = lang.split('-')[0];
+          if (langMap[baseLang]) return langMap[baseLang];
+          return fallback;
         }
 
-        function startNewLine() {
-          currentLinePoints = [];
-          const geometry = new THREE.BufferGeometry();
-          currentLine = new THREE.Line(geometry, inkMaterial);
-          currentLine.frustumCulled = false;
-          scene.add(currentLine);
-          inkLines.push(currentLine);
+        const appleLocale = getLocale(appleLocaleMap, 'EN');
+        const googleLocale = getLocale(googleLocaleMap, 'EN');
+
+        appleImg.src = `./assets/wallet-buttons/apple-wallet-buttons/Locale=${appleLocale}.svg`;
+        googleImg.src = `./assets/wallet-buttons/google-wallet-buttons/Locale=${googleLocale}, Type=Primary.svg`;
+
+        // Fallback to English if locale file doesn't exist
+        appleImg.onerror = () => {
+          appleImg.src = './assets/wallet-buttons/apple-wallet-buttons/Locale=EN.svg';
+        };
+        googleImg.onerror = () => {
+          googleImg.src = './assets/wallet-buttons/google-wallet-buttons/Locale=EN, Type=Primary.svg';
+        };
+
+        // Coming soon click handler
+        const walletMessage = document.getElementById('wallet-message');
+        document.querySelectorAll('.wallet-btn-link').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            walletMessage.classList.add('visible');
+          });
+        });
+      })();
+
+      // ==========================================
+      // Sticky Note Menu & Drawing System
+      // ==========================================
+      (function() {
+        // Elements
+        const stickyNote = document.getElementById('sticky-note');
+        const menuBtn = document.getElementById('menu-btn');
+        const dropdown = document.getElementById('note-dropdown');
+        const changeColorBtn = document.getElementById('change-color-btn');
+        const colorSubmenu = document.getElementById('color-submenu');
+        const colorSwatches = document.querySelectorAll('.color-swatch');
+        const addStampBtn = document.getElementById('add-stamp-btn');
+        const drawBtn = document.getElementById('draw-btn');
+        const colorIcon = document.getElementById('color-icon');
+        const noteDrawingLayer = document.getElementById('note-drawing-layer');
+        const drawingToolbar = document.getElementById('drawing-toolbar');
+        const clearBtn = document.getElementById('clear-drawing');
+        const cancelBtn = document.getElementById('cancel-drawing');
+        const doneBtn = document.getElementById('done-drawing');
+
+        // Color theme definitions
+        const colorThemes = {
+          blue: {
+            gradient: ['#9DD5EE', '#98C4DA', '#9BC8E7', '#ACD7E9', '#B8E3F3', '#C4E9F5'],
+            shadow1: [0.101961, 0.55098, 1],      // Blue tint
+            shadow2: [0, 0.334596, 0.608357],     // Blue tint
+            shadow3: [0.425615, 0.695906, 0.842314] // Blue edge
+          },
+          yellow: {
+            gradient: ['#D8C453', '#D4B94C', '#DEC75E', '#E8D46E', '#F0DF85', '#F7EA9C'],
+            shadow1: [0.85, 0.75, 0.25],          // Yellow tint
+            shadow2: [0.55, 0.48, 0.15],          // Yellow tint
+            shadow3: [0.82, 0.78, 0.42]           // Yellow edge
+          },
+          pink: {
+            gradient: ['#DCABB5', '#D7A0AA', '#E2B4BD', '#ECC4CC', '#F2D1D8', '#F8DEE3'],
+            shadow1: [0.9, 0.55, 0.65],           // Pink tint
+            shadow2: [0.6, 0.35, 0.45],           // Pink tint
+            shadow3: [0.88, 0.72, 0.78]           // Pink edge
+          }
+        };
+
+        // Weighted random color selection
+        function getRandomColor() {
+          const rand = Math.random();
+          if (rand < 0.6) return 'blue';      // 60% chance
+          if (rand < 0.9) return 'yellow';    // 30% chance
+          return 'pink';                       // 10% chance
         }
 
-        function addPointToLine(x, z) {
-          currentLinePoints.push(new THREE.Vector3(x, 0.01, z));
+        let currentColor = getRandomColor();
 
-          if (currentLinePoints.length >= 2) {
-            const positions = [];
-            for (const point of currentLinePoints) {
-              positions.push(point.x, point.y, point.z);
+        // Color icon colors (mid-tone for each theme)
+        const colorIconColors = {
+          blue: '#B4DCE8',
+          yellow: '#E2D060',
+          pink: '#E4B8C0'
+        };
+
+        // Update note colors dynamically
+        function updateNoteColors(colorKey) {
+          const theme = colorThemes[colorKey];
+          if (!theme) return;
+
+          // Update color icon
+          if (colorIcon) {
+            colorIcon.style.background = colorIconColors[colorKey];
+          }
+
+          // Update gradient stops
+          theme.gradient.forEach((color, i) => {
+            const stop = document.getElementById(`grad-stop-${i}`);
+            if (stop) stop.setAttribute('stop-color', color);
+          });
+
+          // Update shadow colors
+          const shadow1 = document.getElementById('shadowColor1');
+          const shadow2 = document.getElementById('shadowColor2');
+          const shadow3 = document.getElementById('shadowColor3');
+
+          if (shadow1) {
+            const [r, g, b] = theme.shadow1;
+            shadow1.setAttribute('values', `0 0 0 0 ${r} 0 0 0 0 ${g} 0 0 0 0 ${b} 0 0 0 0.1 0`);
+          }
+          if (shadow2) {
+            const [r, g, b] = theme.shadow2;
+            shadow2.setAttribute('values', `0 0 0 0 ${r} 0 0 0 0 ${g} 0 0 0 0 ${b} 0 0 0 0.09 0`);
+          }
+          if (shadow3) {
+            const [r, g, b] = theme.shadow3;
+            shadow3.setAttribute('values', `0 0 0 0 ${r} 0 0 0 0 ${g} 0 0 0 0 ${b} 0 0 0 1 0`);
+          }
+        }
+
+        // Note state toggle (click to switch between curled and flat)
+        const noteWrapper = document.getElementById('note-wrapper');
+        const notePaper = document.getElementById('note-paper');
+        const noteShape = document.getElementById('note-shape');
+        const noteShadow = document.getElementById('note-shadow');
+        let isFlat = false;
+
+        // SVG path points for the two states (matching structure for smooth morphing)
+        // Structure: [M, L, C1, C2, C3, L, C1, C2, C3]
+        const statePoints = {
+          curled: [
+            [34.6016, 19.2695],    // M - start
+            [250.102, 18.5996],    // L - top right
+            [250.102, 18.5996],    // C1 - control 1
+            [249.602, 49.0996],    // C2 - control 2
+            [257.602, 228.6],      // C3 - end (bottom right)
+            [28.6016, 231.1],      // L - bottom left
+            [36.6029, 66.5996],    // C1 - control 1
+            [34.6016, 19.2695],    // C2 - control 2
+            [34.6016, 19.2695]     // C3 - end (back to start)
+          ],
+          flat: [
+            [29, 18],              // M - start
+            [258, 18],             // L - top right
+            [258, 18],             // C1 - control 1 (on line)
+            [258, 125],            // C2 - control 2 (midpoint)
+            [258, 232],            // C3 - end (bottom right)
+            [29, 232],             // L - bottom left
+            [29, 125],             // C1 - control 1 (midpoint)
+            [29, 18],              // C2 - control 2 (on line)
+            [29, 18]               // C3 - end (back to start)
+          ]
+        };
+
+        // Convert points array to SVG path string
+        function pointsToPath(points) {
+          return `M${points[0][0]} ${points[0][1]} L${points[1][0]} ${points[1][1]} C${points[2][0]} ${points[2][1]} ${points[3][0]} ${points[3][1]} ${points[4][0]} ${points[4][1]} L${points[5][0]} ${points[5][1]} C${points[6][0]} ${points[6][1]} ${points[7][0]} ${points[7][1]} ${points[8][0]} ${points[8][1]} Z`;
+        }
+
+        // Interpolate between two point arrays
+        function lerpPoints(from, to, t) {
+          return from.map((point, i) => [
+            point[0] + (to[i][0] - point[0]) * t,
+            point[1] + (to[i][1] - point[1]) * t
+          ]);
+        }
+
+        // Easing function (ease-out cubic)
+        function easeOutCubic(t) {
+          return 1 - Math.pow(1 - t, 3);
+        }
+
+        // Animate path morphing
+        let animationId = null;
+        function animatePath(from, to, duration = 400) {
+          if (animationId) cancelAnimationFrame(animationId);
+
+          const startTime = performance.now();
+
+          function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+
+            const currentPoints = lerpPoints(from, to, easedProgress);
+            noteShape.setAttribute('d', pointsToPath(currentPoints));
+
+            if (progress < 1) {
+              animationId = requestAnimationFrame(animate);
             }
-            currentLine.geometry.setAttribute(
-              'position',
-              new THREE.Float32BufferAttribute(positions, 3)
-            );
           }
+
+          animationId = requestAnimationFrame(animate);
         }
 
-        // Drag functionality
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-        const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-        const intersection = new THREE.Vector3();
-        let isDragging = false;
-        let dragOffset = new THREE.Vector3();
-        let lastDrawPos = null;
+        // Flat gradient colors (more uniform, less dynamic)
+        const flatGradients = {
+          blue: ['#A8D4E8', '#A8D4E8', '#A8D4E8', '#B0D8EB', '#B8DCED', '#C0E0F0'],
+          yellow: ['#E2D060', '#E2D060', '#E2D060', '#E6D468', '#EAD870', '#EEDC78'],
+          pink: ['#E4B8C0', '#E4B8C0', '#E4B8C0', '#E8C0C8', '#ECC8D0', '#F0D0D8']
+        };
 
-        function onPointerDown(event) {
-          const rect = canvas.getBoundingClientRect();
-          mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-          mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-          raycaster.setFromCamera(mouse, camera);
-          const intersects = raycaster.intersectObject(pen, true);
-
-          if (intersects.length > 0) {
-            isDragging = true;
-            canvas.style.cursor = 'grabbing';
-
-            raycaster.ray.intersectPlane(plane, intersection);
-            dragOffset.copy(intersection).sub(pen.position);
-
-            // Start a new ink line
-            startNewLine();
-            const tipPos = getPenTipPosition();
-            addPointToLine(tipPos.x, tipPos.z);
-            lastDrawPos = { x: tipPos.x, z: tipPos.z };
-          }
+        // Parse hex color to RGB array
+        function hexToRgb(hex) {
+          const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+          return result ? [
+            parseInt(result[1], 16),
+            parseInt(result[2], 16),
+            parseInt(result[3], 16)
+          ] : [0, 0, 0];
         }
 
-        function onPointerMove(event) {
-          const rect = canvas.getBoundingClientRect();
-          mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-          mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        // Convert RGB array to hex
+        function rgbToHex(r, g, b) {
+          return '#' + [r, g, b].map(x => {
+            const hex = Math.round(x).toString(16);
+            return hex.length === 1 ? '0' + hex : hex;
+          }).join('');
+        }
 
-          raycaster.setFromCamera(mouse, camera);
+        // Animate gradient transition
+        let gradientAnimationId = null;
+        function animateGradient(toFlat, duration = 400) {
+          if (gradientAnimationId) cancelAnimationFrame(gradientAnimationId);
 
-          if (isDragging) {
-            raycaster.ray.intersectPlane(plane, intersection);
-            pen.position.x = intersection.x - dragOffset.x;
-            pen.position.z = intersection.z - dragOffset.z;
+          const theme = colorThemes[currentColor];
+          const fromColors = toFlat ? theme.gradient : flatGradients[currentColor];
+          const toColors = toFlat ? flatGradients[currentColor] : theme.gradient;
 
-            // Constrain bounds to visible desk area
-            pen.position.x = Math.max(-8, Math.min(8, pen.position.x));
-            pen.position.z = Math.max(-6, Math.min(8, pen.position.z));
+          const fromRgb = fromColors.map(hexToRgb);
+          const toRgb = toColors.map(hexToRgb);
 
-            // Draw ink as pen moves
-            const tipPos = getPenTipPosition();
-            const dx = tipPos.x - lastDrawPos.x;
-            const dz = tipPos.z - lastDrawPos.z;
-            const dist = Math.sqrt(dx * dx + dz * dz);
+          const startTime = performance.now();
 
-            // Only add point if moved enough (smooths the line)
-            if (dist > 0.05) {
-              addPointToLine(tipPos.x, tipPos.z);
-              lastDrawPos = { x: tipPos.x, z: tipPos.z };
+          function animate(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const easedProgress = easeOutCubic(progress);
+
+            fromRgb.forEach((from, i) => {
+              const r = from[0] + (toRgb[i][0] - from[0]) * easedProgress;
+              const g = from[1] + (toRgb[i][1] - from[1]) * easedProgress;
+              const b = from[2] + (toRgb[i][2] - from[2]) * easedProgress;
+              const stop = document.getElementById(`grad-stop-${i}`);
+              if (stop) stop.setAttribute('stop-color', rgbToHex(r, g, b));
+            });
+
+            if (progress < 1) {
+              gradientAnimationId = requestAnimationFrame(animate);
             }
-          } else {
-            const intersects = raycaster.intersectObject(pen, true);
-            canvas.style.cursor = intersects.length > 0 ? 'grab' : 'default';
           }
+
+          gradientAnimationId = requestAnimationFrame(animate);
         }
 
-        function onPointerUp() {
-          if (isDragging && currentLine && currentLinePoints.length < 2) {
-            // Remove lines that are too short (just a click)
-            scene.remove(currentLine);
-            inkLines.pop();
+        // Get textarea element
+        const textarea = document.getElementById('memo');
+
+        // Focus/blur on textarea triggers the flat/curled animation
+        textarea.addEventListener('focus', () => {
+          if (!isFlat) {
+            isFlat = true;
+            animatePath(statePoints.curled, statePoints.flat);
+            animateGradient(true);
+            noteShadow.src = './assets/paper-stuff/shadow-layer-two.svg';
+            noteWrapper.classList.add('flat');
           }
-          isDragging = false;
-          currentLine = null;
-          lastDrawPos = null;
-          canvas.style.cursor = 'default';
+        });
+
+        textarea.addEventListener('blur', () => {
+          if (isFlat) {
+            isFlat = false;
+            animatePath(statePoints.flat, statePoints.curled);
+            animateGradient(false);
+            noteShadow.src = './assets/paper-stuff/shadow-layer.svg';
+            noteWrapper.classList.remove('flat');
+          }
+        });
+
+        // Menu toggle
+        menuBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menuBtn.classList.toggle('active');
+          dropdown.classList.toggle('open');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+          if (!dropdown.contains(e.target) && !menuBtn.contains(e.target)) {
+            dropdown.classList.remove('open');
+            menuBtn.classList.remove('active');
+            colorSubmenu.classList.remove('open');
+          }
+        });
+
+        // Color change functionality
+        changeColorBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          colorSubmenu.classList.toggle('open');
+        });
+
+        colorSwatches.forEach(swatch => {
+          swatch.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const colorKey = swatch.dataset.color;
+            currentColor = colorKey;
+            updateNoteColors(colorKey);
+
+            // Update active state
+            colorSwatches.forEach(s => s.classList.remove('active'));
+            swatch.classList.add('active');
+
+            // Close menu
+            dropdown.classList.remove('open');
+            menuBtn.classList.remove('active');
+            colorSubmenu.classList.remove('open');
+          });
+        });
+
+        // Add stamp (placeholder)
+        addStampBtn.addEventListener('click', () => {
+          alert('Stamp feature coming soon!');
+          dropdown.classList.remove('open');
+          menuBtn.classList.remove('active');
+        });
+
+        // ==========================================
+        // Drawing Mode (draws directly on note)
+        // ==========================================
+        let isDrawingMode = false;
+        let drawingCtx = null;
+        let isDrawing = false;
+        let savedImageData = null;
+
+        // Initialize note drawing layer
+        function initNoteDrawingLayer() {
+          noteDrawingLayer.width = stickyNote.offsetWidth * 2;
+          noteDrawingLayer.height = stickyNote.offsetHeight * 2;
+          drawingCtx = noteDrawingLayer.getContext('2d');
+          drawingCtx.scale(2, 2);
+          drawingCtx.lineCap = 'round';
+          drawingCtx.lineJoin = 'round';
+          drawingCtx.strokeStyle = '#1a1a1a';
+          drawingCtx.lineWidth = 2;
         }
 
-        canvas.addEventListener('pointerdown', onPointerDown);
-        canvas.addEventListener('pointermove', onPointerMove);
-        canvas.addEventListener('pointerup', onPointerUp);
-        canvas.addEventListener('pointerleave', onPointerUp);
+        initNoteDrawingLayer();
 
-        // Handle resize
+        // Open drawing mode
+        drawBtn.addEventListener('click', () => {
+          dropdown.classList.remove('open');
+          menuBtn.classList.remove('active');
+
+          isDrawingMode = true;
+
+          // Save current drawing state for cancel
+          savedImageData = drawingCtx.getImageData(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+
+          // Put note in flat state
+          if (!isFlat) {
+            isFlat = true;
+            animatePath(statePoints.curled, statePoints.flat);
+            animateGradient(true);
+            noteShadow.src = './assets/paper-stuff/shadow-layer-two.svg';
+            noteWrapper.classList.add('flat');
+          }
+
+          // Enable drawing mode
+          document.body.classList.add('drawing-mode-active');
+          noteWrapper.classList.add('drawing-mode');
+        });
+
+        // Drawing on canvas
+        noteDrawingLayer.addEventListener('pointerdown', (e) => {
+          if (!isDrawingMode) return;
+          isDrawing = true;
+          const rect = noteDrawingLayer.getBoundingClientRect();
+          const scaleX = noteDrawingLayer.width / rect.width / 2;
+          const scaleY = noteDrawingLayer.height / rect.height / 2;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+
+          drawingCtx.beginPath();
+          drawingCtx.moveTo(x, y);
+        });
+
+        noteDrawingLayer.addEventListener('pointermove', (e) => {
+          if (!isDrawingMode || !isDrawing) return;
+
+          const rect = noteDrawingLayer.getBoundingClientRect();
+          const scaleX = noteDrawingLayer.width / rect.width / 2;
+          const scaleY = noteDrawingLayer.height / rect.height / 2;
+          const x = (e.clientX - rect.left) * scaleX;
+          const y = (e.clientY - rect.top) * scaleY;
+
+          drawingCtx.lineTo(x, y);
+          drawingCtx.stroke();
+          drawingCtx.beginPath();
+          drawingCtx.moveTo(x, y);
+        });
+
+        noteDrawingLayer.addEventListener('pointerup', () => {
+          isDrawing = false;
+        });
+
+        noteDrawingLayer.addEventListener('pointerleave', () => {
+          isDrawing = false;
+        });
+
+        // Clear drawing
+        clearBtn.addEventListener('click', () => {
+          drawingCtx.clearRect(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+        });
+
+        // Cancel drawing - restore previous state
+        cancelBtn.addEventListener('click', () => {
+          if (savedImageData) {
+            drawingCtx.putImageData(savedImageData, 0, 0);
+          }
+          closeDrawingMode();
+        });
+
+        // Done drawing
+        doneBtn.addEventListener('click', () => {
+          closeDrawingMode();
+        });
+
+        function closeDrawingMode() {
+          isDrawingMode = false;
+          isDrawing = false;
+          savedImageData = null;
+          document.body.classList.remove('drawing-mode-active');
+          noteWrapper.classList.remove('drawing-mode');
+        }
+
+        // Handle window resize
         window.addEventListener('resize', () => {
-          camera.left = window.innerWidth / -100;
-          camera.right = window.innerWidth / 100;
-          camera.top = window.innerHeight / 100;
-          camera.bottom = window.innerHeight / -100;
-          camera.updateProjectionMatrix();
-          renderer.setSize(window.innerWidth, window.innerHeight);
+          initNoteDrawingLayer();
         });
 
-        // Animation loop
-        function animate() {
-          requestAnimationFrame(animate);
-          renderer.render(scene, camera);
-        }
-        animate();
+        // Apply random color on load and update active swatch
+        updateNoteColors(currentColor);
+        colorSwatches.forEach(s => {
+          s.classList.toggle('active', s.dataset.color === currentColor);
+        });
       })();
     </script>
   </body>

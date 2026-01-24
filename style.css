@@ -566,21 +566,20 @@ body {
 @media (max-width: 480px) {
   body {
     padding: 0;
-    justify-content: flex-start;
+    justify-content: center;
     overflow-y: auto;
     min-height: 100vh;
     min-height: 100dvh;
   }
 
-  /* Hero text - no longer absolute, flows normally */
+  /* Hero text - stays absolute but repositioned */
   .hero-text {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
+    position: absolute;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
-    padding: 48px 20px 24px;
-    pointer-events: auto;
+    padding: 0 20px;
   }
 
   .hero-title {
@@ -592,24 +591,23 @@ body {
     margin-top: 6px;
   }
 
-  /* Container - full height flex layout */
+  /* Container - centered */
   .container {
-    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 16px 32px;
+    justify-content: center;
+    padding: 0 16px;
     margin-top: 0;
-    gap: 0;
+    gap: 40px;
     width: 100%;
     max-width: 100%;
   }
 
-  /* Note wrapper - centered in middle */
+  /* Note wrapper - bigger and centered */
   .note-wrapper {
-    width: 280px;
-    height: 264px;
+    width: 320px;
+    height: 302px;
     margin-bottom: 0;
     flex-shrink: 0;
   }
@@ -617,8 +615,8 @@ body {
   .note-shadow {
     top: 83px;
     left: -10px;
-    width: 244px;
-    height: 174px;
+    width: 280px;
+    height: 200px;
   }
 
   .note-wrapper.flat .note-shadow {
@@ -627,30 +625,34 @@ body {
   }
 
   .note-paper {
-    width: 280px;
-    height: 264px;
+    width: 320px;
+    height: 302px;
   }
 
   .note {
-    width: 280px;
-    height: 264px;
-    padding: 38px 44px 38px 48px;
+    width: 320px;
+    height: 302px;
+    padding: 44px 50px 44px 56px;
   }
 
   .textarea {
-    font-size: 16px; /* Prevents iOS zoom on focus */
+    font-size: 18px;
   }
 
   .note-menu-btn {
-    top: 38px;
-    right: 44px;
+    top: 44px;
+    right: 50px;
   }
 
   /* Wallet section - at bottom, stacked */
   .wallet-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     width: 100%;
-    padding: 0 20px;
-    margin-top: auto;
+    padding: 16px 20px 32px;
+    background: linear-gradient(to top, rgba(250,250,250,1) 60%, rgba(250,250,250,0));
   }
 
   .wallet-buttons {
@@ -662,7 +664,7 @@ body {
 
   .wallet-btn-link {
     width: 100%;
-    max-width: 280px;
+    max-width: 320px;
     justify-content: center;
   }
 
@@ -671,7 +673,7 @@ body {
   }
 
   .wallet-message {
-    margin-top: 16px;
+    margin-top: 12px;
   }
 
   /* Language picker adjustments */
@@ -683,5 +685,10 @@ body {
   /* Drawing mode adjustments */
   .note-wrapper.drawing-mode {
     transform: scale(1.08);
+  }
+
+  .drawing-mode-active .wallet-wrapper {
+    opacity: 0;
+    pointer-events: none;
   }
 }

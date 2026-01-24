@@ -21,14 +21,12 @@
     <main class="container">
       <div class="note-wrapper">
         <div class="note">
-          <div class="note-title">Memo</div>
           <textarea
             id="memo"
             class="textarea"
             placeholder="Buy oat milk&#10;Text mom&#10;Don't forget…"
             maxlength="140"
           ></textarea>
-          <div class="char-count"><span id="count">0</span>/140</div>
         </div>
       </div>
 
@@ -55,15 +53,9 @@
     </main>
 
     <script>
-      const memo = document.getElementById("memo");
-      const count = document.getElementById("count");
       const walletBtn = document.getElementById("wallet-btn");
       const walletText = document.getElementById("wallet-text");
       const walletIcon = walletBtn.querySelector(".wallet-icon");
-
-      memo.addEventListener("input", (e) => {
-        count.textContent = e.target.value.length;
-      });
 
       walletBtn.addEventListener("click", () => {
         walletBtn.classList.add("coming-soon-btn");

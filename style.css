@@ -628,6 +628,11 @@ body {
     left: 0;
   }
 
+  /* Scale up bigger on mobile when clicked/focused - almost edge to edge */
+  .note-wrapper.flat {
+    transform: scale(1.15);
+  }
+
   .note-paper {
     width: 320px;
     height: 302px;

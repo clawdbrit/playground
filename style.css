@@ -98,18 +98,22 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   min-height: 100vh;
-  padding: 24px;
   position: relative;
   overflow: hidden;
 }
 
+.content-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  min-height: 100vh;
+  padding: 40px 24px;
+}
+
 .hero-text {
-  position: absolute;
-  top: 8%;
-  left: 50%;
-  transform: translateX(-50%);
   text-align: center;
   pointer-events: none;
   z-index: 5;
@@ -167,7 +171,6 @@ body {
   max-width: 340px;
   position: relative;
   z-index: 10;
-  margin-top: -20px;
 }
 
 .note-wrapper {
@@ -376,7 +379,8 @@ body {
 }
 
 .drawing-mode-active .hero-text,
-.drawing-mode-active .wallet-wrapper {
+.drawing-mode-active .wallet-wrapper,
+.drawing-mode-active .content-group .hero-text {
   opacity: 0;
   pointer-events: none;
 }
@@ -566,18 +570,18 @@ body {
 @media (max-width: 480px) {
   body {
     padding: 0;
-    justify-content: center;
     overflow-y: auto;
     min-height: 100vh;
     min-height: 100dvh;
   }
 
-  /* Hero text - stays absolute but repositioned */
+  .content-group {
+    gap: 32px;
+    padding: 24px 16px;
+    padding-bottom: 160px;
+  }
+
   .hero-text {
-    position: absolute;
-    top: 5%;
-    left: 50%;
-    transform: translateX(-50%);
     width: 100%;
     padding: 0 20px;
   }

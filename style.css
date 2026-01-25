@@ -570,6 +570,7 @@ body {
 @media (max-width: 480px) {
   body {
     padding: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     min-height: 100vh;
     min-height: 100dvh;
@@ -626,6 +627,12 @@ body {
   .note-wrapper.flat .note-shadow {
     top: 58px;
     left: 0;
+  }
+
+  /* Scale up bigger on mobile when clicked/focused - almost edge to edge */
+  .note-wrapper.flat,
+  .note-wrapper.flat:hover {
+    transform: scale(1.12);
   }
 
   .note-paper {

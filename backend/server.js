@@ -11,7 +11,6 @@ app.use(express.json({ limit: '10mb' }));
 
 // Load certificates
 const CERTS_PATH = path.join(__dirname, 'certs');
-const PASS_TEMPLATE_PATH = path.join(__dirname, 'pass-template', 'walletmemo.pass');
 
 // Check if certs exist
 function checkCerts() {
@@ -42,50 +41,55 @@ app.post('/api/generate-pass', async (req, res) => {
     const p12Buffer = fs.readFileSync(path.join(CERTS_PATH, 'pass.p12'));
     const wwdrBuffer = fs.readFileSync(path.join(CERTS_PATH, 'wwdr.pem'));
 
-    // Create pass
-    const pass = new PKPass({}, {
+    // Generate images first
+    const stripBuffer = await generateStripImage(text, color, drawingDataUrl);
+    const iconBuffer = await generateIconImage(color);
+    const logoBuffer = await generateLogoImage(color);
+
+    // Create pass using PKPass.from() with buffers
+    const pass = await PKPass.from({
+      // Pass model (like a template)
+      "pass.json": Buffer.from(JSON.stringify({
+        formatVersion: 1,
+        passTypeIdentifier: 'pass.com.walletmemo.note',
+        teamIdentifier: process.env.TEAM_ID || 'HTWS8J5HF3',
+        organizationName: 'Wallet Memo',
+        description: 'A sticky note for your wallet',
+        serialNumber: `memo-${Date.now()}`,
+        foregroundColor: 'rgb(0, 0, 0)',
+        backgroundColor: getBackgroundColor(color),
+        labelColor: 'rgb(80, 80, 80)',
+        generic: {
+          primaryFields: [
+            {
+              key: 'note',
+              label: 'MEMO',
+              value: text || 'Empty note'
+            }
+          ],
+          secondaryFields: [],
+          auxiliaryFields: [],
+          backFields: [
+            {
+              key: 'fullnote',
+              label: 'Your Note',
+              value: text || 'Empty note'
+            }
+          ]
+        }
+      })),
+      "strip.png": stripBuffer,
+      "strip@2x.png": stripBuffer,
+      "icon.png": iconBuffer,
+      "icon@2x.png": iconBuffer,
+      "logo.png": logoBuffer,
+      "logo@2x.png": logoBuffer,
+    }, {
       wwdr: wwdrBuffer,
       signerCert: p12Buffer,
       signerKey: p12Buffer,
       signerKeyPassphrase: process.env.P12_PASSWORD || 'walletmemo123'
-    }, {
-      formatVersion: 1,
-      passTypeIdentifier: 'pass.com.walletmemo.note',
-      teamIdentifier: process.env.TEAM_ID || 'HTWS8J5HF3', // Your team ID
-      organizationName: 'Wallet Memo',
-      description: 'A sticky note for your wallet',
-      serialNumber: `memo-${Date.now()}`,
-      foregroundColor: 'rgb(0, 0, 0)',
-      backgroundColor: getBackgroundColor(color),
-      labelColor: 'rgb(100, 100, 100)',
-      generic: {
-        primaryFields: [],
-        secondaryFields: [],
-        auxiliaryFields: [],
-        backFields: [
-          {
-            key: 'note',
-            label: 'YOUR NOTE',
-            value: text || 'Empty note'
-          }
-        ]
-      }
     });
-
-    // Generate thumbnail image with the note content
-    const thumbnailBuffer = await generateNoteImage(text, color, drawingDataUrl);
-    pass.addBuffer('thumbnail.png', thumbnailBuffer);
-    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
-    
-    // Add icon (required)
-    const iconBuffer = await generateIconImage(color);
-    pass.addBuffer('icon.png', iconBuffer);
-    pass.addBuffer('icon@2x.png', iconBuffer);
-
-    // Add strip image (the main visual on the pass)
-    const stripBuffer = await generateStripImage(text, color, drawingDataUrl);
-    pass.addBuffer('strip.png', stripBuffer);
-    pass.addBuffer('strip@2x.png', stripBuffer);
 
     // Generate the .pkpass file
     const passBuffer = pass.getAsBuffer();
@@ -138,7 +142,7 @@ async function generateStripImage(text, color, drawingDataUrl) {
 
   // Draw text
   if (text) {
-    ctx.font = '600 28px Caveat, cursive, sans-serif';
+    ctx.font = '600 28px sans-serif';
     ctx.fillStyle = '#1a1a1a';
     
     const lines = text.split('\n');
@@ -147,7 +151,9 @@ async function generateStripImage(text, color, drawingDataUrl) {
     const startX = 40;
 
     lines.forEach((line, i) => {
-      ctx.fillText(line, startX, startY + (i * lineHeight));
+      if (i < 5) { // Max 5 lines on strip
+        ctx.fillText(line, startX, startY + (i * lineHeight));
+      }
     });
   }
 
@@ -164,35 +170,27 @@ async function generateStripImage(text, color, drawingDataUrl) {
   return canvas.toBuffer('image/png');
 }
 
-// Generate thumbnail
-async function generateNoteImage(text, color, drawingDataUrl) {
-  const width = 180;
-  const height = 180;
+// Generate logo
+async function generateLogoImage(color) {
+  const width = 160;
+  const height = 50;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
-  const bgColors = {
-    blue: '#A8D4E8',
-    yellow: '#E2D060',
-    pink: '#E4B8C0'
-  };
-  ctx.fillStyle = bgColors[color] || bgColors.blue;
-  ctx.fillRect(0, 0, width, height);
+  // Transparent background
+  ctx.clearRect(0, 0, width, height);
 
-  // Mini text preview
-  if (text) {
-    ctx.font = '600 16px sans-serif';
-    ctx.fillStyle = '#1a1a1a';
-    const preview = text.substring(0, 30) + (text.length > 30 ? '...' : '');
-    ctx.fillText(preview, 10, 90);
-  }
+  // Draw "Wallet Memo" text
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = '#333';
+  ctx.fillText('Wallet Memo', 10, 32);
 
   return canvas.toBuffer('image/png');
 }
 
 // Generate icon
 async function generateIconImage(color) {
-  const size = 58;
+  const size = 87;
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
 
@@ -204,18 +202,27 @@ async function generateIconImage(color) {
   
   // Rounded square
   ctx.fillStyle = bgColors[color] || bgColors.blue;
-  const radius = 12;
   ctx.beginPath();
-  ctx.roundRect(0, 0, size, size, radius);
+  ctx.roundRect(4, 4, size - 8, size - 8, 16);
   ctx.fill();
 
   // Pencil icon hint
   ctx.strokeStyle = '#1a1a1a';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
+  ctx.lineCap = 'round';
   ctx.beginPath();
-  ctx.moveTo(15, 43);
-  ctx.lineTo(43, 15);
+  ctx.moveTo(25, 62);
+  ctx.lineTo(62, 25);
   ctx.stroke();
+
+  // Pencil tip
+  ctx.beginPath();
+  ctx.moveTo(20, 67);
+  ctx.lineTo(25, 62);
+  ctx.lineTo(30, 67);
+  ctx.closePath();
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fill();
 
   return canvas.toBuffer('image/png');
 }

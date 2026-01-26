@@ -402,19 +402,72 @@ body {
 
 .drawing-toolbar {
   position: absolute;
-  bottom: -60px;
+  bottom: -100px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  gap: 10px;
   background: #fff;
-  padding: 10px 14px;
-  border-radius: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
   box-shadow: 0 4px 20px rgba(0,0,0,.15);
   opacity: 0;
   visibility: hidden;
   transition: opacity .3s ease, visibility .3s ease;
   z-index: 101;
+}
+
+.pen-colors,
+.pen-sizes,
+.pen-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+.pen-color {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease;
+}
+
+.pen-color:hover {
+  transform: scale(1.1);
+}
+
+.pen-color.active {
+  border-color: #333;
+}
+
+.pen-size {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background: #f0f0f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s ease;
+}
+
+.pen-size span {
+  background: #333;
+  border-radius: 50%;
+  display: block;
+}
+
+.pen-size:hover {
+  background: #e5e5e5;
+}
+
+.pen-size.active {
+  border-color: #333;
 }
 
 .note-wrapper.drawing-mode .drawing-toolbar {

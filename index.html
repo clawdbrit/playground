@@ -145,9 +145,24 @@
         </div>
         <!-- Drawing toolbar -->
         <div class="drawing-toolbar" id="drawing-toolbar">
-          <button class="toolbar-btn clear" id="clear-drawing">Clear</button>
-          <button class="toolbar-btn cancel" id="cancel-drawing">Cancel</button>
-          <button class="toolbar-btn done" id="done-drawing">Done</button>
+          <div class="pen-colors">
+            <button class="pen-color active" data-color="26,26,26" style="background:#1a1a1a"></button>
+            <button class="pen-color" data-color="229,57,53" style="background:#e53935"></button>
+            <button class="pen-color" data-color="30,136,229" style="background:#1e88e5"></button>
+            <button class="pen-color" data-color="67,160,71" style="background:#43a047"></button>
+            <button class="pen-color" data-color="142,36,170" style="background:#8e24aa"></button>
+          </div>
+          <div class="pen-sizes">
+            <button class="pen-size" data-size="1"><span style="width:4px;height:4px"></span></button>
+            <button class="pen-size active" data-size="2"><span style="width:6px;height:6px"></span></button>
+            <button class="pen-size" data-size="4"><span style="width:10px;height:10px"></span></button>
+            <button class="pen-size" data-size="6"><span style="width:14px;height:14px"></span></button>
+          </div>
+          <div class="pen-actions">
+            <button class="toolbar-btn clear" id="clear-drawing">Clear</button>
+            <button class="toolbar-btn cancel" id="cancel-drawing">Cancel</button>
+            <button class="toolbar-btn done" id="done-drawing">Done</button>
+          </div>
         </div>
       </div>
 
@@ -575,9 +590,13 @@
           drawingCtx.scale(2, 2);
           drawingCtx.lineCap = 'round';
           drawingCtx.lineJoin = 'round';
-          drawingCtx.strokeStyle = '#1a1a1a';
+          drawingCtx.strokeStyle = 'rgba(26, 26, 26, 0.9)';
           drawingCtx.lineWidth = 2;
         }
+        
+        // Pen settings
+        let currentPenColor = 'rgba(26, 26, 26, 0.9)';
+        let currentPenSize = 2;
 
         initNoteDrawingLayer();
 
@@ -667,6 +686,29 @@
           document.body.classList.remove('drawing-mode-active');
           noteWrapper.classList.remove('drawing-mode');
         }
+
+        // Pen color picker
+        document.querySelectorAll('.pen-color').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.pen-color').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const rgb = btn.dataset.color;
+            currentPenColor = `rgba(${rgb}, 0.9)`;
+            if (drawingCtx) drawingCtx.strokeStyle = currentPenColor;
+          });
+        });
+
+        // Pen size picker
+        document.querySelectorAll('.pen-size').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.pen-size').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPenSize = parseInt(btn.dataset.size);
+            if (drawingCtx) drawingCtx.lineWidth = currentPenSize;
+          });
+        });
 
         // Handle window resize
         window.addEventListener('resize', () => {

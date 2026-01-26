@@ -9,8 +9,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
-// Load certificates
+// Paths
 const CERTS_PATH = path.join(__dirname, 'certs');
+const TEMPLATE_PATH = path.join(__dirname, 'templates', 'walletmemo.pass');
 
 // Check if certs exist
 function checkCerts() {
@@ -18,11 +19,11 @@ function checkCerts() {
   const wwdrPath = path.join(CERTS_PATH, 'wwdr.pem');
   
   if (!fs.existsSync(p12Path)) {
-    console.error('❌ Missing: certs/pass.p12 - Export your certificate from Keychain Access');
+    console.error('❌ Missing: certs/pass.p12');
     return false;
   }
   if (!fs.existsSync(wwdrPath)) {
-    console.error('❌ Missing: certs/wwdr.pem - Download WWDR certificate from Apple');
+    console.error('❌ Missing: certs/wwdr.pem');
     return false;
   }
   return true;
@@ -41,55 +42,35 @@ app.post('/api/generate-pass', async (req, res) => {
     const p12Buffer = fs.readFileSync(path.join(CERTS_PATH, 'pass.p12'));
     const wwdrBuffer = fs.readFileSync(path.join(CERTS_PATH, 'wwdr.pem'));
 
-    // Generate images first
+    // Create pass from template
+    const pass = await PKPass.from({
+      model: TEMPLATE_PATH,
+      certificates: {
+        wwdr: wwdrBuffer,
+        signerCert: p12Buffer,
+        signerKey: p12Buffer,
+        signerKeyPassphrase: process.env.P12_PASSWORD || 'walletmemo123'
+      }
+    });
+
+    // Update pass fields
+    pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    pass.backgroundColor = getBackgroundColor(color);
+    
+    // Update the primary field with the note text
+    pass.primaryFields[0].value = text || 'Empty note';
+
+    // Generate and add images
     const stripBuffer = await generateStripImage(text, color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
-    const logoBuffer = await generateLogoImage(color);
+    const logoBuffer = await generateLogoImage();
 
-    // Create pass using PKPass.from() with buffers
-    const pass = await PKPass.from({
-      // Pass model (like a template)
-      "pass.json": Buffer.from(JSON.stringify({
-        formatVersion: 1,
-        passTypeIdentifier: 'pass.com.walletmemo.note',
-        teamIdentifier: process.env.TEAM_ID || 'HTWS8J5HF3',
-        organizationName: 'Wallet Memo',
-        description: 'A sticky note for your wallet',
-        serialNumber: `memo-${Date.now()}`,
-        foregroundColor: 'rgb(0, 0, 0)',
-        backgroundColor: getBackgroundColor(color),
-        labelColor: 'rgb(80, 80, 80)',
-        generic: {
-          primaryFields: [
-            {
-              key: 'note',
-              label: 'MEMO',
-              value: text || 'Empty note'
-            }
-          ],
-          secondaryFields: [],
-          auxiliaryFields: [],
-          backFields: [
-            {
-              key: 'fullnote',
-              label: 'Your Note',
-              value: text || 'Empty note'
-            }
-          ]
-        }
-      })),
-      "strip.png": stripBuffer,
-      "strip@2x.png": stripBuffer,
-      "icon.png": iconBuffer,
-      "icon@2x.png": iconBuffer,
-      "logo.png": logoBuffer,
-      "logo@2x.png": logoBuffer,
-    }, {
-      wwdr: wwdrBuffer,
-      signerCert: p12Buffer,
-      signerKey: p12Buffer,
-      signerKeyPassphrase: process.env.P12_PASSWORD || 'walletmemo123'
-    });
+    pass.addBuffer('strip.png', stripBuffer);
+    pass.addBuffer('strip@2x.png', stripBuffer);
+    pass.addBuffer('icon.png', iconBuffer);
+    pass.addBuffer('icon@2x.png', iconBuffer);
+    pass.addBuffer('logo.png', logoBuffer);
+    pass.addBuffer('logo@2x.png', logoBuffer);
 
     // Generate the .pkpass file
     const passBuffer = pass.getAsBuffer();
@@ -116,7 +97,7 @@ function getBackgroundColor(color) {
   return colors[color] || colors.blue;
 }
 
-// Generate the main strip image (what shows on the pass)
+// Generate the main strip image
 async function generateStripImage(text, color, drawingDataUrl) {
   const width = 640;
   const height = 246;
@@ -132,7 +113,7 @@ async function generateStripImage(text, color, drawingDataUrl) {
   ctx.fillStyle = bgColors[color] || bgColors.blue;
   ctx.fillRect(0, 0, width, height);
 
-  // Add paper texture effect (subtle noise)
+  // Paper texture
   ctx.globalAlpha = 0.03;
   for (let i = 0; i < 5000; i++) {
     ctx.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
@@ -151,13 +132,13 @@ async function generateStripImage(text, color, drawingDataUrl) {
     const startX = 40;
 
     lines.forEach((line, i) => {
-      if (i < 5) { // Max 5 lines on strip
+      if (i < 5) {
         ctx.fillText(line, startX, startY + (i * lineHeight));
       }
     });
   }
 
-  // Overlay drawing if provided
+  // Overlay drawing
   if (drawingDataUrl) {
     try {
       const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
@@ -171,19 +152,16 @@ async function generateStripImage(text, color, drawingDataUrl) {
 }
 
 // Generate logo
-async function generateLogoImage(color) {
+async function generateLogoImage() {
   const width = 160;
   const height = 50;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
-  // Transparent background
   ctx.clearRect(0, 0, width, height);
-
-  // Draw "Wallet Memo" text
-  ctx.font = 'bold 20px sans-serif';
+  ctx.font = 'bold 18px sans-serif';
   ctx.fillStyle = '#333';
-  ctx.fillText('Wallet Memo', 10, 32);
+  ctx.fillText('Wallet Memo', 5, 32);
 
   return canvas.toBuffer('image/png');
 }
@@ -200,13 +178,11 @@ async function generateIconImage(color) {
     pink: '#E4B8C0'
   };
   
-  // Rounded square
   ctx.fillStyle = bgColors[color] || bgColors.blue;
   ctx.beginPath();
   ctx.roundRect(4, 4, size - 8, size - 8, 16);
   ctx.fill();
 
-  // Pencil icon hint
   ctx.strokeStyle = '#1a1a1a';
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
@@ -214,15 +190,6 @@ async function generateIconImage(color) {
   ctx.moveTo(25, 62);
   ctx.lineTo(62, 25);
   ctx.stroke();
-
-  // Pencil tip
-  ctx.beginPath();
-  ctx.moveTo(20, 67);
-  ctx.lineTo(25, 62);
-  ctx.lineTo(30, 67);
-  ctx.closePath();
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fill();
 
   return canvas.toBuffer('image/png');
 }
@@ -232,7 +199,7 @@ app.get('/api/health', (req, res) => {
   const certsOk = checkCerts();
   res.json({ 
     status: certsOk ? 'ready' : 'missing-certs',
-    message: certsOk ? 'Server ready to generate passes' : 'Please add certificates to backend/certs/'
+    message: certsOk ? 'Server ready to generate passes' : 'Please add certificates'
   });
 });
 
@@ -243,9 +210,6 @@ app.listen(PORT, () => {
   if (checkCerts()) {
     console.log('✅ Certificates found - ready to generate passes!\n');
   } else {
-    console.log('\n📋 Setup instructions:');
-    console.log('1. Copy your Certificates.p12 to backend/certs/pass.p12');
-    console.log('2. Convert WWDR cert to PEM and save as backend/certs/wwdr.pem');
-    console.log('   (Run: openssl x509 -in "Apple WWDR CA G4.cer" -out wwdr.pem -outform PEM)\n');
+    console.log('\n📋 Add certs to backend/certs/\n');
   }
 });

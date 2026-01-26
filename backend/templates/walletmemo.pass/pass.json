@@ -1,0 +1,23 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.walletmemo.note",
+  "teamIdentifier": "HTWS8J5HF3",
+  "organizationName": "Wallet Memo",
+  "description": "A sticky note for your wallet",
+  "serialNumber": "PLACEHOLDER",
+  "foregroundColor": "rgb(0, 0, 0)",
+  "backgroundColor": "rgb(168, 212, 232)",
+  "labelColor": "rgb(80, 80, 80)",
+  "generic": {
+    "primaryFields": [
+      {
+        "key": "note",
+        "label": "MEMO",
+        "value": "Your note here"
+      }
+    ],
+    "secondaryFields": [],
+    "auxiliaryFields": [],
+    "backFields": []
+  }
+}

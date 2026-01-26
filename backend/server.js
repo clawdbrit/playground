@@ -3,7 +3,7 @@ const cors = require('cors');
 const { PKPass } = require('passkit-generator');
 const fs = require('fs');
 const path = require('path');
-const { createCanvas } = require('canvas');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 
 const app = express();
 app.use(cors());
@@ -154,8 +154,7 @@ async function generateStripImage(text, color, drawingDataUrl) {
   // Overlay drawing if provided
   if (drawingDataUrl) {
     try {
-      const { loadImage } = require('canvas');
-      const drawingImage = await loadImage(drawingDataUrl);
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
       ctx.drawImage(drawingImage, 0, 0, width, height);
     } catch (e) {
       console.log('Could not load drawing:', e.message);

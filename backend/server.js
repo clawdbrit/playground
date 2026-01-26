@@ -4,6 +4,7 @@ const { PKPass } = require('passkit-generator');
 const fs = require('fs');
 const path = require('path');
 const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const forge = require('node-forge');
 
 const app = express();
 app.use(cors());
@@ -29,6 +30,25 @@ function checkCerts() {
   return true;
 }
 
+// Extract cert and key from p12 using node-forge
+function extractFromP12(p12Path, password) {
+  const p12Buffer = fs.readFileSync(p12Path);
+  const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString('binary'));
+  const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
+  
+  // Get certificate
+  const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
+  const cert = certBags[forge.pki.oids.certBag][0].cert;
+  const certPem = forge.pki.certificateToPem(cert);
+  
+  // Get private key
+  const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+  const key = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
+  const keyPem = forge.pki.privateKeyToPem(key);
+  
+  return { certPem, keyPem };
+}
+
 // Generate a pass
 app.post('/api/generate-pass', async (req, res) => {
   try {
@@ -38,18 +58,21 @@ app.post('/api/generate-pass', async (req, res) => {
       return res.status(500).json({ error: 'Server certificates not configured' });
     }
 
-    // Read certificates
-    const p12Buffer = fs.readFileSync(path.join(CERTS_PATH, 'pass.p12'));
-    const wwdrBuffer = fs.readFileSync(path.join(CERTS_PATH, 'wwdr.pem'));
+    const p12Path = path.join(CERTS_PATH, 'pass.p12');
+    const wwdrPath = path.join(CERTS_PATH, 'wwdr.pem');
+    const password = process.env.P12_PASSWORD || 'walletmemo123';
+    
+    // Extract cert and key from p12
+    const { certPem, keyPem } = extractFromP12(p12Path, password);
+    const wwdrBuffer = fs.readFileSync(wwdrPath);
 
     // Create pass from template
     const pass = await PKPass.from({
       model: TEMPLATE_PATH,
       certificates: {
         wwdr: wwdrBuffer,
-        signerCert: p12Buffer,
-        signerKey: p12Buffer,
-        signerKeyPassphrase: process.env.P12_PASSWORD || 'walletmemo123'
+        signerCert: certPem,
+        signerKey: keyPem,
       }
     });
 
@@ -58,7 +81,9 @@ app.post('/api/generate-pass', async (req, res) => {
     pass.backgroundColor = getBackgroundColor(color);
     
     // Update the primary field with the note text
-    pass.primaryFields[0].value = text || 'Empty note';
+    if (pass.primaryFields && pass.primaryFields[0]) {
+      pass.primaryFields[0].value = text || 'Empty note';
+    }
 
     // Generate and add images
     const stripBuffer = await generateStripImage(text, color, drawingDataUrl);

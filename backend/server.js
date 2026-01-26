@@ -14,39 +14,57 @@ app.use(express.json({ limit: '10mb' }));
 const CERTS_PATH = path.join(__dirname, 'certs');
 const TEMPLATE_PATH = path.join(__dirname, 'templates', 'walletmemo.pass');
 
-// Check if certs exist
+// Check if certs are available (files or env vars)
 function checkCerts() {
+  // Check for env vars first (production)
+  if (process.env.P12_BASE64 && process.env.WWDR_PEM) {
+    return true;
+  }
+  
+  // Fall back to files (local dev)
   const p12Path = path.join(CERTS_PATH, 'pass.p12');
   const wwdrPath = path.join(CERTS_PATH, 'wwdr.pem');
   
   if (!fs.existsSync(p12Path)) {
-    console.error('❌ Missing: certs/pass.p12');
+    console.error('❌ Missing: certs/pass.p12 or P12_BASE64 env var');
     return false;
   }
   if (!fs.existsSync(wwdrPath)) {
-    console.error('❌ Missing: certs/wwdr.pem');
+    console.error('❌ Missing: certs/wwdr.pem or WWDR_PEM env var');
     return false;
   }
   return true;
 }
 
-// Extract cert and key from p12 using node-forge
-function extractFromP12(p12Path, password) {
-  const p12Buffer = fs.readFileSync(p12Path);
+// Get certificates (from env vars or files)
+function getCertificates() {
+  const password = process.env.P12_PASSWORD || '';
+  
+  let p12Buffer, wwdrPem;
+  
+  // Check for env vars first (production)
+  if (process.env.P12_BASE64 && process.env.WWDR_PEM) {
+    p12Buffer = Buffer.from(process.env.P12_BASE64, 'base64');
+    wwdrPem = process.env.WWDR_PEM;
+  } else {
+    // Fall back to files (local dev)
+    p12Buffer = fs.readFileSync(path.join(CERTS_PATH, 'pass.p12'));
+    wwdrPem = fs.readFileSync(path.join(CERTS_PATH, 'wwdr.pem'), 'utf8');
+  }
+  
+  // Extract cert and key from p12 using node-forge
   const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString('binary'));
   const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
   
-  // Get certificate
   const certBags = p12.getBags({ bagType: forge.pki.oids.certBag });
   const cert = certBags[forge.pki.oids.certBag][0].cert;
   const certPem = forge.pki.certificateToPem(cert);
   
-  // Get private key
   const keyBags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
   const key = keyBags[forge.pki.oids.pkcs8ShroudedKeyBag][0].key;
   const keyPem = forge.pki.privateKeyToPem(key);
   
-  return { certPem, keyPem };
+  return { certPem, keyPem, wwdrPem };
 }
 
 // Generate a pass
@@ -58,19 +76,13 @@ app.post('/api/generate-pass', async (req, res) => {
       return res.status(500).json({ error: 'Server certificates not configured' });
     }
 
-    const p12Path = path.join(CERTS_PATH, 'pass.p12');
-    const wwdrPath = path.join(CERTS_PATH, 'wwdr.pem');
-    const password = process.env.P12_PASSWORD || 'walletmemo123';
-    
-    // Extract cert and key from p12
-    const { certPem, keyPem } = extractFromP12(p12Path, password);
-    const wwdrBuffer = fs.readFileSync(wwdrPath);
+    const { certPem, keyPem, wwdrPem } = getCertificates();
 
     // Create pass from template
     const pass = await PKPass.from({
       model: TEMPLATE_PATH,
       certificates: {
-        wwdr: wwdrBuffer,
+        wwdr: wwdrPem,
         signerCert: certPem,
         signerKey: keyPem,
       }
@@ -80,7 +92,6 @@ app.post('/api/generate-pass', async (req, res) => {
     pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     pass.backgroundColor = getBackgroundColor(color);
     
-    // Update the primary field with the note text
     if (pass.primaryFields && pass.primaryFields[0]) {
       pass.primaryFields[0].value = text || 'Empty note';
     }
@@ -129,7 +140,6 @@ async function generateStripImage(text, color, drawingDataUrl) {
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
-  // Background color
   const bgColors = {
     blue: '#A8D4E8',
     yellow: '#E2D060',
@@ -138,7 +148,6 @@ async function generateStripImage(text, color, drawingDataUrl) {
   ctx.fillStyle = bgColors[color] || bgColors.blue;
   ctx.fillRect(0, 0, width, height);
 
-  // Paper texture
   ctx.globalAlpha = 0.03;
   for (let i = 0; i < 5000; i++) {
     ctx.fillStyle = Math.random() > 0.5 ? '#000' : '#fff';
@@ -146,7 +155,6 @@ async function generateStripImage(text, color, drawingDataUrl) {
   }
   ctx.globalAlpha = 1;
 
-  // Draw text
   if (text) {
     ctx.font = '600 28px sans-serif';
     ctx.fillStyle = '#1a1a1a';
@@ -163,7 +171,6 @@ async function generateStripImage(text, color, drawingDataUrl) {
     });
   }
 
-  // Overlay drawing
   if (drawingDataUrl) {
     try {
       const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
@@ -176,7 +183,6 @@ async function generateStripImage(text, color, drawingDataUrl) {
   return canvas.toBuffer('image/png');
 }
 
-// Generate logo
 async function generateLogoImage() {
   const width = 160;
   const height = 50;
@@ -191,7 +197,6 @@ async function generateLogoImage() {
   return canvas.toBuffer('image/png');
 }
 
-// Generate icon
 async function generateIconImage(color) {
   const size = 87;
   const canvas = createCanvas(size, size);
@@ -219,12 +224,11 @@ async function generateIconImage(color) {
   return canvas.toBuffer('image/png');
 }
 
-// Health check
 app.get('/api/health', (req, res) => {
   const certsOk = checkCerts();
   res.json({ 
     status: certsOk ? 'ready' : 'missing-certs',
-    message: certsOk ? 'Server ready to generate passes' : 'Please add certificates'
+    message: certsOk ? 'Server ready to generate passes' : 'Please configure certificates'
   });
 });
 
@@ -235,6 +239,7 @@ app.listen(PORT, () => {
   if (checkCerts()) {
     console.log('✅ Certificates found - ready to generate passes!\n');
   } else {
-    console.log('\n📋 Add certs to backend/certs/\n');
+    console.log('\n📋 For local dev: add certs to backend/certs/');
+    console.log('📋 For production: set P12_BASE64, WWDR_PEM, P12_PASSWORD env vars\n');
   }
 });

@@ -1,0 +1,5 @@
+# Place your certificates here (they are gitignored for security)
+#
+# Required files:
+# - pass.p12 (exported from Keychain Access)
+# - wwdr.pem (Apple WWDR certificate in PEM format)

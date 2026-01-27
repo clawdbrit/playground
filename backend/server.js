@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 46;
+const BUILD_NUMBER = 47;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -225,12 +225,21 @@ async function generateStripImage(color, drawingDataUrl) {
       
       let drawWidth, drawHeight, drawX, drawY;
       
-      // Position drawing at TOP of strip (Apple crops from bottom)
-      // Scale to fit width, position at top
-      drawWidth = width * 0.8;  // Leave some margin
-      drawHeight = drawWidth / srcAspect;
-      drawX = (width - drawWidth) / 2;  // Center horizontally
-      drawY = 20;  // Position near top with small margin
+      // Fill the strip with the drawing - make it prominent
+      // Scale to FILL the strip area (cover)
+      if (srcAspect > (width / height)) {
+        // Drawing is wider than strip - fit to height, center horizontally
+        drawHeight = height;
+        drawWidth = height * srcAspect;
+        drawX = (width - drawWidth) / 2;
+        drawY = 0;
+      } else {
+        // Drawing is taller than strip - fit to width, position at top
+        drawWidth = width;
+        drawHeight = width / srcAspect;
+        drawX = 0;
+        drawY = 0;  // Align to top so drawing is visible
+      }
       
       ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
       console.log('Drawing applied successfully');

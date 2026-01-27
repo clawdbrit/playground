@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 51;
+const BUILD_NUMBER = 52;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -215,9 +215,9 @@ async function generateStripImage(color, drawingDataUrl, text) {
   // Render text at top of strip (like the sticky note)
   if (text && text.trim()) {
     ctx.fillStyle = '#1E1E1E';  // Dark text
-    ctx.font = 'italic 48px Georgia, serif';  // Match the website style
+    ctx.font = 'italic 72px "Caveat", cursive';  // Bigger, use Caveat
     ctx.textBaseline = 'top';
-    ctx.fillText(text, 40, 30);  // Position at top-left with padding
+    ctx.fillText(text, 50, 40);  // Position at top-left with padding
     console.log('Text rendered:', text);
   }
 

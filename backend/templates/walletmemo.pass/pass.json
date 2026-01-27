@@ -10,7 +10,13 @@
   "labelColor": "rgb(60, 60, 60)",
   "eventTicket": {
     "headerFields": [],
-    "primaryFields": [],
+    "primaryFields": [
+      {
+        "key": "memo",
+        "label": "",
+        "value": ""
+      }
+    ],
     "secondaryFields": [],
     "auxiliaryFields": [],
     "backFields": [

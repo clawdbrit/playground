@@ -106,14 +106,14 @@ app.post('/api/generate-pass', async (req, res) => {
     }
 
     // Generate and add images
-    // For eventTicket passes, background.png shows behind entire card
+    // For eventTicket passes, strip.png shows CRISP at top (not blurred like background)
     console.log('Drawing data received:', drawingDataUrl ? 'yes (' + drawingDataUrl.length + ' chars)' : 'no');
-    const backgroundBuffer = await generateBackgroundImage(color, drawingDataUrl);
+    const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
 
-    pass.addBuffer('background.png', backgroundBuffer);
-    pass.addBuffer('background@2x.png', backgroundBuffer);
-    pass.addBuffer('background@3x.png', backgroundBuffer);
+    pass.addBuffer('strip.png', stripBuffer);
+    pass.addBuffer('strip@2x.png', stripBuffer);
+    pass.addBuffer('strip@3x.png', stripBuffer);
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
     // Logo removed per user request
@@ -143,12 +143,12 @@ function getBackgroundColor(color) {
   return colors[color] || colors.blue;
 }
 
-// Generate the background image with gradient and paper texture
-// For eventTicket passes: 180x220 @1x, 360x440 @2x, 540x660 @3x
-// Using @3x resolution for sharper drawing lines
-async function generateBackgroundImage(color, drawingDataUrl) {
-  const width = 540;
-  const height = 660;
+// Generate the strip image with gradient and paper texture
+// For eventTicket strips: 375x123 @1x, 750x246 @2x, 1125x369 @3x
+// Strip stays CRISP (unlike background which gets blurred)
+async function generateStripImage(color, drawingDataUrl) {
+  const width = 1125;   // @3x
+  const height = 369;   // @3x
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
@@ -188,9 +188,9 @@ async function generateBackgroundImage(color, drawingDataUrl) {
   ctx.fillRect(0, 0, width, height);
 
   // Add paper noise texture (more visible)
-  const noiseIntensity = 0.07;
+  const noiseIntensity = 0.06;
   ctx.globalAlpha = noiseIntensity;
-  for (let i = 0; i < 25000; i++) {
+  for (let i = 0; i < 30000; i++) {
     const x = Math.random() * width;
     const y = Math.random() * height;
     // Mix of light and dark specks for paper texture

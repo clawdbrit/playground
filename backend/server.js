@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 36;
+const BUILD_NUMBER = 37;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -177,25 +177,19 @@ async function generateStripImage(color, drawingDataUrl) {
   // Gradient colors - more dramatic contrast for visible effect
   const gradientColors = {
     blue: [
-      { pos: 0, color: '#5BA8C8' },      // noticeably darker at bottom
-      { pos: 0.25, color: '#7BBFDC' },
-      { pos: 0.5, color: '#9DD5EE' },
-      { pos: 0.75, color: '#B8E8F8' },
-      { pos: 1, color: '#E0F5FC' }       // much lighter at top
+      { pos: 0, color: '#9DD5EE' },      // bottom matches backgroundColor
+      { pos: 0.5, color: '#B8E8F8' },
+      { pos: 1, color: '#E0F5FC' }       // lighter at top (like light source)
     ],
     yellow: [
-      { pos: 0, color: '#B0A030' },      // noticeably darker at bottom
-      { pos: 0.25, color: '#C8B840' },
-      { pos: 0.5, color: '#E0D060' },
-      { pos: 0.75, color: '#F0E480' },
-      { pos: 1, color: '#FDF8C0' }       // much lighter at top
+      { pos: 0, color: '#E2D060' },      // bottom matches backgroundColor
+      { pos: 0.5, color: '#F0E480' },
+      { pos: 1, color: '#FDF8C0' }       // lighter at top
     ],
     pink: [
-      { pos: 0, color: '#B07888' },      // noticeably darker at bottom
-      { pos: 0.25, color: '#C89098' },
-      { pos: 0.5, color: '#E0A8B0' },
-      { pos: 0.75, color: '#F0C0C8' },
-      { pos: 1, color: '#FCE8F0' }       // much lighter at top
+      { pos: 0, color: '#E4B8C0' },      // bottom matches backgroundColor
+      { pos: 0.5, color: '#F0C8D0' },
+      { pos: 1, color: '#FCE8F0' }       // lighter at top
     ]
   };
 

@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 57;
+const BUILD_NUMBER = 58;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -147,17 +147,20 @@ app.post('/api/generate-pass', async (req, res) => {
     // Generate background image (fills entire pass body)
     const bgBuffer = await generateBackgroundImage(color);
     
-    // For posterEventTicket, background.png is the main poster image
-    // Strip is used for non-poster fallback on older iOS
-    pass.addBuffer('strip.png', stripBuffer);
-    pass.addBuffer('strip@2x.png', stripBuffer);
-    pass.addBuffer('strip@3x.png', stripBuffer);
+    // For posterEventTicket: use background.png (poster) + thumbnail.png (crisp overlay)
+    // Do NOT use strip.png - it conflicts with poster style
+    // Older iOS fallback will use background (blurred) + thumbnail
     
-    // Background image for posterEventTicket (full poster view on iOS 18+)
     const posterBuffer = await generatePosterImage(color, drawingDataUrl);
     pass.addBuffer('background.png', posterBuffer);
     pass.addBuffer('background@2x.png', posterBuffer);
     pass.addBuffer('background@3x.png', posterBuffer);
+    
+    // Thumbnail shows crisp on the pass (not blurred like background)
+    const thumbnailBuffer = await generateThumbnailImage(color, drawingDataUrl);
+    pass.addBuffer('thumbnail.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@3x.png', thumbnailBuffer);
     
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
@@ -337,6 +340,47 @@ async function generatePosterImage(color, drawingDataUrl) {
       ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
     } catch (e) {
       console.error('Could not load drawing for poster:', e.message);
+    }
+  }
+
+  return canvas.toBuffer('image/png');
+}
+
+// Generate thumbnail for eventTicket (shows crisp, not blurred)
+// Dimensions: 90pt × 90pt (@3x = 270 × 270) - but can be taller
+async function generateThumbnailImage(color, drawingDataUrl) {
+  const width = 270;
+  const height = 270;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  
+  // Gradient background
+  const gradientColors = {
+    blue: ['#9DD5EE', '#E0F5FC'],
+    yellow: ['#E2D060', '#FDF8C0'],
+    pink: ['#E4B8C0', '#FCE8F0']
+  };
+  
+  const colors = gradientColors[color] || gradientColors.blue;
+  const gradient = ctx.createLinearGradient(0, height, 0, 0);
+  gradient.addColorStop(0, colors[0]);
+  gradient.addColorStop(1, colors[1]);
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // Overlay drawing if provided
+  if (drawingDataUrl && drawingDataUrl.length > 1000) {
+    try {
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
+      const scale = Math.min(width / drawingImage.width, height / drawingImage.height) * 0.85;
+      const drawWidth = drawingImage.width * scale;
+      const drawHeight = drawingImage.height * scale;
+      const drawX = (width - drawWidth) / 2;
+      const drawY = (height - drawHeight) / 2;
+      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
+    } catch (e) {
+      console.error('Could not load drawing for thumbnail:', e.message);
     }
   }
 

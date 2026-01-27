@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 54;
+const BUILD_NUMBER = 55;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -127,10 +127,10 @@ app.post('/api/generate-pass', async (req, res) => {
       pass.backFields[0].value = String(BUILD_NUMBER);
     }
     
-    // Add memo text to primary field (guaranteed visible by Apple)
-    if (text && text.trim() && pass.primaryFields && pass.primaryFields[0]) {
-      pass.primaryFields[0].value = text;
-      console.log('Set memo in primaryFields:', text);
+    // Add memo text to secondary field (smaller, less dominant)
+    if (text && text.trim() && pass.secondaryFields && pass.secondaryFields[0]) {
+      pass.secondaryFields[0].value = text;
+      console.log('Set memo in secondaryFields:', text);
     }
 
     // Generate and add images

@@ -10,14 +10,14 @@
   "labelColor": "rgb(60, 60, 60)",
   "eventTicket": {
     "headerFields": [],
-    "primaryFields": [
+    "primaryFields": [],
+    "secondaryFields": [
       {
         "key": "memo",
-        "label": "",
+        "label": "Note",
         "value": ""
       }
     ],
-    "secondaryFields": [],
     "auxiliaryFields": [],
     "backFields": [
       {

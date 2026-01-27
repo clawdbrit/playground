@@ -6,12 +6,19 @@
   "description": "A sticky note for your wallet",
   "serialNumber": "PLACEHOLDER",
   "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(228, 184, 192)",
-  "labelColor": "rgb(240, 240, 240)",
-  "relevantDate": "2099-12-31T23:59:00Z",
-  "preferredStyleSchemes": ["posterEventTicket", "eventTicket"],
+  "preferredStyleSchemes": [
+    "posterEventTicket",
+    "eventTicket"
+  ],
+  "relevantDates": [
+    {
+      "startDate": "2099-12-31T00:00:00Z",
+      "endDate": "2099-12-31T23:59:00Z"
+    }
+  ],
   "eventTicket": {
-    "headerFields": [],
     "primaryFields": [],
     "secondaryFields": [],
     "auxiliaryFields": [],
@@ -28,11 +35,12 @@
       }
     ]
   },
-  "semanticTags": {
-    "eventName": "Wallet Memo",
+  "semantics": {
     "eventType": "PKEventTypeGeneric",
-    "venueName": "Your Notes",
-    "eventStartDate": "2099-12-31T23:59:00Z",
-    "eventEndDate": "2099-12-31T23:59:00Z"
+    "eventName": "Wallet Memo",
+    "venueName": "Your Digital Note",
+    "venueRegionName": "Everywhere",
+    "venueRoom": "Your Pocket",
+    "eventStartDate": "2099-12-31T00:00:00Z"
   }
 }

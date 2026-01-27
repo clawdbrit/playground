@@ -111,6 +111,7 @@ app.post('/api/generate-pass', async (req, res) => {
 
     pass.addBuffer('background.png', backgroundBuffer);
     pass.addBuffer('background@2x.png', backgroundBuffer);
+    pass.addBuffer('background@3x.png', backgroundBuffer);
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
     // Logo removed per user request
@@ -141,10 +142,11 @@ function getBackgroundColor(color) {
 }
 
 // Generate the background image with gradient and paper texture
-// For eventTicket passes: 180x220 @1x, 360x440 @2x
+// For eventTicket passes: 180x220 @1x, 360x440 @2x, 540x660 @3x
+// Using @3x resolution for sharper drawing lines
 async function generateBackgroundImage(color, drawingDataUrl) {
-  const width = 360;
-  const height = 440;
+  const width = 540;
+  const height = 660;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
 
@@ -186,7 +188,7 @@ async function generateBackgroundImage(color, drawingDataUrl) {
   // Add paper noise texture (more visible)
   const noiseIntensity = 0.07;
   ctx.globalAlpha = noiseIntensity;
-  for (let i = 0; i < 15000; i++) {
+  for (let i = 0; i < 25000; i++) {
     const x = Math.random() * width;
     const y = Math.random() * height;
     // Mix of light and dark specks for paper texture

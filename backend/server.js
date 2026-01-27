@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 42;
+const BUILD_NUMBER = 43;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -109,17 +109,22 @@ app.post('/api/generate-pass', async (req, res) => {
     // Update pass fields
     pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     
-    // Set background color - try multiple methods
+    // Set background color
     const bgColor = getBackgroundColor(color);
     console.log('Setting pass colors - color:', color, 'bgColor:', bgColor);
     
-    // Try setting directly on pass object
-    pass.backgroundColor = bgColor;
-    pass.foregroundColor = 'rgb(30, 30, 30)';
-    pass.labelColor = 'rgb(60, 60, 60)';
-    
-    // Also try props
-    pass.props.backgroundColor = bgColor;
+    // PKPass uses setters - try all approaches
+    try {
+      // Method 1: Direct property
+      pass.backgroundColor = bgColor;
+      // Method 2: Props object  
+      if (pass.props) pass.props.backgroundColor = bgColor;
+      // Method 3: Using localize/set methods if available
+      if (typeof pass.setBackgroundColor === 'function') pass.setBackgroundColor(bgColor);
+      console.log('Pass backgroundColor after setting:', pass.backgroundColor);
+    } catch (e) {
+      console.error('Error setting backgroundColor:', e.message);
+    }
     
     // Set build number in back field (flip side of pass)
     if (pass.backFields && pass.backFields[0]) {

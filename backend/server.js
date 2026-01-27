@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 29;
+const BUILD_NUMBER = 30;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -132,8 +132,9 @@ app.post('/api/generate-pass', async (req, res) => {
     pass.addBuffer('strip.png', stripBuffer);
     pass.addBuffer('strip@2x.png', stripBuffer);
     pass.addBuffer('strip@3x.png', stripBuffer);
-    pass.addBuffer('background.png', bgBuffer);
-    pass.addBuffer('background@2x.png', bgBuffer);
+    // Removing background to see if it conflicts with strip
+    // pass.addBuffer('background.png', bgBuffer);
+    // pass.addBuffer('background@2x.png', bgBuffer);
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
     // Logo removed per user request

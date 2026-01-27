@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 50;
+const BUILD_NUMBER = 51;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -89,6 +89,7 @@ function getCertificates() {
 app.post('/api/generate-pass', async (req, res) => {
   try {
     const { text, color, drawingDataUrl } = req.body;
+    console.log('Received - text:', text, 'color:', color, 'drawing length:', drawingDataUrl?.length);
     
     if (!checkCerts()) {
       return res.status(500).json({ error: 'Server certificates not configured' });

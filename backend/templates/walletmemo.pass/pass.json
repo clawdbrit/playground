@@ -6,18 +6,12 @@
   "description": "A sticky note for your wallet",
   "serialNumber": "PLACEHOLDER",
   "backgroundColor": "rgb(228, 184, 192)",
-  "foregroundColor": "rgb(30, 30, 30)",
-  "labelColor": "rgb(60, 60, 60)",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(240, 240, 240)",
   "preferredStyleSchemes": ["posterEventTicket", "eventTicket"],
   "eventTicket": {
     "headerFields": [],
-    "primaryFields": [
-      {
-        "key": "memo",
-        "label": "",
-        "value": ""
-      }
-    ],
+    "primaryFields": [],
     "secondaryFields": [],
     "auxiliaryFields": [],
     "backFields": [
@@ -33,8 +27,13 @@
       }
     ]
   },
-  "semantics": {
+  "semanticTags": {
     "eventName": "Wallet Memo",
-    "venueName": "Your Digital Sticky Note"
+    "eventType": "PKEventTypeGeneric",
+    "venueName": "Your Digital Note",
+    "venueLocation": {
+      "latitude": 0,
+      "longitude": 0
+    }
   }
 }

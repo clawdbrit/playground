@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 56;
+const BUILD_NUMBER = 57;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -272,12 +272,12 @@ async function generateStripImage(color, drawingDataUrl) {
   return canvas.toBuffer('image/png');
 }
 
-// Generate poster background for posterEventTicket (iOS 18+)
-// This is the tall poster-style image that fills the pass
-// Recommended size: 180pt × 220pt (@3x = 540 × 660)
+// Generate poster background for posterEventTicket (iOS 17.5+)
+// For poster style, this is the full-bleed image that fills the pass
+// Apple recommends: 375pt × 522pt (@3x = 1125 × 1566)
 async function generatePosterImage(color, drawingDataUrl) {
-  const width = 540;   // @3x width (180pt)
-  const height = 660;  // @3x height (220pt)
+  const width = 1125;  // @3x width matching strip
+  const height = 1566; // @3x height for tall poster aspect
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   

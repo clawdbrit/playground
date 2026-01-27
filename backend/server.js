@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 30;
+const BUILD_NUMBER = 31;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -168,9 +168,9 @@ function getBackgroundColor(color) {
 // For eventTicket: making strip TALL so it dominates the card like Apple's example
 // @3x resolution: 1125 x 1200
 async function generateStripImage(color, drawingDataUrl) {
-  // Apple strip dimensions for @3x: 960 × 252
-  const width = 960;
-  const height = 252;
+  // Apple strip dimensions for event tickets @3x: 1125 × 294
+  const width = 1125;
+  const height = 294;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   

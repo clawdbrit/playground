@@ -555,6 +555,11 @@
             currentColor = colorKey;
             updateNoteColors(colorKey);
 
+            // Clear drawing when color changes (drawing is tied to note color)
+            if (drawingCtx) {
+              drawingCtx.clearRect(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+            }
+
             // Update active state
             colorSwatches.forEach(s => s.classList.remove('active'));
             swatch.classList.add('active');

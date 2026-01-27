@@ -12,13 +12,18 @@
     "headerFields": [],
     "primaryFields": [],
     "secondaryFields": [],
-    "auxiliaryFields": [
+    "auxiliaryFields": [],
+    "backFields": [
       {
-        "key": "build",
+        "key": "version",
         "label": "Build",
         "value": "0"
+      },
+      {
+        "key": "website",
+        "label": "Website",
+        "value": "https://walletmemo.com"
       }
-    ],
-    "backFields": []
+    ]
   }
 }

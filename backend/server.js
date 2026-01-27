@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 35;
+const BUILD_NUMBER = 36;
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -115,9 +115,9 @@ app.post('/api/generate-pass', async (req, res) => {
     pass.props.foregroundColor = 'rgb(30, 30, 30)';
     pass.props.labelColor = 'rgb(60, 60, 60)';
     
-    // Set build number in auxiliary field for debugging
-    if (pass.auxiliaryFields && pass.auxiliaryFields[0]) {
-      pass.auxiliaryFields[0].value = String(BUILD_NUMBER);
+    // Set build number in back field (flip side of pass)
+    if (pass.backFields && pass.backFields[0]) {
+      pass.backFields[0].value = String(BUILD_NUMBER);
     }
 
     // Generate and add images

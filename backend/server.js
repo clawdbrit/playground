@@ -98,6 +98,8 @@ app.post('/api/generate-pass', async (req, res) => {
     // Update pass fields
     pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     pass.backgroundColor = getBackgroundColor(color);
+    pass.foregroundColor = 'rgb(30, 30, 30)';  // Dark text for readability
+    pass.labelColor = 'rgb(60, 60, 60)';       // Dark gray labels
     
     if (pass.primaryFields && pass.primaryFields[0]) {
       pass.primaryFields[0].value = text || 'Empty note';
@@ -198,30 +200,30 @@ async function generateBackgroundImage(color, drawingDataUrl) {
   }
   ctx.globalAlpha = 1;
 
-  // Overlay any drawing from the user (maintain aspect ratio)
+  // Overlay any drawing from the user
   if (drawingDataUrl) {
     try {
       const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
       
-      // Original canvas is ~688x648 (344x324 * 2), pass is 360x440
-      // Scale to fit while maintaining aspect ratio
+      // Scale to FILL (cover entire canvas) rather than FIT
+      // This minimizes scaling down, which preserves line sharpness
       const srcAspect = drawingImage.width / drawingImage.height;
       const dstAspect = width / height;
       
       let drawWidth, drawHeight, drawX, drawY;
       
       if (srcAspect > dstAspect) {
-        // Source is wider - fit to width
-        drawWidth = width;
-        drawHeight = width / srcAspect;
-        drawX = 0;
-        drawY = (height - drawHeight) / 2;
-      } else {
-        // Source is taller - fit to height  
+        // Source is wider - fit to height, crop sides
         drawHeight = height;
         drawWidth = height * srcAspect;
         drawX = (width - drawWidth) / 2;
         drawY = 0;
+      } else {
+        // Source is taller - fit to width, crop top/bottom
+        drawWidth = width;
+        drawHeight = width / srcAspect;
+        drawX = 0;
+        drawY = (height - drawHeight) / 2;
       }
       
       ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);

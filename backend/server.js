@@ -105,7 +105,7 @@ app.post('/api/generate-pass', async (req, res) => {
 
     // Generate and add images
     // For eventTicket passes, background.png shows behind entire card
-    const backgroundBuffer = await generateBackgroundImage(color);
+    const backgroundBuffer = await generateBackgroundImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
     const logoBuffer = await generateLogoImage();
 
@@ -143,7 +143,7 @@ function getBackgroundColor(color) {
 
 // Generate the background image with gradient and paper texture
 // For eventTicket passes: 180x220 @1x, 360x440 @2x
-async function generateBackgroundImage(color) {
+async function generateBackgroundImage(color, drawingDataUrl) {
   const width = 360;
   const height = 440;
   const canvas = createCanvas(width, height);
@@ -152,28 +152,25 @@ async function generateBackgroundImage(color) {
   // Gradient colors matching the site's sticky note SVG (bottom to top)
   const gradientColors = {
     blue: [
-      { pos: 0, color: '#9DD5EE' },      // bottom
-      { pos: 0.26, color: '#98C4DA' },
-      { pos: 0.81, color: '#9BC8E7' },
-      { pos: 0.86, color: '#ACD7E9' },
-      { pos: 0.95, color: '#B8E3F3' },
-      { pos: 1, color: '#C4E9F5' }       // top
+      { pos: 0, color: '#7AC0DC' },      // darker at bottom
+      { pos: 0.3, color: '#9DD5EE' },
+      { pos: 0.6, color: '#A8DCF0' },
+      { pos: 0.85, color: '#B8E3F3' },
+      { pos: 1, color: '#D0F0FA' }       // lighter at top
     ],
     yellow: [
-      { pos: 0, color: '#D4C44A' },
-      { pos: 0.26, color: '#DBCA58' },
-      { pos: 0.81, color: '#E2D060' },
-      { pos: 0.86, color: '#E8D76E' },
-      { pos: 0.95, color: '#EFDE7C' },
-      { pos: 1, color: '#F5E58A' }
+      { pos: 0, color: '#C4B43A' },      // darker at bottom
+      { pos: 0.3, color: '#D4C44A' },
+      { pos: 0.6, color: '#E2D060' },
+      { pos: 0.85, color: '#EFDE7C' },
+      { pos: 1, color: '#FAF0A0' }       // lighter at top
     ],
     pink: [
-      { pos: 0, color: '#D9A8B2' },
-      { pos: 0.26, color: '#DBAEB8' },
-      { pos: 0.81, color: '#E4B8C0' },
-      { pos: 0.86, color: '#E9C0C8' },
-      { pos: 0.95, color: '#EEC8D0' },
-      { pos: 1, color: '#F3D0D8' }
+      { pos: 0, color: '#C8909A' },      // darker at bottom
+      { pos: 0.3, color: '#D9A8B2' },
+      { pos: 0.6, color: '#E4B8C0' },
+      { pos: 0.85, color: '#EEC8D0' },
+      { pos: 1, color: '#F8E0E8' }       // lighter at top
     ]
   };
 
@@ -198,6 +195,16 @@ async function generateBackgroundImage(color) {
     ctx.fillRect(x, y, 1, 1);
   }
   ctx.globalAlpha = 1;
+
+  // Overlay any drawing from the user
+  if (drawingDataUrl) {
+    try {
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
+      ctx.drawImage(drawingImage, 0, 0, width, height);
+    } catch (e) {
+      console.log('Could not load drawing:', e.message);
+    }
+  }
 
   return canvas.toBuffer('image/png');
 }

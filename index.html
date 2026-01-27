@@ -744,7 +744,7 @@
           appleWalletBtn.style.pointerEvents = 'none';
           
           try {
-            const response = await fetch('http://localhost:3007/api/generate-pass', {
+            const response = await fetch('https://sandbox-production-24e9.up.railway.app/api/generate-pass', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

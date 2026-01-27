@@ -10,6 +10,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 
+// Build number for debugging deploys
+const BUILD_NUMBER = 25;
+
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
 if (fs.existsSync(fontPath)) {
@@ -231,6 +234,11 @@ async function generateStripImage(color, drawingDataUrl) {
       console.log('Could not load drawing:', e.message);
     }
   }
+
+  // Add build number in corner for debugging
+  ctx.font = '24px sans-serif';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.fillText(`b${BUILD_NUMBER}`, 10, height - 10);
 
   return canvas.toBuffer('image/png');
 }

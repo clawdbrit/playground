@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 63;
+const BUILD_NUMBER = 64;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 // Tokens expire after 5 minutes
@@ -111,9 +111,9 @@ app.post('/api/generate-pass', async (req, res) => {
     const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
     passJsonContent.backgroundColor = bgColor;
     
-    // Set event date to 30 days from now (posterEventTicket needs event dates)
+    // Set event date to 10 years from now (prevents auto-archive)
     const eventDate = new Date();
-    eventDate.setDate(eventDate.getDate() + 30);
+    eventDate.setFullYear(eventDate.getFullYear() + 10);
     const eventDateStr = eventDate.toISOString();
     
     // Add relevantDate for lock screen relevance
@@ -260,7 +260,7 @@ app.get('/api/download-pass/:token', async (req, res) => {
     passJsonContent.backgroundColor = bgColor;
     
     const eventDate = new Date();
-    eventDate.setDate(eventDate.getDate() + 30);
+    eventDate.setFullYear(eventDate.getFullYear() + 10);
     const eventDateStr = eventDate.toISOString();
     passJsonContent.relevantDate = eventDateStr;
     if (passJsonContent.semantics) {

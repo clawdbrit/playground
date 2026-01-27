@@ -23,6 +23,12 @@
   cursor: pointer;
   border-radius: 6px;
   transition: background .15s ease, color .15s ease;
+  /* Safari border-radius fix */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .lang-btn:hover {
@@ -58,6 +64,11 @@
   visibility: hidden;
   transform: translateY(-4px);
   transition: all .15s ease;
+  /* Safari border-radius fix */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .lang-picker.open .lang-dropdown {
@@ -303,6 +314,11 @@ body {
   transform: translateY(-8px) scale(.95);
   transition: all .2s ease;
   z-index: 100;
+  /* Safari border-radius fix */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .note-dropdown.open {
@@ -418,6 +434,11 @@ body {
   visibility: hidden;
   transition: opacity .3s ease, visibility .3s ease;
   z-index: 101;
+  /* Safari border-radius fix */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .pen-colors,

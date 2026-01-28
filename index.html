@@ -770,9 +770,11 @@
               
               if (testResponse.ok) {
                 const { token } = await testResponse.json();
-                // Safari iOS workaround: navigate directly to download URL
-                window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
-                return; // Exit early, navigation will handle it
+                const downloadUrl = `${BACKEND_URL}/api/download-pass/${token}`;
+                
+                // Open in new tab - Safari iOS handles .pkpass better this way
+                window.open(downloadUrl, '_blank');
+                return;
               } else {
                 useTwoStep = false;
               }

@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 81;
+const BUILD_NUMBER = 82;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -261,11 +261,11 @@ app.get('/test-pass', async (req, res) => {
   }
 });
 
-// Generate strip image for eventTicket (banner at top)
-// Strip dimensions @3x: 1125 x 294 (375pt x 98pt)
+// Generate strip image for coupon (banner at top)
+// Strip dimensions @3x: 1125 x 432 (375pt x 144pt) - taller than eventTicket!
 async function generateStripImage(color, drawingDataUrl) {
   const width = 1125;
-  const height = 294;
+  const height = 432;
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   

@@ -9,7 +9,7 @@
   "labelColor": "rgb(80, 80, 80)",
   "backgroundColor": "rgb(228, 184, 192)",
   "logoText": "Wallet Memo",
-  "eventTicket": {
+  "coupon": {
     "headerFields": [],
     "primaryFields": [
       {

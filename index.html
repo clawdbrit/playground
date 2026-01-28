@@ -197,7 +197,7 @@
       </div>
     </main>
     
-    <div class="build-hover-area"><span class="build-number">Build 101</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 102</span></div>
     </div>
 
     <script>
@@ -564,6 +564,8 @@
         });
 
         textarea.addEventListener('blur', () => {
+          // Don't close note when entering drawing mode
+          if (isDrawingMode) return;
           if (isFlat) {
             isFlat = false;
             animatePath(statePoints.flat, statePoints.curled);
@@ -676,6 +678,16 @@
             noteShadow.src = './assets/paper-stuff/shadow-layer-two.svg';
             noteWrapper.classList.add('flat');
           }
+
+          // Hide keyboard but keep note open
+          // Temporarily prevent blur from closing the note
+          isDrawingMode = true; // already set above, but ensures blur check works
+          textarea.blur();
+          // Re-assert flat state since blur removes it
+          isFlat = true;
+          noteWrapper.classList.add('flat');
+          focusOverlay.classList.add('active');
+          langPicker2.classList.add('hidden');
 
           // Enable drawing mode
           document.body.classList.add('drawing-mode-active');

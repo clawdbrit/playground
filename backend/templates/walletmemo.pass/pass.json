@@ -5,13 +5,19 @@
   "teamIdentifier": "HTWS8J5HF3",
   "organizationName": "Wallet Memo",
   "description": "A sticky note for your wallet",
-  "foregroundColor": "rgb(255, 255, 255)",
-  "labelColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(228, 184, 192)",
-  "preferredStyleSchemes": ["posterEventTicket"],
-  "useAutomaticColors": true,
+  "foregroundColor": "rgb(50, 50, 50)",
+  "labelColor": "rgb(80, 80, 80)",
+  "logoText": "Wallet Memo",
+  "preferredStyleSchemes": ["posterEventTicket", "eventTicket"],
   "eventTicket": {
-    "headerFields": [],
+    "headerFields": [
+      {
+        "key": "date",
+        "label": "",
+        "value": ""
+      }
+    ],
     "primaryFields": [],
     "secondaryFields": [],
     "auxiliaryFields": [],
@@ -29,13 +35,15 @@
     ]
   },
   "semantics": {
-    "eventType": "PKEventTypeGeneric",
+    "eventType": "PKEventTypeLivePerformance",
     "eventName": "Wallet Memo",
-    "eventStartDate": "2036-01-01T00:00:00Z",
+    "admissionLevel": "Note",
+    "venueRegionName": "Your Pocket",
+    "updatedEventStartDate": "2036-01-01T00:00:00+00:00",
+    "updatedEventEndDate": "2036-01-02T00:00:00+00:00",
     "venueLocation": {
       "latitude": 40.7580,
       "longitude": -73.9855
-    },
-    "venueName": "Your Pocket"
+    }
   }
 }

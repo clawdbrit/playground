@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 73;
+const BUILD_NUMBER = 74;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -110,7 +110,12 @@ async function createPass({ text, color, drawingDataUrl }) {
   
   // Update semantics for poster event ticket
   if (passJsonContent.semantics) {
-    passJsonContent.semantics.eventStartDate = eventDateStr;
+    // Use updatedEventStartDate/EndDate for poster mode
+    passJsonContent.semantics.updatedEventStartDate = eventDateStr;
+    const endDate = new Date(eventDate);
+    endDate.setHours(endDate.getHours() + 2);
+    passJsonContent.semantics.updatedEventEndDate = endDate.toISOString();
+    
     // Use the memo text as the event name for poster display
     if (text && text.trim()) {
       passJsonContent.semantics.eventName = text;
@@ -145,15 +150,20 @@ async function createPass({ text, color, drawingDataUrl }) {
   // Apple applies blur/scrim automatically behind text
   const backgroundBuffer = await generateBackgroundImage(color, drawingDataUrl);
   const iconBuffer = await generateIconImage(color);
+  const logoBuffer = await generateLogoImage(color);
 
   // Add background image (poster uses this for full-bleed artwork)
   pass.addBuffer('background.png', backgroundBuffer);
   pass.addBuffer('background@2x.png', backgroundBuffer);
   pass.addBuffer('background@3x.png', backgroundBuffer);
   
-  // Icon is still required
+  // Icon is required
   pass.addBuffer('icon.png', iconBuffer);
   pass.addBuffer('icon@2x.png', iconBuffer);
+  
+  // Logo for poster tickets
+  pass.addBuffer('logo.png', logoBuffer);
+  pass.addBuffer('logo@2x.png', logoBuffer);
 
   // Log semantics for debugging
   console.log('Pass semantics:', JSON.stringify(passJsonContent.semantics, null, 2));
@@ -391,6 +401,62 @@ async function generateIconImage(color) {
   ctx.beginPath();
   ctx.moveTo(22, 58);
   ctx.lineTo(45, 58);
+  ctx.stroke();
+
+  return canvas.toBuffer('image/png');
+}
+
+// Generate logo for poster event ticket
+async function generateLogoImage(color) {
+  // Logo dimensions: 160x50 @1x (Apple recommendation)
+  const width = 320;
+  const height = 100;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+
+  // Transparent background
+  ctx.clearRect(0, 0, width, height);
+  
+  // Small sticky note icon
+  const noteSize = 60;
+  const noteX = 10;
+  const noteY = (height - noteSize) / 2;
+  
+  const gradient = ctx.createLinearGradient(noteX, noteY + noteSize, noteX, noteY);
+  if (color === 'yellow') {
+    gradient.addColorStop(0, '#D4C44A');
+    gradient.addColorStop(1, '#F5E58A');
+  } else if (color === 'pink') {
+    gradient.addColorStop(0, '#D9A8B2');
+    gradient.addColorStop(1, '#F3D0D8');
+  } else {
+    gradient.addColorStop(0, '#9DD5EE');
+    gradient.addColorStop(1, '#C4E9F5');
+  }
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.roundRect(noteX, noteY, noteSize, noteSize, 8);
+  ctx.fill();
+  
+  // Lines on the note
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  
+  ctx.beginPath();
+  ctx.moveTo(noteX + 12, noteY + 20);
+  ctx.lineTo(noteX + noteSize - 12, noteY + 20);
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(noteX + 12, noteY + 32);
+  ctx.lineTo(noteX + noteSize - 18, noteY + 32);
+  ctx.stroke();
+  
+  ctx.beginPath();
+  ctx.moveTo(noteX + 12, noteY + 44);
+  ctx.lineTo(noteX + noteSize - 24, noteY + 44);
   ctx.stroke();
 
   return canvas.toBuffer('image/png');

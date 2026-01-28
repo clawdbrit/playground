@@ -212,7 +212,7 @@ body {
 
 @media (max-width: 600px) {
   .note-wrapper.flat {
-    transform: scale(1.12);
+    transform: scale(1.2);
   }
 }
 

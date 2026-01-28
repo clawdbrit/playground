@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 66;
+const BUILD_NUMBER = 67;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 // Tokens expire after 5 minutes

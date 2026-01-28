@@ -5,8 +5,8 @@
   "teamIdentifier": "HTWS8J5HF3",
   "organizationName": "Wallet Memo",
   "description": "A sticky note for your wallet",
-  "foregroundColor": "rgb(255, 255, 255)",
-  "labelColor": "rgb(255, 255, 255)",
+  "foregroundColor": "rgb(50, 50, 50)",
+  "labelColor": "rgb(80, 80, 80)",
   "backgroundColor": "rgb(228, 184, 192)",
   "groupingIdentifier": "pass.com.walletmemo.note",
   "preferredStyleSchemes": [
@@ -14,7 +14,14 @@
     "eventTicket"
   ],
   "eventTicket": {
-    "primaryFields": [],
+    "headerFields": [],
+    "primaryFields": [
+      {
+        "key": "memo",
+        "label": "",
+        "value": ""
+      }
+    ],
     "secondaryFields": [],
     "auxiliaryFields": [],
     "backFields": [

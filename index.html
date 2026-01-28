@@ -521,10 +521,10 @@
 
         // Calculate mobile scale so note fills screen width with padding
         function updateMobileScale() {
-          const padding = 16; // 8px each side
+          const padding = 8; // 4px each side
           const noteWidth = noteWrapper.offsetWidth || 344;
           const scale = (window.innerWidth - padding) / noteWidth;
-          document.documentElement.style.setProperty('--mobile-note-scale', Math.min(scale, 1.5).toFixed(3));
+          document.documentElement.style.setProperty('--mobile-note-scale', scale.toFixed(3));
         }
         updateMobileScale();
         window.addEventListener('resize', updateMobileScale);

@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 79;
+const BUILD_NUMBER = 80;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();

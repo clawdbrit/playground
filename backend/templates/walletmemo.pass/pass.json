@@ -2,57 +2,95 @@
   "formatVersion": 1,
   "passTypeIdentifier": "pass.com.walletmemo.note",
   "teamIdentifier": "HTWS8J5HF3",
-  "groupingIdentifier": "walletmemo-demo",
+  "groupingIdentifier": "walletmemo",
   "description": "A sticky note for your wallet",
   "organizationName": "Wallet Memo",
+  "foregroundColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(255, 255, 255)",
-  "foregroundColor": "rgb(0, 0, 0)",
-  "labelColor": "rgb(0, 0, 0)",
-  "logoText": "Wallet Memo",
+  "labelColor": "rgb(200, 200, 200)",
   "preferredStyleSchemes": ["posterEventTicket", "eventTicket"],
   "eventTicket": {
     "headerFields": [
       {
-        "key": "event_date",
-        "label": "event-date",
-        "value": "26.09.2024"
+        "key": "date",
+        "label": "",
+        "value": "15 MAR",
+        "textAlignment": "PKTextAlignmentRight"
+      },
+      {
+        "key": "time",
+        "label": "",
+        "value": "6:00 pm",
+        "textAlignment": "PKTextAlignmentRight"
+      }
+    ],
+    "primaryFields": [
+      {
+        "key": "section",
+        "label": "Sec",
+        "value": "MAIN"
+      }
+    ],
+    "secondaryFields": [
+      {
+        "key": "seating",
+        "label": "",
+        "value": "Your Notes"
+      },
+      {
+        "key": "venue",
+        "label": "",
+        "value": "Wallet Memo"
+      }
+    ],
+    "auxiliaryFields": [
+      {
+        "key": "attendee",
+        "label": "Attendee",
+        "value": "You"
+      }
+    ],
+    "backFields": [
+      {
+        "key": "version",
+        "label": "Build",
+        "value": "0"
+      },
+      {
+        "key": "website",
+        "label": "Website",
+        "value": "https://walletmemo.com"
       }
     ]
   },
   "semantics": {
-    "venueParkingLotsOpenDate": "2024-10-04T09:00:00+00:00",
-    "venueGatesOpenDate": "2024-10-06T20:00:00+00:00",
     "eventType": "PKEventTypeLivePerformance",
     "eventName": "Your Memo",
-    "admissionLevel": "VIP Access",
-    "venueRegionName": "Your Pocket",
-    "performerNames": ["You"],
-    "venueBoxOfficeOpenDate": "2024-10-06T20:15:00+00:00",
-    "venueCloseDate": "2024-10-06T23:59:59+00:00",
-    "venueDoorsOpenDate": "2024-10-06T20:00:00+00:00",
-    "venueFanZoneOpenDate": "2024-10-06T19:30:00+00:00",
-    "updatedEventStartDate": "2024-10-06T21:30:00+00:00",
-    "updatedEventEndDate": "2024-10-07T01:30:00+00:00",
+    "eventStartDate": "2026-03-15T18:00:00+00:00",
+    "eventEndDate": "2026-03-15T22:00:00+00:00",
+    "admissionLevel": "VIP",
     "admissionLevelAbbreviation": "VIP",
-    "venueEntranceDoor": "1A",
-    "venueEntrancePortal": "Main",
-    "entranceDescription": "Event Entrance",
+    "venueRegionName": "Your Pocket",
+    "venueName": "Wallet Memo",
+    "performerNames": ["You"],
+    "venueEntranceDoor": "1",
+    "venueEntranceGate": "A",
     "venueLocation": {
       "latitude": 40.7580,
       "longitude": -73.9855
-    }
+    },
+    "seats": [
+      {
+        "seatSection": "MAIN",
+        "seatRow": "1",
+        "seatNumber": "1"
+      }
+    ]
   },
-  "parkingInformationURL": "https://walletmemo.com",
-  "directionsInformationURL": "https://walletmemo.com",
-  "contactVenueEmail": "hello@walletmemo.com",
   "relevantDates": [
     {
-      "startDate": "2024-10-03T17:00:00+01:00",
-      "endDate": "2024-10-03T23:00:00+01:00"
-    },
-    {
-      "startDate": "2024-10-06T00:00:00+00:00",
-      "endDate": "2024-10-06T19:00:00+01:00"
+      "startDate": "2026-03-15T17:00:00+00:00",
+      "endDate": "2026-03-15T23:00:00+00:00"
     }
   ]
 }

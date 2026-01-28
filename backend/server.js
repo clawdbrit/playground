@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 75;
+const BUILD_NUMBER = 76;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -296,11 +296,10 @@ app.get('/test-pass', async (req, res) => {
 });
 
 // Generate background image for poster event ticket
-// Apple HIG for poster event tickets: 375pt × 522pt minimum
-// @3x = 1125 × 1566 pixels
+// Matching passkit-generator example dimensions: 1700 × 1996
 async function generateBackgroundImage(color, drawingDataUrl) {
-  const width = 1125;   // @3x width
-  const height = 1566;  // @3x height for poster aspect
+  const width = 1700;   // Match working example
+  const height = 1996;  // Match working example
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   

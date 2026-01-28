@@ -757,32 +757,7 @@
           try {
             const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
             
-            // Try two-step flow first (Safari iOS fix), fall back to blob method
-            let useTwoStep = true;
-            
-            // Check if prepare endpoint exists
-            try {
-              const testResponse = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, color: currentColor, drawingDataUrl })
-              });
-              
-              if (testResponse.ok) {
-                const { token } = await testResponse.json();
-                const downloadUrl = `${BACKEND_URL}/api/download-pass/${token}`;
-                
-                // Open in new tab - Safari iOS handles .pkpass better this way
-                window.open(downloadUrl, '_blank');
-                return;
-              } else {
-                useTwoStep = false;
-              }
-            } catch (e) {
-              useTwoStep = false;
-            }
-            
-            // Fallback: original blob download method
+            // Simple approach: fetch blob and trigger download
             const response = await fetch(`${BACKEND_URL}/api/generate-pass`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -798,16 +773,12 @@
               throw new Error(error.error || 'Failed to generate pass');
             }
             
-            // Download the .pkpass file
+            // Get the blob and create download link
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'walletmemo.pkpass';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            
+            // Try opening the blob URL directly - Safari may handle .pkpass
+            window.location.href = url;
             
           } catch (error) {
             console.error('Error:', error);

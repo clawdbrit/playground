@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 68;
+const BUILD_NUMBER = 69;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 // Tokens expire after 5 minutes
@@ -160,32 +160,19 @@ app.post('/api/generate-pass', async (req, res) => {
     }
 
     // Generate and add images
-    // For coupon/eventTicket passes, strip.png shows CRISP at top (not blurred)
+    // For eventTicket: use ONLY strip.png for crisp image (no background/thumbnail!)
+    // Apple HIG: "if you supply a strip image, do not include a background or thumbnail image"
     console.log('Drawing data received:', drawingDataUrl ? 'yes (' + drawingDataUrl.length + ' chars)' : 'no');
     const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
 
-    // Generate background image (fills entire pass body)
-    const bgBuffer = await generateBackgroundImage(color);
-    
-    // For posterEventTicket: use background.png (poster) + thumbnail.png (crisp overlay)
-    // Do NOT use strip.png - it conflicts with poster style
-    // Older iOS fallback will use background (blurred) + thumbnail
-    
-    const posterBuffer = await generatePosterImage(color, drawingDataUrl);
-    pass.addBuffer('background.png', posterBuffer);
-    pass.addBuffer('background@2x.png', posterBuffer);
-    pass.addBuffer('background@3x.png', posterBuffer);
-    
-    // Thumbnail shows crisp on the pass (not blurred like background)
-    const thumbnailBuffer = await generateThumbnailImage(color, drawingDataUrl);
-    pass.addBuffer('thumbnail.png', thumbnailBuffer);
-    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
-    pass.addBuffer('thumbnail@3x.png', thumbnailBuffer);
+    // Strip image shows CRISP at top of pass
+    pass.addBuffer('strip.png', stripBuffer);
+    pass.addBuffer('strip@2x.png', stripBuffer);
+    pass.addBuffer('strip@3x.png', stripBuffer);
     
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
-    // Logo removed per user request
 
     // Generate the .pkpass file
     const passBuffer = pass.getAsBuffer();
@@ -300,17 +287,13 @@ app.get('/api/download-pass/:token', async (req, res) => {
 
     // Generate images
     const stripBuffer = await generateStripImage(color, drawingDataUrl);
+    const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
-    const bgBuffer = await generateBackgroundImage(color);
-    const posterBuffer = await generatePosterImage(color, drawingDataUrl);
-    const thumbnailBuffer = await generateThumbnailImage(color, drawingDataUrl);
     
-    pass.addBuffer('background.png', posterBuffer);
-    pass.addBuffer('background@2x.png', posterBuffer);
-    pass.addBuffer('background@3x.png', posterBuffer);
-    pass.addBuffer('thumbnail.png', thumbnailBuffer);
-    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
-    pass.addBuffer('thumbnail@3x.png', thumbnailBuffer);
+    // Strip image shows CRISP at top of pass (no background/thumbnail!)
+    pass.addBuffer('strip.png', stripBuffer);
+    pass.addBuffer('strip@2x.png', stripBuffer);
+    pass.addBuffer('strip@3x.png', stripBuffer);
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
 

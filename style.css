@@ -210,6 +210,12 @@ body {
   transform: scale(1.03);
 }
 
+@media (max-width: 600px) {
+  .note-wrapper.flat {
+    transform: scale(1.12);
+  }
+}
+
 .note-wrapper.flat:hover {
   transform: scale(1.03) translateY(-2px);
 }

@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 78;
+const BUILD_NUMBER = 79;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -139,7 +139,6 @@ async function createPass({ text, color, drawingDataUrl }) {
 
   // Log semantics for debugging
   console.log('Pass semantics:', JSON.stringify(passJsonContent.semantics, null, 2));
-  console.log('Background image size:', backgroundBuffer.length, 'bytes');
 
   return pass.getAsBuffer();
 }

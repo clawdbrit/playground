@@ -1,55 +1,25 @@
 {
   "formatVersion": 1,
+  "serialNumber": "placeholder",
   "passTypeIdentifier": "pass.com.walletmemo.note",
   "teamIdentifier": "HTWS8J5HF3",
-  "groupingIdentifier": "walletmemo",
-  "description": "A sticky note for your wallet",
   "organizationName": "Wallet Memo",
-  "foregroundColor": "rgb(255, 255, 255)",
-  "backgroundColor": "rgb(255, 255, 255)",
-  "labelColor": "rgb(200, 200, 200)",
-  "preferredStyleSchemes": ["posterEventTicket", "eventTicket"],
+  "description": "A sticky note for your wallet",
+  "foregroundColor": "rgb(50, 50, 50)",
+  "labelColor": "rgb(80, 80, 80)",
+  "backgroundColor": "rgb(228, 184, 192)",
+  "logoText": "Wallet Memo",
   "eventTicket": {
-    "headerFields": [
-      {
-        "key": "date",
-        "label": "",
-        "value": "15 MAR",
-        "textAlignment": "PKTextAlignmentRight"
-      },
-      {
-        "key": "time",
-        "label": "",
-        "value": "6:00 pm",
-        "textAlignment": "PKTextAlignmentRight"
-      }
-    ],
+    "headerFields": [],
     "primaryFields": [
       {
-        "key": "section",
-        "label": "Sec",
-        "value": "MAIN"
-      }
-    ],
-    "secondaryFields": [
-      {
-        "key": "seating",
+        "key": "memo",
         "label": "",
-        "value": "Your Notes"
-      },
-      {
-        "key": "venue",
-        "label": "",
-        "value": "Wallet Memo"
+        "value": ""
       }
     ],
-    "auxiliaryFields": [
-      {
-        "key": "attendee",
-        "label": "Attendee",
-        "value": "You"
-      }
-    ],
+    "secondaryFields": [],
+    "auxiliaryFields": [],
     "backFields": [
       {
         "key": "version",
@@ -62,35 +32,5 @@
         "value": "https://walletmemo.com"
       }
     ]
-  },
-  "semantics": {
-    "eventType": "PKEventTypeLivePerformance",
-    "eventName": "Your Memo",
-    "eventStartDate": "2026-03-15T18:00:00+00:00",
-    "eventEndDate": "2026-03-15T22:00:00+00:00",
-    "admissionLevel": "VIP",
-    "admissionLevelAbbreviation": "VIP",
-    "venueRegionName": "Your Pocket",
-    "venueName": "Wallet Memo",
-    "performerNames": ["You"],
-    "venueEntranceDoor": "1",
-    "venueEntranceGate": "A",
-    "venueLocation": {
-      "latitude": 40.7580,
-      "longitude": -73.9855
-    },
-    "seats": [
-      {
-        "seatSection": "MAIN",
-        "seatRow": "1",
-        "seatNumber": "1"
-      }
-    ]
-  },
-  "relevantDates": [
-    {
-      "startDate": "2026-03-15T17:00:00+00:00",
-      "endDate": "2026-03-15T23:00:00+00:00"
-    }
-  ]
+  }
 }

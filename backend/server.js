@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 80;
+const BUILD_NUMBER = 81;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -94,23 +94,18 @@ function getBackgroundColor(color) {
 // Core pass generation logic (shared between endpoints)
 async function createPass({ text, color, drawingDataUrl }) {
   const { certPem, keyPem, wwdrPem } = getCertificates();
+  const bgColor = getBackgroundColor(color);
   
-  // Read the pass.json template - keep it mostly as-is for poster mode
+  // Read and modify the pass.json template
   const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
   const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
   
-  // Only change serial number and event name
+  // Set colors to match sticky note
+  passJsonContent.backgroundColor = bgColor;
   passJsonContent.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  
-  // Use the memo text as the event name for poster display
-  if (text && text.trim() && passJsonContent.semantics) {
-    passJsonContent.semantics.eventName = text;
-  }
   
   // Write modified pass.json temporarily
   fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
-  
-  console.log('Pass JSON for poster mode:', JSON.stringify(passJsonContent, null, 2));
   
   // Create pass from template
   const pass = await PKPass.from({
@@ -129,16 +124,27 @@ async function createPass({ text, color, drawingDataUrl }) {
     pass.backFields[0].value = String(BUILD_NUMBER);
   }
   
-  // For poster mode, memo text is set via semantics.eventName (already done above)
-  // primaryFields are empty for poster layout
+  // Set memo text in primaryFields
+  if (text && text.trim()) {
+    if (pass.primaryFields && pass.primaryFields[0]) {
+      pass.primaryFields[0].value = text;
+    }
+  }
 
-  // For poster layout: use all template images (from working passkit-generator example)
-  // Template contains: background.png, logo.png, icon.png
-  // No image overrides - use exactly what's in the template
-  console.log('Using template images for poster mode (background, logo, icon)');
+  // Generate color-matched images
+  const stripBuffer = await generateStripImage(color, drawingDataUrl);
+  const iconBuffer = await generateIconImage(color);
 
-  // Log semantics for debugging
-  console.log('Pass semantics:', JSON.stringify(passJsonContent.semantics, null, 2));
+  // Add strip image (shows at top of eventTicket)
+  pass.addBuffer('strip.png', stripBuffer);
+  pass.addBuffer('strip@2x.png', stripBuffer);
+  pass.addBuffer('strip@3x.png', stripBuffer);
+  
+  // Add icon
+  pass.addBuffer('icon.png', iconBuffer);
+  pass.addBuffer('icon@2x.png', iconBuffer);
+
+  console.log('Generated pass with color:', color, 'bgColor:', bgColor);
 
   return pass.getAsBuffer();
 }
@@ -254,6 +260,73 @@ app.get('/test-pass', async (req, res) => {
     res.status(500).send(`Error: ${error.message}`);
   }
 });
+
+// Generate strip image for eventTicket (banner at top)
+// Strip dimensions @3x: 1125 x 294 (375pt x 98pt)
+async function generateStripImage(color, drawingDataUrl) {
+  const width = 1125;
+  const height = 294;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  
+  // Gradient colors matching sticky notes
+  const gradientColors = {
+    blue: [
+      { pos: 0, color: '#9DD5EE' },
+      { pos: 0.5, color: '#B8E8F8' },
+      { pos: 1, color: '#E0F5FC' }
+    ],
+    yellow: [
+      { pos: 0, color: '#E2D060' },
+      { pos: 0.5, color: '#F0E480' },
+      { pos: 1, color: '#FDF8C0' }
+    ],
+    pink: [
+      { pos: 0, color: '#E4B8C0' },
+      { pos: 0.5, color: '#F0C8D0' },
+      { pos: 1, color: '#FCE8F0' }
+    ]
+  };
+
+  // Create vertical gradient
+  const gradient = ctx.createLinearGradient(0, height, 0, 0);
+  const stops = gradientColors[color] || gradientColors.blue;
+  stops.forEach(stop => {
+    gradient.addColorStop(stop.pos, stop.color);
+  });
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // Overlay any drawing from the user
+  if (drawingDataUrl && drawingDataUrl.length > 1000) {
+    try {
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
+      
+      // Scale drawing to fit within strip
+      const srcAspect = drawingImage.width / drawingImage.height;
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (srcAspect > (width / height)) {
+        drawWidth = width * 0.9;
+        drawHeight = drawWidth / srcAspect;
+      } else {
+        drawHeight = height * 0.9;
+        drawWidth = drawHeight * srcAspect;
+      }
+      
+      drawX = (width - drawWidth) / 2;
+      drawY = (height - drawHeight) / 2;
+      
+      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
+      console.log('Drawing applied to strip');
+    } catch (e) {
+      console.error('Could not load drawing for strip:', e.message);
+    }
+  }
+
+  return canvas.toBuffer('image/png');
+}
 
 // Generate background image for poster event ticket
 // Matching passkit-generator example dimensions: 1700 × 1996

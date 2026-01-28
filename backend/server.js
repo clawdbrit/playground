@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 72;
+const BUILD_NUMBER = 73;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 const pendingPasses = new Map();
@@ -137,12 +137,8 @@ async function createPass({ text, color, drawingDataUrl }) {
     pass.backFields[0].value = String(BUILD_NUMBER);
   }
   
-  // Add memo text to primaryFields
-  if (text && text.trim()) {
-    if (pass.primaryFields && pass.primaryFields[0]) {
-      pass.primaryFields[0].value = text;
-    }
-  }
+  // For poster mode, memo text is set via semantics.eventName (already done above)
+  // primaryFields are empty for poster layout
 
   // Generate images for poster event ticket
   // For poster layout: use background.png (full-bleed artwork)

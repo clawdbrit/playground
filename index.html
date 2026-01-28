@@ -197,7 +197,7 @@
       </div>
     </main>
     
-    <div class="build-hover-area"><span class="build-number">Build 102</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 103</span></div>
     </div>
 
     <script>
@@ -755,7 +755,16 @@
           savedImageData = null;
           document.body.classList.remove('drawing-mode-active');
           noteWrapper.classList.remove('drawing-mode');
-          // Return to initial state - unfocus the note
+          // Return to initial closed state
+          if (isFlat) {
+            isFlat = false;
+            animatePath(statePoints.flat, statePoints.curled);
+            animateGradient(false);
+            noteShadow.src = './assets/paper-stuff/shadow-layer.svg';
+            noteWrapper.classList.remove('flat');
+            focusOverlay.classList.remove('active');
+            langPicker2.classList.remove('hidden');
+          }
           textarea.blur();
         }
 

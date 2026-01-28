@@ -19,7 +19,12 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 55;
+const BUILD_NUMBER = 64;
+
+// Temporary storage for pending passes (Safari iOS workaround)
+// Tokens expire after 5 minutes
+const pendingPasses = new Map();
+const PASS_TOKEN_TTL = 5 * 60 * 1000; // 5 minutes
 
 // Register Caveat font for handwritten style
 const fontPath = path.join(__dirname, 'fonts', 'Caveat.ttf');
@@ -101,10 +106,23 @@ app.post('/api/generate-pass', async (req, res) => {
     const bgColor = getBackgroundColor(color);
     console.log('Creating pass with color:', color, 'bgColor:', bgColor);
     
-    // Read and modify the pass.json template to set the correct color
+    // Read and modify the pass.json template to set the correct color and dates
     const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
     const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
     passJsonContent.backgroundColor = bgColor;
+    
+    // Set event date to 10 years from now (prevents auto-archive)
+    const eventDate = new Date();
+    eventDate.setFullYear(eventDate.getFullYear() + 10);
+    const eventDateStr = eventDate.toISOString();
+    
+    // Add relevantDate for lock screen relevance
+    passJsonContent.relevantDate = eventDateStr;
+    
+    // Add eventStartDate to semantics
+    if (passJsonContent.semantics) {
+      passJsonContent.semantics.eventStartDate = eventDateStr;
+    }
     
     // Write modified pass.json temporarily
     fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
@@ -127,14 +145,19 @@ app.post('/api/generate-pass', async (req, res) => {
       pass.backFields[0].value = String(BUILD_NUMBER);
     }
     
-    // Add memo text to secondary field (smaller, less dominant)
-    if (text && text.trim() && pass.secondaryFields && pass.secondaryFields[0]) {
-      pass.secondaryFields[0].value = text;
-      console.log('Set memo in secondaryFields:', text);
+    // Add memo text - support both coupon (primaryFields) and eventTicket (secondaryFields)
+    if (text && text.trim()) {
+      if (pass.primaryFields && pass.primaryFields[0]) {
+        pass.primaryFields[0].value = text;
+        console.log('Set memo in primaryFields:', text);
+      } else if (pass.secondaryFields && pass.secondaryFields[0]) {
+        pass.secondaryFields[0].value = text;
+        console.log('Set memo in secondaryFields:', text);
+      }
     }
 
     // Generate and add images
-    // For eventTicket passes, strip.png shows CRISP at top (not blurred like background)
+    // For coupon/eventTicket passes, strip.png shows CRISP at top (not blurred)
     console.log('Drawing data received:', drawingDataUrl ? 'yes (' + drawingDataUrl.length + ' chars)' : 'no');
     const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
@@ -142,12 +165,21 @@ app.post('/api/generate-pass', async (req, res) => {
     // Generate background image (fills entire pass body)
     const bgBuffer = await generateBackgroundImage(color);
     
-    pass.addBuffer('strip.png', stripBuffer);
-    pass.addBuffer('strip@2x.png', stripBuffer);
-    pass.addBuffer('strip@3x.png', stripBuffer);
-    // Removing background to see if it conflicts with strip
-    // pass.addBuffer('background.png', bgBuffer);
-    // pass.addBuffer('background@2x.png', bgBuffer);
+    // For posterEventTicket: use background.png (poster) + thumbnail.png (crisp overlay)
+    // Do NOT use strip.png - it conflicts with poster style
+    // Older iOS fallback will use background (blurred) + thumbnail
+    
+    const posterBuffer = await generatePosterImage(color, drawingDataUrl);
+    pass.addBuffer('background.png', posterBuffer);
+    pass.addBuffer('background@2x.png', posterBuffer);
+    pass.addBuffer('background@3x.png', posterBuffer);
+    
+    // Thumbnail shows crisp on the pass (not blurred like background)
+    const thumbnailBuffer = await generateThumbnailImage(color, drawingDataUrl);
+    pass.addBuffer('thumbnail.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@3x.png', thumbnailBuffer);
+    
     pass.addBuffer('icon.png', iconBuffer);
     pass.addBuffer('icon@2x.png', iconBuffer);
     // Logo removed per user request
@@ -167,6 +199,129 @@ app.post('/api/generate-pass', async (req, res) => {
   }
 });
 
+// Safari iOS workaround: Two-step download flow
+// Step 1: POST data to prepare endpoint, get back a token
+app.post('/api/prepare-pass', (req, res) => {
+  try {
+    const { text, color, drawingDataUrl } = req.body;
+    
+    // Generate a unique token
+    const token = `${Date.now()}-${Math.random().toString(36).substr(2, 12)}`;
+    
+    // Store the pass data temporarily
+    pendingPasses.set(token, {
+      text,
+      color,
+      drawingDataUrl,
+      createdAt: Date.now()
+    });
+    
+    // Clean up old tokens periodically
+    for (const [key, value] of pendingPasses.entries()) {
+      if (Date.now() - value.createdAt > PASS_TOKEN_TTL) {
+        pendingPasses.delete(key);
+      }
+    }
+    
+    console.log('Prepared pass token:', token, '(pending passes:', pendingPasses.size, ')');
+    
+    res.json({ token });
+  } catch (error) {
+    console.error('Error preparing pass:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Step 2: GET the pass with the token (Safari navigates here directly)
+app.get('/api/download-pass/:token', async (req, res) => {
+  try {
+    const { token } = req.params;
+    
+    // Retrieve and delete the pending pass data
+    const passData = pendingPasses.get(token);
+    if (!passData) {
+      return res.status(404).json({ error: 'Pass token expired or invalid. Please try again.' });
+    }
+    pendingPasses.delete(token);
+    
+    const { text, color, drawingDataUrl } = passData;
+    console.log('Generating pass from token:', token);
+    
+    if (!checkCerts()) {
+      return res.status(500).json({ error: 'Server certificates not configured' });
+    }
+
+    const { certPem, keyPem, wwdrPem } = getCertificates();
+    const bgColor = getBackgroundColor(color);
+    
+    // Read and modify the pass.json template
+    const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
+    const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
+    passJsonContent.backgroundColor = bgColor;
+    
+    const eventDate = new Date();
+    eventDate.setFullYear(eventDate.getFullYear() + 10);
+    const eventDateStr = eventDate.toISOString();
+    passJsonContent.relevantDate = eventDateStr;
+    if (passJsonContent.semantics) {
+      passJsonContent.semantics.eventStartDate = eventDateStr;
+    }
+    fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
+    
+    // Create pass from template
+    const pass = await PKPass.from({
+      model: TEMPLATE_PATH,
+      certificates: {
+        wwdr: wwdrPem,
+        signerCert: certPem,
+        signerKey: keyPem,
+      }
+    });
+
+    pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    if (pass.backFields && pass.backFields[0]) {
+      pass.backFields[0].value = String(BUILD_NUMBER);
+    }
+    
+    if (text && text.trim()) {
+      if (pass.primaryFields && pass.primaryFields[0]) {
+        pass.primaryFields[0].value = text;
+      } else if (pass.secondaryFields && pass.secondaryFields[0]) {
+        pass.secondaryFields[0].value = text;
+      }
+    }
+
+    // Generate images
+    const stripBuffer = await generateStripImage(color, drawingDataUrl);
+    const iconBuffer = await generateIconImage(color);
+    const bgBuffer = await generateBackgroundImage(color);
+    const posterBuffer = await generatePosterImage(color, drawingDataUrl);
+    const thumbnailBuffer = await generateThumbnailImage(color, drawingDataUrl);
+    
+    pass.addBuffer('background.png', posterBuffer);
+    pass.addBuffer('background@2x.png', posterBuffer);
+    pass.addBuffer('background@3x.png', posterBuffer);
+    pass.addBuffer('thumbnail.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@2x.png', thumbnailBuffer);
+    pass.addBuffer('thumbnail@3x.png', thumbnailBuffer);
+    pass.addBuffer('icon.png', iconBuffer);
+    pass.addBuffer('icon@2x.png', iconBuffer);
+
+    const passBuffer = pass.getAsBuffer();
+
+    res.set({
+      'Content-Type': 'application/vnd.apple.pkpass',
+      'Content-Disposition': 'attachment; filename=walletmemo.pkpass'
+    });
+    res.send(passBuffer);
+
+  } catch (error) {
+    console.error('Error downloading pass:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Color mapping for pass background
 function getBackgroundColor(color) {
   const colors = {
@@ -178,11 +333,11 @@ function getBackgroundColor(color) {
 }
 
 // Generate the strip image with gradient, text, and drawing
-// Apple crops strip to ~123 points (369px @3x) for eventTicket
-// We'll make it 450px tall and position drawing at TOP so it's visible
+// For posterEventTicket, we use background.png instead of strip
+// Strip dimensions @3x: eventTicket = 294px (98pt × 3)
 async function generateStripImage(color, drawingDataUrl) {
   const width = 1125;  // @3x width
-  const height = 450;  // Slightly taller than Apple's crop, drawing at top
+  const height = 294;  // eventTicket strip height (98pt × 3)
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   
@@ -255,6 +410,118 @@ async function generateStripImage(color, drawingDataUrl) {
       console.log('Drawing applied successfully');
     } catch (e) {
       console.error('Could not load drawing:', e.message, e.stack);
+    }
+  }
+
+  return canvas.toBuffer('image/png');
+}
+
+// Generate poster background for posterEventTicket (iOS 17.5+)
+// For poster style, this is the full-bleed image that fills the pass
+// Apple recommends: 375pt × 522pt (@3x = 1125 × 1566)
+async function generatePosterImage(color, drawingDataUrl) {
+  const width = 1125;  // @3x width matching strip
+  const height = 1566; // @3x height for tall poster aspect
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  
+  // Gradient colors - full poster gradient
+  const gradientColors = {
+    blue: [
+      { pos: 0, color: '#9DD5EE' },
+      { pos: 0.3, color: '#B8E8F8' },
+      { pos: 0.7, color: '#D0F0FC' },
+      { pos: 1, color: '#E8F8FF' }
+    ],
+    yellow: [
+      { pos: 0, color: '#E2D060' },
+      { pos: 0.3, color: '#F0E480' },
+      { pos: 0.7, color: '#F8F0A0' },
+      { pos: 1, color: '#FFFCE8' }
+    ],
+    pink: [
+      { pos: 0, color: '#E4B8C0' },
+      { pos: 0.3, color: '#F0C8D0' },
+      { pos: 0.7, color: '#F8D8E0' },
+      { pos: 1, color: '#FFF0F5' }
+    ]
+  };
+
+  // Create vertical gradient
+  const gradient = ctx.createLinearGradient(0, height, 0, 0);
+  const stops = gradientColors[color] || gradientColors.blue;
+  stops.forEach(stop => {
+    gradient.addColorStop(stop.pos, stop.color);
+  });
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // Overlay any drawing from the user
+  if (drawingDataUrl && drawingDataUrl.length > 1000) {
+    try {
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
+      
+      // Scale drawing to fit within poster
+      const srcAspect = drawingImage.width / drawingImage.height;
+      let drawWidth, drawHeight, drawX, drawY;
+      
+      if (srcAspect > (width / height)) {
+        drawWidth = width * 0.85;
+        drawHeight = drawWidth / srcAspect;
+      } else {
+        drawHeight = height * 0.6;  // Leave room for text at bottom
+        drawWidth = drawHeight * srcAspect;
+      }
+      
+      // Center horizontally, position in upper portion
+      drawX = (width - drawWidth) / 2;
+      drawY = height * 0.1;  // Start 10% from top
+      
+      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
+    } catch (e) {
+      console.error('Could not load drawing for poster:', e.message);
+    }
+  }
+
+  return canvas.toBuffer('image/png');
+}
+
+// Generate thumbnail for eventTicket (shows crisp, not blurred)
+// Dimensions: 90pt × 90pt (@3x = 270 × 270) - but can be taller
+async function generateThumbnailImage(color, drawingDataUrl) {
+  const width = 270;
+  const height = 270;
+  const canvas = createCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  
+  // Gradient background
+  const gradientColors = {
+    blue: ['#9DD5EE', '#E0F5FC'],
+    yellow: ['#E2D060', '#FDF8C0'],
+    pink: ['#E4B8C0', '#FCE8F0']
+  };
+  
+  const colors = gradientColors[color] || gradientColors.blue;
+  const gradient = ctx.createLinearGradient(0, height, 0, 0);
+  gradient.addColorStop(0, colors[0]);
+  gradient.addColorStop(1, colors[1]);
+  
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  // Overlay drawing if provided
+  if (drawingDataUrl && drawingDataUrl.length > 1000) {
+    try {
+      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
+      const scale = Math.min(width / drawingImage.width, height / drawingImage.height) * 0.85;
+      const drawWidth = drawingImage.width * scale;
+      const drawHeight = drawingImage.height * scale;
+      const drawX = (width - drawWidth) / 2;
+      const drawY = (height - drawHeight) / 2;
+      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
+    } catch (e) {
+      console.error('Could not load drawing for thumbnail:', e.message);
     }
   }
 

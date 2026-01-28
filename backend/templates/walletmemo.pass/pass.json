@@ -4,20 +4,17 @@
   "teamIdentifier": "HTWS8J5HF3",
   "organizationName": "Wallet Memo",
   "description": "A sticky note for your wallet",
-  "serialNumber": "PLACEHOLDER",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(228, 184, 192)",
-  "foregroundColor": "rgb(30, 30, 30)",
-  "labelColor": "rgb(60, 60, 60)",
+  "groupingIdentifier": "pass.com.walletmemo.note",
+  "preferredStyleSchemes": [
+    "posterEventTicket",
+    "eventTicket"
+  ],
   "eventTicket": {
-    "headerFields": [],
     "primaryFields": [],
-    "secondaryFields": [
-      {
-        "key": "memo",
-        "label": "Note",
-        "value": ""
-      }
-    ],
+    "secondaryFields": [],
     "auxiliaryFields": [],
     "backFields": [
       {
@@ -31,5 +28,12 @@
         "value": "https://walletmemo.com"
       }
     ]
+  },
+  "semantics": {
+    "eventType": "PKEventTypeGeneric",
+    "eventName": "Wallet Memo",
+    "venueName": "Your Digital Note",
+    "venueRegionName": "Everywhere",
+    "venueRoom": "Your Pocket"
   }
 }

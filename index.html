@@ -755,7 +755,33 @@
           appleWalletBtn.style.pointerEvents = 'none';
           
           try {
-            const response = await fetch('https://sandbox-staging.up.railway.app/api/generate-pass', {
+            const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
+            
+            // Try two-step flow first (Safari iOS fix), fall back to blob method
+            let useTwoStep = true;
+            
+            // Check if prepare endpoint exists
+            try {
+              const testResponse = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, color: currentColor, drawingDataUrl })
+              });
+              
+              if (testResponse.ok) {
+                const { token } = await testResponse.json();
+                // Safari iOS workaround: navigate directly to download URL
+                window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
+                return; // Exit early, navigation will handle it
+              } else {
+                useTwoStep = false;
+              }
+            } catch (e) {
+              useTwoStep = false;
+            }
+            
+            // Fallback: original blob download method
+            const response = await fetch(`${BACKEND_URL}/api/generate-pass`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({

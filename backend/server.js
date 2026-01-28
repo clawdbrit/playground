@@ -19,7 +19,7 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 69;
+const BUILD_NUMBER = 70;
 
 // Temporary storage for pending passes (Safari iOS workaround)
 // Tokens expire after 5 minutes
@@ -286,7 +286,6 @@ app.get('/api/download-pass/:token', async (req, res) => {
     }
 
     // Generate images
-    const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const stripBuffer = await generateStripImage(color, drawingDataUrl);
     const iconBuffer = await generateIconImage(color);
     

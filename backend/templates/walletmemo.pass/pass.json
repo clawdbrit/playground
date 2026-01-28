@@ -5,17 +5,16 @@
   "teamIdentifier": "HTWS8J5HF3",
   "organizationName": "Wallet Memo",
   "description": "A sticky note for your wallet",
-  "foregroundColor": "rgb(50, 50, 50)",
-  "labelColor": "rgb(80, 80, 80)",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(255, 255, 255)",
   "backgroundColor": "rgb(228, 184, 192)",
-  "groupingIdentifier": "pass.com.walletmemo.note",
   "eventTicket": {
     "headerFields": [],
     "primaryFields": [
       {
         "key": "memo",
         "label": "",
-        "value": ""
+        "value": "Your note here"
       }
     ],
     "secondaryFields": [],
@@ -36,8 +35,11 @@
   "semantics": {
     "eventType": "PKEventTypeGeneric",
     "eventName": "Wallet Memo",
-    "venueName": "Your Digital Note",
-    "venueRegionName": "Everywhere",
-    "venueRoom": "Your Pocket"
+    "eventStartDate": "2036-01-01T00:00:00Z",
+    "venueLocation": {
+      "latitude": 0,
+      "longitude": 0
+    },
+    "venueName": "Your Pocket"
   }
 }

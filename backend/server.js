@@ -19,10 +19,9 @@ process.on('unhandledRejection', (reason) => {
 });
 
 // Build number for debugging deploys
-const BUILD_NUMBER = 70;
+const BUILD_NUMBER = 71;
 
 // Temporary storage for pending passes (Safari iOS workaround)
-// Tokens expire after 5 minutes
 const pendingPasses = new Map();
 const PASS_TOKEN_TTL = 5 * 60 * 1000; // 5 minutes
 
@@ -39,15 +38,11 @@ const TEMPLATE_PATH = path.join(__dirname, 'templates', 'walletmemo.pass');
 
 // Check if certs are available (files or env vars)
 function checkCerts() {
-  // Check for env vars first (production)
   if (process.env.P12_BASE64 && process.env.WWDR_PEM) {
     return true;
   }
-  
-  // Fall back to files (local dev)
   const p12Path = path.join(CERTS_PATH, 'pass.p12');
   const wwdrPath = path.join(CERTS_PATH, 'wwdr.pem');
-  
   if (!fs.existsSync(p12Path)) {
     console.error('❌ Missing: certs/pass.p12 or P12_BASE64 env var');
     return false;
@@ -62,20 +57,16 @@ function checkCerts() {
 // Get certificates (from env vars or files)
 function getCertificates() {
   const password = process.env.P12_PASSWORD || '';
-  
   let p12Buffer, wwdrPem;
   
-  // Check for env vars first (production)
   if (process.env.P12_BASE64 && process.env.WWDR_PEM) {
     p12Buffer = Buffer.from(process.env.P12_BASE64, 'base64');
     wwdrPem = process.env.WWDR_PEM;
   } else {
-    // Fall back to files (local dev)
     p12Buffer = fs.readFileSync(path.join(CERTS_PATH, 'pass.p12'));
     wwdrPem = fs.readFileSync(path.join(CERTS_PATH, 'wwdr.pem'), 'utf8');
   }
   
-  // Extract cert and key from p12 using node-forge
   const p12Asn1 = forge.asn1.fromDer(p12Buffer.toString('binary'));
   const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, password);
   
@@ -90,6 +81,87 @@ function getCertificates() {
   return { certPem, keyPem, wwdrPem };
 }
 
+// Color mapping
+function getBackgroundColor(color) {
+  const colors = {
+    blue: 'rgb(157, 213, 238)',
+    yellow: 'rgb(226, 208, 96)',
+    pink: 'rgb(228, 184, 192)'
+  };
+  return colors[color] || colors.blue;
+}
+
+// Core pass generation logic (shared between endpoints)
+async function createPass({ text, color, drawingDataUrl }) {
+  const { certPem, keyPem, wwdrPem } = getCertificates();
+  const bgColor = getBackgroundColor(color);
+  
+  // Read and modify the pass.json template
+  const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
+  const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
+  passJsonContent.backgroundColor = bgColor;
+  passJsonContent.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Set event date to 10 years from now (prevents auto-archive)
+  const eventDate = new Date();
+  eventDate.setFullYear(eventDate.getFullYear() + 10);
+  const eventDateStr = eventDate.toISOString();
+  passJsonContent.relevantDate = eventDateStr;
+  
+  // Update semantics for poster event ticket
+  if (passJsonContent.semantics) {
+    passJsonContent.semantics.eventStartDate = eventDateStr;
+  }
+  
+  // Write modified pass.json temporarily
+  fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
+  
+  // Create pass from template
+  const pass = await PKPass.from({
+    model: TEMPLATE_PATH,
+    certificates: {
+      wwdr: wwdrPem,
+      signerCert: certPem,
+      signerKey: keyPem,
+    }
+  });
+
+  pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  // Set build number in back field
+  if (pass.backFields && pass.backFields[0]) {
+    pass.backFields[0].value = String(BUILD_NUMBER);
+  }
+  
+  // Add memo text to primaryFields
+  if (text && text.trim()) {
+    if (pass.primaryFields && pass.primaryFields[0]) {
+      pass.primaryFields[0].value = text;
+    }
+  }
+
+  // Generate images for poster event ticket
+  // For poster layout: use background.png (full-bleed artwork)
+  // Apple applies blur/scrim automatically behind text
+  const backgroundBuffer = await generateBackgroundImage(color, drawingDataUrl);
+  const iconBuffer = await generateIconImage(color);
+
+  // Add background image (poster uses this for full-bleed artwork)
+  pass.addBuffer('background.png', backgroundBuffer);
+  pass.addBuffer('background@2x.png', backgroundBuffer);
+  pass.addBuffer('background@3x.png', backgroundBuffer);
+  
+  // Icon is still required
+  pass.addBuffer('icon.png', iconBuffer);
+  pass.addBuffer('icon@2x.png', iconBuffer);
+
+  // Log semantics for debugging
+  console.log('Pass semantics:', JSON.stringify(passJsonContent.semantics, null, 2));
+  console.log('Background image size:', backgroundBuffer.length, 'bytes');
+
+  return pass.getAsBuffer();
+}
+
 // Generate a pass
 app.post('/api/generate-pass', async (req, res) => {
   try {
@@ -100,82 +172,7 @@ app.post('/api/generate-pass', async (req, res) => {
       return res.status(500).json({ error: 'Server certificates not configured' });
     }
 
-    const { certPem, keyPem, wwdrPem } = getCertificates();
-
-    // Get background color based on selection
-    const bgColor = getBackgroundColor(color);
-    console.log('Creating pass with color:', color, 'bgColor:', bgColor);
-    
-    // Read and modify the pass.json template to set the correct color and dates
-    const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
-    const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
-    passJsonContent.backgroundColor = bgColor;
-    
-    // Generate unique serial number (required by Apple)
-    passJsonContent.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Set event date to 10 years from now (prevents auto-archive)
-    const eventDate = new Date();
-    eventDate.setFullYear(eventDate.getFullYear() + 10);
-    const eventDateStr = eventDate.toISOString();
-    
-    // Add relevantDate for lock screen relevance
-    passJsonContent.relevantDate = eventDateStr;
-    
-    // Add eventStartDate to semantics
-    if (passJsonContent.semantics) {
-      passJsonContent.semantics.eventStartDate = eventDateStr;
-    }
-    
-    // Write modified pass.json temporarily
-    fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
-    
-    // Create pass from template
-    const pass = await PKPass.from({
-      model: TEMPLATE_PATH,
-      certificates: {
-        wwdr: wwdrPem,
-        signerCert: certPem,
-        signerKey: keyPem,
-      }
-    });
-
-    // Update pass fields
-    pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    // Set build number in back field (flip side of pass)
-    if (pass.backFields && pass.backFields[0]) {
-      pass.backFields[0].value = String(BUILD_NUMBER);
-    }
-    
-    // Add memo text - support both coupon (primaryFields) and eventTicket (secondaryFields)
-    if (text && text.trim()) {
-      if (pass.primaryFields && pass.primaryFields[0]) {
-        pass.primaryFields[0].value = text;
-        console.log('Set memo in primaryFields:', text);
-      } else if (pass.secondaryFields && pass.secondaryFields[0]) {
-        pass.secondaryFields[0].value = text;
-        console.log('Set memo in secondaryFields:', text);
-      }
-    }
-
-    // Generate and add images
-    // For eventTicket: use ONLY strip.png for crisp image (no background/thumbnail!)
-    // Apple HIG: "if you supply a strip image, do not include a background or thumbnail image"
-    console.log('Drawing data received:', drawingDataUrl ? 'yes (' + drawingDataUrl.length + ' chars)' : 'no');
-    const stripBuffer = await generateStripImage(color, drawingDataUrl);
-    const iconBuffer = await generateIconImage(color);
-
-    // Strip image shows CRISP at top of pass
-    pass.addBuffer('strip.png', stripBuffer);
-    pass.addBuffer('strip@2x.png', stripBuffer);
-    pass.addBuffer('strip@3x.png', stripBuffer);
-    
-    pass.addBuffer('icon.png', iconBuffer);
-    pass.addBuffer('icon@2x.png', iconBuffer);
-
-    // Generate the .pkpass file
-    const passBuffer = pass.getAsBuffer();
+    const passBuffer = await createPass({ text, color, drawingDataUrl });
 
     res.set({
       'Content-Type': 'application/vnd.apple.pkpass',
@@ -190,15 +187,11 @@ app.post('/api/generate-pass', async (req, res) => {
 });
 
 // Safari iOS workaround: Two-step download flow
-// Step 1: POST data to prepare endpoint, get back a token
 app.post('/api/prepare-pass', (req, res) => {
   try {
     const { text, color, drawingDataUrl } = req.body;
-    
-    // Generate a unique token
     const token = `${Date.now()}-${Math.random().toString(36).substr(2, 12)}`;
     
-    // Store the pass data temporarily
     pendingPasses.set(token, {
       text,
       color,
@@ -206,15 +199,14 @@ app.post('/api/prepare-pass', (req, res) => {
       createdAt: Date.now()
     });
     
-    // Clean up old tokens periodically
+    // Clean up old tokens
     for (const [key, value] of pendingPasses.entries()) {
       if (Date.now() - value.createdAt > PASS_TOKEN_TTL) {
         pendingPasses.delete(key);
       }
     }
     
-    console.log('Prepared pass token:', token, '(pending passes:', pendingPasses.size, ')');
-    
+    console.log('Prepared pass token:', token);
     res.json({ token });
   } catch (error) {
     console.error('Error preparing pass:', error);
@@ -222,81 +214,21 @@ app.post('/api/prepare-pass', (req, res) => {
   }
 });
 
-// Step 2: GET the pass with the token (Safari navigates here directly)
 app.get('/api/download-pass/:token', async (req, res) => {
   try {
     const { token } = req.params;
-    
-    // Retrieve and delete the pending pass data
     const passData = pendingPasses.get(token);
+    
     if (!passData) {
       return res.status(404).json({ error: 'Pass token expired or invalid. Please try again.' });
     }
     pendingPasses.delete(token);
     
-    const { text, color, drawingDataUrl } = passData;
-    console.log('Generating pass from token:', token);
-    
     if (!checkCerts()) {
       return res.status(500).json({ error: 'Server certificates not configured' });
     }
 
-    const { certPem, keyPem, wwdrPem } = getCertificates();
-    const bgColor = getBackgroundColor(color);
-    
-    // Read and modify the pass.json template
-    const passJsonPath = path.join(TEMPLATE_PATH, 'pass.json');
-    const passJsonContent = JSON.parse(fs.readFileSync(passJsonPath, 'utf8'));
-    passJsonContent.backgroundColor = bgColor;
-    
-    // Generate unique serial number (required by Apple)
-    passJsonContent.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    const eventDate = new Date();
-    eventDate.setFullYear(eventDate.getFullYear() + 10);
-    const eventDateStr = eventDate.toISOString();
-    passJsonContent.relevantDate = eventDateStr;
-    if (passJsonContent.semantics) {
-      passJsonContent.semantics.eventStartDate = eventDateStr;
-    }
-    fs.writeFileSync(passJsonPath, JSON.stringify(passJsonContent, null, 2));
-    
-    // Create pass from template
-    const pass = await PKPass.from({
-      model: TEMPLATE_PATH,
-      certificates: {
-        wwdr: wwdrPem,
-        signerCert: certPem,
-        signerKey: keyPem,
-      }
-    });
-
-    pass.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    if (pass.backFields && pass.backFields[0]) {
-      pass.backFields[0].value = String(BUILD_NUMBER);
-    }
-    
-    if (text && text.trim()) {
-      if (pass.primaryFields && pass.primaryFields[0]) {
-        pass.primaryFields[0].value = text;
-      } else if (pass.secondaryFields && pass.secondaryFields[0]) {
-        pass.secondaryFields[0].value = text;
-      }
-    }
-
-    // Generate images
-    const stripBuffer = await generateStripImage(color, drawingDataUrl);
-    const iconBuffer = await generateIconImage(color);
-    
-    // Strip image shows CRISP at top of pass (no background/thumbnail!)
-    pass.addBuffer('strip.png', stripBuffer);
-    pass.addBuffer('strip@2x.png', stripBuffer);
-    pass.addBuffer('strip@3x.png', stripBuffer);
-    pass.addBuffer('icon.png', iconBuffer);
-    pass.addBuffer('icon@2x.png', iconBuffer);
-
-    const passBuffer = pass.getAsBuffer();
+    const passBuffer = await createPass(passData);
 
     res.set({
       'Content-Type': 'application/vnd.apple.pkpass',
@@ -310,132 +242,70 @@ app.get('/api/download-pass/:token', async (req, res) => {
   }
 });
 
-// Color mapping for pass background
-function getBackgroundColor(color) {
-  const colors = {
-    blue: 'rgb(157, 213, 238)',    // Match gradient base
-    yellow: 'rgb(226, 208, 96)',
-    pink: 'rgb(228, 184, 192)'
-  };
-  return colors[color] || colors.blue;
-}
-
-// Generate the strip image with gradient, text, and drawing
-// For posterEventTicket, we use background.png instead of strip
-// Strip dimensions @3x: eventTicket = 294px (98pt × 3)
-async function generateStripImage(color, drawingDataUrl) {
-  const width = 1125;  // @3x width
-  const height = 294;  // eventTicket strip height (98pt × 3)
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-  
-  // Gradient colors - more dramatic contrast for visible effect
-  const gradientColors = {
-    blue: [
-      { pos: 0, color: '#9DD5EE' },      // bottom matches backgroundColor
-      { pos: 0.5, color: '#B8E8F8' },
-      { pos: 1, color: '#E0F5FC' }       // lighter at top (like light source)
-    ],
-    yellow: [
-      { pos: 0, color: '#E2D060' },      // bottom matches backgroundColor
-      { pos: 0.5, color: '#F0E480' },
-      { pos: 1, color: '#FDF8C0' }       // lighter at top
-    ],
-    pink: [
-      { pos: 0, color: '#E4B8C0' },      // bottom matches backgroundColor
-      { pos: 0.5, color: '#F0C8D0' },
-      { pos: 1, color: '#FCE8F0' }       // lighter at top
-    ]
-  };
-
-  // Create vertical gradient (bottom to top, so we reverse y)
-  const gradient = ctx.createLinearGradient(0, height, 0, 0);
-  const stops = gradientColors[color] || gradientColors.blue;
-  stops.forEach(stop => {
-    gradient.addColorStop(stop.pos, stop.color);
-  });
-  
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  // Skip paper noise for now - causes visible seam with background
-  // TODO: Add noise back but fade it out at the bottom edge
-
-  // Text now rendered via pass fields (primaryFields) for guaranteed visibility
-  // Strip is just for the drawing/visual
-
-  // Overlay any drawing from the user (skip if too small - likely empty canvas)
-  console.log('Drawing data length:', drawingDataUrl ? drawingDataUrl.length : 0);
-  if (drawingDataUrl && drawingDataUrl.length > 1000) {
-    try {
-      console.log('Processing drawing...');
-      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
-      console.log('Drawing loaded:', drawingImage.width, 'x', drawingImage.height);
-      
-      // Scale to FILL (cover entire canvas) rather than FIT
-      // This minimizes scaling down, which preserves line sharpness
-      const srcAspect = drawingImage.width / drawingImage.height;
-      const dstAspect = width / height;
-      
-      let drawWidth, drawHeight, drawX, drawY;
-      
-      // Scale drawing to FIT within strip (contain, not cover)
-      // This ensures the entire drawing is visible
-      if (srcAspect > (width / height)) {
-        // Drawing is wider - fit to width
-        drawWidth = width * 0.9;  // 90% width for margin
-        drawHeight = drawWidth / srcAspect;
-      } else {
-        // Drawing is taller - fit to height
-        drawHeight = height * 0.9;  // 90% height for margin
-        drawWidth = drawHeight * srcAspect;
-      }
-      // Center the drawing
-      drawX = (width - drawWidth) / 2;
-      drawY = (height - drawHeight) / 2;
-      
-      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
-      console.log('Drawing applied successfully');
-    } catch (e) {
-      console.error('Could not load drawing:', e.message, e.stack);
+// ============================================
+// TEST ROUTE: Quick pass generation for local dev
+// Visit: http://localhost:8080/test-pass?color=pink&text=Hello
+// ============================================
+app.get('/test-pass', async (req, res) => {
+  try {
+    const { text = 'Test Memo', color = 'blue' } = req.query;
+    
+    console.log('\n🧪 TEST PASS GENERATION');
+    console.log('Text:', text);
+    console.log('Color:', color);
+    
+    if (!checkCerts()) {
+      return res.status(500).send('❌ Certificates not configured');
     }
+
+    const passBuffer = await createPass({ text, color, drawingDataUrl: null });
+
+    res.set({
+      'Content-Type': 'application/vnd.apple.pkpass',
+      'Content-Disposition': 'attachment; filename=test-walletmemo.pkpass'
+    });
+    res.send(passBuffer);
+    
+    console.log('✅ Test pass generated successfully\n');
+
+  } catch (error) {
+    console.error('❌ Test pass error:', error);
+    res.status(500).send(`Error: ${error.message}`);
   }
+});
 
-  return canvas.toBuffer('image/png');
-}
-
-// Generate poster background for posterEventTicket (iOS 17.5+)
-// For poster style, this is the full-bleed image that fills the pass
-// Apple recommends: 375pt × 522pt (@3x = 1125 × 1566)
-async function generatePosterImage(color, drawingDataUrl) {
-  const width = 1125;  // @3x width matching strip
-  const height = 1566; // @3x height for tall poster aspect
+// Generate background image for poster event ticket
+// Apple HIG for poster event tickets: 375pt × 522pt minimum
+// @3x = 1125 × 1566 pixels
+async function generateBackgroundImage(color, drawingDataUrl) {
+  const width = 1125;   // @3x width
+  const height = 1566;  // @3x height for poster aspect
   const canvas = createCanvas(width, height);
   const ctx = canvas.getContext('2d');
   
-  // Gradient colors - full poster gradient
+  // Gradient colors - soft sticky note gradients
   const gradientColors = {
     blue: [
-      { pos: 0, color: '#9DD5EE' },
-      { pos: 0.3, color: '#B8E8F8' },
-      { pos: 0.7, color: '#D0F0FC' },
-      { pos: 1, color: '#E8F8FF' }
+      { pos: 0, color: '#7BC4E0' },
+      { pos: 0.4, color: '#9DD5EE' },
+      { pos: 0.7, color: '#B8E8F8' },
+      { pos: 1, color: '#E0F5FC' }
     ],
     yellow: [
-      { pos: 0, color: '#E2D060' },
-      { pos: 0.3, color: '#F0E480' },
-      { pos: 0.7, color: '#F8F0A0' },
-      { pos: 1, color: '#FFFCE8' }
+      { pos: 0, color: '#D4C44A' },
+      { pos: 0.4, color: '#E2D060' },
+      { pos: 0.7, color: '#F0E480' },
+      { pos: 1, color: '#FDF8C0' }
     ],
     pink: [
-      { pos: 0, color: '#E4B8C0' },
-      { pos: 0.3, color: '#F0C8D0' },
-      { pos: 0.7, color: '#F8D8E0' },
-      { pos: 1, color: '#FFF0F5' }
+      { pos: 0, color: '#D9A8B2' },
+      { pos: 0.4, color: '#E4B8C0' },
+      { pos: 0.7, color: '#F0C8D0' },
+      { pos: 1, color: '#FCE8F0' }
     ]
   };
 
-  // Create vertical gradient
+  // Create vertical gradient (bottom darker, top lighter)
   const gradient = ctx.createLinearGradient(0, height, 0, 0);
   const stops = gradientColors[color] || gradientColors.blue;
   stops.forEach(stop => {
@@ -448,108 +318,35 @@ async function generatePosterImage(color, drawingDataUrl) {
   // Overlay any drawing from the user
   if (drawingDataUrl && drawingDataUrl.length > 1000) {
     try {
+      console.log('Processing drawing for background...');
       const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
       
-      // Scale drawing to fit within poster
+      // Scale drawing to fit within poster, leaving room for text at bottom
       const srcAspect = drawingImage.width / drawingImage.height;
       let drawWidth, drawHeight, drawX, drawY;
       
-      if (srcAspect > (width / height)) {
-        drawWidth = width * 0.85;
+      // Leave bottom 25% for text area (where Apple applies blur)
+      const availableHeight = height * 0.7;
+      
+      if (srcAspect > (width / availableHeight)) {
+        drawWidth = width * 0.9;
         drawHeight = drawWidth / srcAspect;
       } else {
-        drawHeight = height * 0.6;  // Leave room for text at bottom
+        drawHeight = availableHeight * 0.9;
         drawWidth = drawHeight * srcAspect;
       }
       
       // Center horizontally, position in upper portion
       drawX = (width - drawWidth) / 2;
-      drawY = height * 0.1;  // Start 10% from top
+      drawY = height * 0.08;  // Start 8% from top
       
       ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
+      console.log('Drawing applied to background');
     } catch (e) {
-      console.error('Could not load drawing for poster:', e.message);
+      console.error('Could not load drawing:', e.message);
     }
   }
 
-  return canvas.toBuffer('image/png');
-}
-
-// Generate thumbnail for eventTicket (shows crisp, not blurred)
-// Dimensions: 90pt × 90pt (@3x = 270 × 270) - but can be taller
-async function generateThumbnailImage(color, drawingDataUrl) {
-  const width = 270;
-  const height = 270;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-  
-  // Gradient background
-  const gradientColors = {
-    blue: ['#9DD5EE', '#E0F5FC'],
-    yellow: ['#E2D060', '#FDF8C0'],
-    pink: ['#E4B8C0', '#FCE8F0']
-  };
-  
-  const colors = gradientColors[color] || gradientColors.blue;
-  const gradient = ctx.createLinearGradient(0, height, 0, 0);
-  gradient.addColorStop(0, colors[0]);
-  gradient.addColorStop(1, colors[1]);
-  
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, width, height);
-
-  // Overlay drawing if provided
-  if (drawingDataUrl && drawingDataUrl.length > 1000) {
-    try {
-      const drawingImage = await loadImage(Buffer.from(drawingDataUrl.split(',')[1], 'base64'));
-      const scale = Math.min(width / drawingImage.width, height / drawingImage.height) * 0.85;
-      const drawWidth = drawingImage.width * scale;
-      const drawHeight = drawingImage.height * scale;
-      const drawX = (width - drawWidth) / 2;
-      const drawY = (height - drawHeight) / 2;
-      ctx.drawImage(drawingImage, drawX, drawY, drawWidth, drawHeight);
-    } catch (e) {
-      console.error('Could not load drawing for thumbnail:', e.message);
-    }
-  }
-
-  return canvas.toBuffer('image/png');
-}
-
-async function generateLogoImage() {
-  const width = 160;
-  const height = 50;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-
-  ctx.clearRect(0, 0, width, height);
-  
-  // Use Caveat font for logo too if available
-  const fontFamily = GlobalFonts.has('Caveat') ? 'Caveat' : 'sans-serif';
-  ctx.font = `600 24px "${fontFamily}"`;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-  ctx.fillText('Wallet Memo', 5, 34);
-
-  return canvas.toBuffer('image/png');
-}
-
-// Generate background image that fills the pass body
-async function generateBackgroundImage(color) {
-  // Background image for generic pass: 360x440 @2x = 720x880
-  const width = 720;
-  const height = 880;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-
-  const bgColors = {
-    blue: '#A8D4E8',
-    yellow: '#E2D060',
-    pink: '#E4B8C0'
-  };
-  ctx.fillStyle = bgColors[color] || bgColors.blue;
-  ctx.fillRect(0, 0, width, height);
-
-  // Skip paper texture on background to save memory
   return canvas.toBuffer('image/png');
 }
 
@@ -558,7 +355,6 @@ async function generateIconImage(color) {
   const canvas = createCanvas(size, size);
   const ctx = canvas.getContext('2d');
 
-  // Use gradient for icon too
   const gradient = ctx.createLinearGradient(0, size, 0, 0);
   
   if (color === 'yellow') {
@@ -577,12 +373,11 @@ async function generateIconImage(color) {
   ctx.roundRect(4, 4, size - 8, size - 8, 16);
   ctx.fill();
 
-  // Draw a simple memo line icon
+  // Draw memo lines icon
   ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
   ctx.lineWidth = 3;
   ctx.lineCap = 'round';
   
-  // Three horizontal lines for "memo" look
   ctx.beginPath();
   ctx.moveTo(22, 30);
   ctx.lineTo(65, 30);
@@ -605,6 +400,7 @@ app.get('/api/health', (req, res) => {
   const certsOk = checkCerts();
   res.json({ 
     status: certsOk ? 'ready' : 'missing-certs',
+    build: BUILD_NUMBER,
     message: certsOk ? 'Server ready to generate passes' : 'Please configure certificates'
   });
 });
@@ -612,6 +408,8 @@ app.get('/api/health', (req, res) => {
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`\n🎫 Wallet Memo backend running on http://localhost:${PORT}`);
+  console.log(`📦 Build: ${BUILD_NUMBER}`);
+  console.log(`🧪 Test route: http://localhost:${PORT}/test-pass?color=pink&text=Hello`);
   console.log('\nChecking certificates...');
   if (checkCerts()) {
     console.log('✅ Certificates found - ready to generate passes!\n');

@@ -9,7 +9,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <link rel="stylesheet" href="./style.css" />
-      </head>
+          <!-- GoatCounter analytics -->
+    <script data-goatcounter="https://walletmemo.goatcounter.com/count"
+            async src="//gc.zgo.at/count.js"></script>
+  </head>
   <body>
     <!-- Language picker -->
     <div class="lang-picker" id="lang-picker">
@@ -143,6 +146,7 @@
             placeholder="Buy oat milk&#10;Text mom&#10;Don't forget…"
             maxlength="140"
           ></textarea>
+          <div class="note-version">v1.0</div>
         </div>
         <!-- Drawing toolbar -->
         <div class="drawing-toolbar" id="drawing-toolbar">
@@ -172,13 +176,16 @@
           <a href="#" class="wallet-btn-link" id="apple-wallet-btn">
             <img id="apple-wallet-img" src="./assets/wallet-buttons/apple-wallet-buttons/Locale=EN.svg" alt="Add to Apple Wallet">
           </a>
-          <a href="#" class="wallet-btn-link" id="google-wallet-btn" style="display:none;">
+          <a href="#" class="wallet-btn-link" id="google-wallet-btn" style="display: none;">
             <img id="google-wallet-img" src="./assets/wallet-buttons/google-wallet-buttons/Locale=EN, Type=Primary.svg" alt="Add to Google Wallet">
           </a>
+          <a href="mailto:ram@agentmail.to" class="contact-btn">Contact</a>
         </div>
         <div class="wallet-message" id="wallet-message">Coming soon!</div>
       </div>
     </main>
+    
+    <div class="build-hover-area"><span class="build-number">v1.0.56</span></div>
     </div>
 
     <script>
@@ -265,52 +272,11 @@
           });
         });
 
-        // Apple Wallet button handler
+        // Google Wallet - coming soon
         const walletMessage = document.getElementById('wallet-message');
-        const appleWalletBtn = document.getElementById('apple-wallet-btn');
-        const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
-
-        appleWalletBtn.addEventListener('click', async (e) => {
+        document.getElementById('google-wallet-btn').addEventListener('click', (e) => {
           e.preventDefault();
-          const memo = document.getElementById('memo');
-          const text = memo ? memo.value.trim() : '';
-          if (!text) {
-            walletMessage.textContent = 'Write something on your note first!';
-            walletMessage.classList.add('visible');
-            setTimeout(() => walletMessage.classList.remove('visible'), 2000);
-            return;
-          }
-
-          // Get current note color
-          const noteShape = document.getElementById('note-shape');
-          const currentColor = noteShape ? noteShape.getAttribute('fill') : null;
-
-          // Get drawing data
-          const drawingCanvas = document.getElementById('note-drawing-layer');
-          const drawingDataUrl = drawingCanvas && drawingCanvas.getContext('2d').getImageData(0, 0, 1, 1).data[3] > 0
-            ? drawingCanvas.toDataURL('image/png') : null;
-
-          walletMessage.textContent = 'Creating your pass...';
           walletMessage.classList.add('visible');
-
-          try {
-            // Use two-step flow for iOS Safari
-            const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text, color: currentColor, drawingDataUrl })
-            });
-            const { token, error } = await prepRes.json();
-            if (error) throw new Error(error);
-
-            // Redirect to download URL (triggers iOS wallet prompt)
-            window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
-            walletMessage.classList.remove('visible');
-          } catch (err) {
-            walletMessage.textContent = 'Something went wrong. Try again!';
-            setTimeout(() => walletMessage.classList.remove('visible'), 2500);
-            console.error('Pass generation error:', err);
-          }
         });
       })();
 
@@ -546,17 +512,14 @@
         // Get textarea element
         const textarea = document.getElementById('memo');
 
-        // Mobile: tap anywhere on note to focus textarea immediately
-        noteWrapper.addEventListener('touchend', (e) => {
-          // Don't hijack menu button or dropdown taps
+        // Tap anywhere on the note to focus textarea (fixes mobile double-tap)
+        noteWrapper.addEventListener('click', (e) => {
+          // Don't steal clicks from menu, dropdown, or drawing layer
           if (e.target.closest('.note-menu-btn') || e.target.closest('.note-dropdown') || e.target.closest('.drawing-toolbar')) return;
-          // Don't hijack if in drawing mode
-          if (noteWrapper.classList.contains('drawing-mode')) return;
-          e.preventDefault(); // Prevent double-tap zoom and ghost click
           textarea.focus();
         });
 
-        // Mobile: tap anywhere on note to focus textarea immediately
+        // Mobile: touchend for immediate focus without double-tap
         noteWrapper.addEventListener('touchend', (e) => {
           if (e.target.closest('.note-menu-btn') || e.target.closest('.note-dropdown') || e.target.closest('.drawing-toolbar')) return;
           if (noteWrapper.classList.contains('drawing-mode')) return;
@@ -614,6 +577,11 @@
             currentColor = colorKey;
             updateNoteColors(colorKey);
 
+            // Clear drawing when color changes (drawing is tied to note color)
+            if (drawingCtx) {
+              drawingCtx.clearRect(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+            }
+
             // Update active state
             colorSwatches.forEach(s => s.classList.remove('active'));
             swatch.classList.add('active');
@@ -649,12 +617,12 @@
           drawingCtx.lineCap = 'round';
           drawingCtx.lineJoin = 'round';
           drawingCtx.strokeStyle = 'rgba(26, 26, 26, 0.9)';
-          drawingCtx.lineWidth = 2;
+          drawingCtx.lineWidth = 4;
         }
         
         // Pen settings
         let currentPenColor = 'rgba(26, 26, 26, 0.9)';
-        let currentPenSize = 2;
+        let currentPenSize = 4;
 
         initNoteDrawingLayer();
 
@@ -777,6 +745,65 @@
         updateNoteColors(currentColor);
         colorSwatches.forEach(s => {
           s.classList.toggle('active', s.dataset.color === currentColor);
+        });
+
+        // ==========================================
+        // Apple Wallet Pass Generation
+        // ==========================================
+        const appleWalletBtn = document.getElementById('apple-wallet-btn');
+        const walletMsg = document.getElementById('wallet-message');
+        
+        appleWalletBtn.addEventListener('click', async (e) => {
+          e.preventDefault();
+          
+          // Get note content
+          const text = document.getElementById('memo').value;
+          
+          // Get drawing data - always send canvas (backend handles empty gracefully)
+          const drawingDataUrl = noteDrawingLayer.toDataURL('image/png');
+          
+          // Show loading state
+          const originalContent = appleWalletBtn.innerHTML;
+          appleWalletBtn.style.opacity = '0.6';
+          appleWalletBtn.style.pointerEvents = 'none';
+          
+          try {
+            const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
+            
+            // Simple approach: fetch blob and trigger download
+            const response = await fetch(`${BACKEND_URL}/api/generate-pass`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                text: text,
+                color: currentColor,
+                drawingDataUrl: drawingDataUrl
+              })
+            });
+            
+            if (!response.ok) {
+              const error = await response.json();
+              throw new Error(error.error || 'Failed to generate pass');
+            }
+            
+            // Get the blob and create download link
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            
+            // Try opening the blob URL directly - Safari may handle .pkpass
+            window.location.href = url;
+            
+          } catch (error) {
+            console.error('Error:', error);
+            walletMsg.textContent = error.message.includes('fetch') 
+              ? 'Backend not running. Start the server first!'
+              : error.message;
+            walletMsg.classList.add('visible');
+            setTimeout(() => walletMsg.classList.remove('visible'), 3000);
+          } finally {
+            appleWalletBtn.style.opacity = '1';
+            appleWalletBtn.style.pointerEvents = 'auto';
+          }
         });
       })();
     </script>

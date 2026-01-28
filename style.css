@@ -758,7 +758,7 @@ body {
   /* Scale up bigger on mobile when clicked/focused - almost edge to edge */
   .note-wrapper.flat,
   .note-wrapper.flat:hover {
-    transform: scale(1.12);
+    transform: scale(1.8);
   }
 
   .note-paper {

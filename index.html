@@ -197,7 +197,7 @@
       </div>
     </main>
     
-    <div class="build-hover-area"><span class="build-number">Build 107</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 108</span></div>
     </div>
 
     <script>
@@ -951,6 +951,9 @@
             el.style.transition = '';
             el.style.filter = '';
             el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            // "Stick" the note back — blur textarea so it curls up
+            const ta = el.querySelector('textarea');
+            if (ta) ta.blur();
           });
         }
 

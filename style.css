@@ -140,9 +140,9 @@ body {
 }
 
 .hero-title {
-  font-family: 'DM Serif Display', serif;
+  font-family: 'Playfair Display', serif;
   font-size: clamp(72px, 15vw, 140px);
-  font-weight: 400;
+  font-weight: 900;
   letter-spacing: -2px;
   line-height: 1;
   background: linear-gradient(

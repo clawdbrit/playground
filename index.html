@@ -1603,7 +1603,7 @@
             el.classList.add('flat');
             el.dispatchEvent(new Event('note:lift'));
             const elRect = el.getBoundingClientRect();
-            tiltDeg = (e.clientX < elRect.left + elRect.width / 2) ? -3 : 3;
+            tiltDeg = (e.clientX < elRect.left + elRect.width / 2) ? 3 : -3;
             el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(${tiltDeg}deg)`;
             // Show add button immediately on grab
             if (!hasMoved) {
@@ -1962,7 +1962,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v29';
+      if (tv) tv.textContent = ' · test v30';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

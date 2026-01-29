@@ -249,6 +249,31 @@ app.get('/api/download-pass/:token', async (req, res) => {
 });
 
 // ============================================
+// QR CODE REDIRECT: Phone scans QR → downloads pass
+// ============================================
+app.get('/api/pass-redirect', async (req, res) => {
+  try {
+    const { t, c = 'blue' } = req.query;
+    const text = t ? decodeURIComponent(escape(atob(t))) : '';
+    
+    if (!checkCerts()) {
+      return res.status(500).send('Server certificates not configured');
+    }
+
+    const passBuffer = await createPass({ text, color: c, drawingDataUrl: null });
+
+    res.set({
+      'Content-Type': 'application/vnd.apple.pkpass',
+      'Content-Disposition': 'attachment; filename=walletmemo.pkpass'
+    });
+    res.send(passBuffer);
+  } catch (error) {
+    console.error('Error in pass-redirect:', error);
+    res.status(500).send('Failed to generate pass. Please try again.');
+  }
+});
+
+// ============================================
 // TEST ROUTE: Quick pass generation for local dev
 // Visit: http://localhost:8080/test-pass?color=pink&text=Hello
 // ============================================

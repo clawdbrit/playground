@@ -358,6 +358,13 @@ body {
   transform: translateY(0) scale(1);
 }
 
+@media (max-width: 600px) {
+  .note-wrapper.flat .note-dropdown.open {
+    transform: translateY(0) scale(calc(1 / var(--mobile-note-scale, 1)));
+    transform-origin: top right;
+  }
+}
+
 .dropdown-item {
   display: flex;
   align-items: center;

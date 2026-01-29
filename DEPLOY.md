@@ -22,17 +22,32 @@
 - Live at: https://walletmemo.com
 
 ### 4. Pre-push checks
-- [ ] CSS cache bust incremented?
+- [ ] CSS cache bust incremented? (style.css AND lang-picker.css if changed)
 - [ ] Test version bumped? (test only)
 - [ ] No `console.log` debug spam left in?
 - [ ] Changes work on mobile? (if UI change)
 - [ ] Does the Apple Wallet pass still generate? (if backend change)
+- [ ] **Changelog updated?**
+  - Test push → add entry to `changelog-test.html` with new version number
+  - Production push → add entry to `changelog.html` if it's a notable change
+  - Include translations for all 7 languages in the entry
+  - Keep entries grouped by category (✨ New, 🔧 Fix, 🎨 Design, ⚡ Improvement)
 
 ### 5. After pushing
 - Verify the deploy succeeded (`gh run list -R <repo> -L 1`)
 - For test: check https://clawdbrit.github.io/playground/?v={N}
 - For production: check https://walletmemo.com
 - If backend changed: verify Railway auto-deployed
+
+### 6. Changelog safety
+- `changelog.html` = **production** changelog (linked from walletmemo.com footer)
+- `changelog-test.html` = **test** changelog (linked from test site footer)
+- These are **separate files** — they cannot overwrite each other
+- Both files exist in both repos, but each site only links to its own
+- When pushing to production, test changelog comes along but is harmless (not linked)
+- **Always add English first**, then translate to all 7 languages
+- Production entries should be high-level summaries (v1.0, v1.1, etc.)
+- Test entries should be granular per-build (v1, v2, v3, etc.)
 
 ## Git Remotes (local repo: ~/clawd/sandbox)
 - `origin` = `britonbaker/sandbox` (PRODUCTION)

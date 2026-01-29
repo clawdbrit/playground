@@ -239,6 +239,7 @@
       e.preventDefault();
       const href = e.currentTarget.href;
       sessionStorage.setItem('page-transition', 'back');
+      document.documentElement.classList.remove('page-slide-in-right');
       document.documentElement.classList.add('page-slide-out-right');
       setTimeout(() => { window.location.href = href; }, 300);
     });

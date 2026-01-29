@@ -1960,7 +1960,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v22';
+      if (tv) tv.textContent = ' · test v23';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');
@@ -2004,6 +2004,7 @@
       e.preventDefault();
       const href = link.href;
       sessionStorage.setItem('page-transition', 'forward');
+      document.documentElement.classList.remove('page-slide-in-left');
       document.documentElement.classList.add('page-slide-out-left');
       setTimeout(() => { window.location.href = href; }, 300);
     });

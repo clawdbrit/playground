@@ -237,10 +237,10 @@ body {
 
 @media (max-width: 600px) {
   .note-wrapper {
-    transform: scale(var(--mobile-note-scale, 1));
+    transform: scale(var(--mobile-note-scale, 1.1));
   }
   .note-wrapper.flat {
-    transform: scale(var(--mobile-note-scale, 1.1)) translateY(-82px);
+    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-82px);
   }
 }
 
@@ -784,7 +784,7 @@ body {
   /* Scale up bigger on mobile when clicked/focused - almost edge to edge */
   .note-wrapper.flat,
   .note-wrapper.flat:hover {
-    transform: scale(var(--mobile-note-scale, 1.03)) translateY(-82px);
+    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-82px);
   }
 
   .note-paper {

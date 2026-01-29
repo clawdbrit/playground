@@ -655,9 +655,12 @@
 
         // Calculate mobile scale so note fills width
         function updateMobileLayout() {
-          const noteWidth = noteWrapper.offsetWidth || 344;
-          const scale = (window.innerWidth - 32) / noteWidth;
-          document.documentElement.style.setProperty('--mobile-note-scale', scale.toFixed(3));
+          if (window.innerWidth > 600) return; // Desktop doesn't need this
+          const noteWidth = noteWrapper.offsetWidth || 320;
+          const baseScale = (window.innerWidth - 32) / noteWidth;
+          document.documentElement.style.setProperty('--mobile-note-scale', baseScale.toFixed(3));
+          // Focused state is slightly bigger than base
+          document.documentElement.style.setProperty('--mobile-note-focus-scale', (baseScale * 1.05).toFixed(3));
         }
         updateMobileLayout();
         window.addEventListener('resize', updateMobileLayout);
@@ -703,7 +706,7 @@
             const current = noteWrapper.style.transform || '';
             const base = current.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
             const isMobileView = window.innerWidth <= 600;
-            const mobileScale = getComputedStyle(document.documentElement).getPropertyValue('--mobile-note-scale') || '1.1';
+            const mobileScale = getComputedStyle(document.documentElement).getPropertyValue('--mobile-note-focus-scale') || '1.15';
             if (isMobileView) {
               noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(-82px)';
             } else {
@@ -1309,6 +1312,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 168</span></div>
+    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 169</span></div>
   </body>
 </html>

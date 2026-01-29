@@ -204,7 +204,7 @@
           </a>
         </div>
         <div class="wallet-message" id="wallet-message" data-i18n="comingSoonExcl">Coming soon!</div>
-        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><svg class="mail-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:4px;position:relative;top:1.5px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg><span data-i18n="emailUs">Email Us</span></a> · <span class="copyright">© 2026 Wallet Memo</span> · <span class="test-version" id="test-version"></span><!-- Build 195 --></div>
+        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><svg class="mail-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:4px;position:relative;top:1.5px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg><span data-i18n="emailUs">Email Us</span></a> · <span class="copyright">© 2026 Wallet Memo</span><span class="test-version" id="test-version"></span><!-- Build 195 --></div>
       </div>
     </main>
     
@@ -1931,7 +1931,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = 'test v12';
+      if (tv) tv.textContent = ' · test v12';
 
       // Add changelog link to footer
       const footerArea = document.querySelector('.build-hover-area');

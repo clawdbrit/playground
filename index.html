@@ -1041,19 +1041,27 @@
           newWrapper.style.height = '340px';
           newWrapper.style.zIndex = String(10 + noteCounter);
 
+          const g = cfg.gradient;
           newWrapper.innerHTML = `
             <svg class="note-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g filter="url(#nf${noteCounter})">
-                <path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="${cfg.shape}"/>
+                <path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#ng${noteCounter})"/>
               </g>
               <defs>
+                <linearGradient id="ng${noteCounter}" x1="153" y1="231" x2="143" y2="18" gradientUnits="userSpaceOnUse">
+                  <stop offset="0" stop-color="${g[0]}"/>
+                  <stop offset="0.25" stop-color="${g[1]}"/>
+                  <stop offset="0.5" stop-color="${g[2]}"/>
+                  <stop offset="0.75" stop-color="${g[3]}"/>
+                  <stop offset="1" stop-color="${g[4]}"/>
+                </linearGradient>
                 <filter id="nf${noteCounter}" x="0" y="0" width="286.2" height="269.7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
                   <feFlood flood-opacity="0" result="BackgroundImageFix"/>
                   <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
                   <feOffset dy="10"/>
                   <feGaussianBlur stdDeviation="14"/>
                   <feComposite in2="hardAlpha" operator="out"/>
-                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"/>
+                  <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
                   <feBlend mode="normal" in2="BackgroundImageFix" result="shadow"/>
                   <feBlend mode="normal" in="SourceGraphic" in2="shadow" result="shape"/>
                 </filter>
@@ -1075,6 +1083,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 122</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 123</span></div>
   </body>
 </html>

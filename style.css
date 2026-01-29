@@ -899,7 +899,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2px 0 2px;
+    padding: 0;
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
     box-sizing: border-box;

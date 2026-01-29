@@ -240,6 +240,9 @@ body {
   .note-wrapper:hover {
     transform: translateY(-2px);
   }
+  .note-wrapper.drawing-mode:hover {
+    transform: scale(1.1);
+  }
 }
 
 /* Focused state - note lifts and grows slightly */
@@ -482,8 +485,8 @@ body {
 }
 
 .drawing-toolbar {
-  position: absolute;
-  bottom: -100px;
+  position: fixed;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -556,7 +559,7 @@ body {
   border-color: #333;
 }
 
-.note-wrapper.drawing-mode .drawing-toolbar {
+.drawing-toolbar.visible {
   opacity: 1;
   visibility: visible;
 }

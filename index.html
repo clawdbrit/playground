@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@300&family=Fraunces:wght@300&family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-    <link rel="stylesheet" href="./style.css?v=8" />
+    <link rel="stylesheet" href="./style.css?v=9" />
     <!-- Hreflang alternate links for SEO -->
     <link rel="alternate" hreflang="en" href="https://walletmemo.com/" />
     <link rel="alternate" hreflang="es" href="https://walletmemo.com/?lang=es" />
@@ -169,25 +169,27 @@
           ></textarea>
         </div>
         <!-- Drawing toolbar -->
-        <div class="drawing-toolbar" id="drawing-toolbar">
-          <div class="pen-colors">
-            <button class="pen-color active" data-color="26,26,26" style="background:#1a1a1a"></button>
-            <button class="pen-color" data-color="229,57,53" style="background:#e53935"></button>
-            <button class="pen-color" data-color="30,136,229" style="background:#1e88e5"></button>
-            <button class="pen-color" data-color="67,160,71" style="background:#43a047"></button>
-            <button class="pen-color" data-color="142,36,170" style="background:#8e24aa"></button>
-          </div>
-          <div class="pen-sizes">
-            <button class="pen-size" data-size="1"><span style="width:4px;height:4px"></span></button>
-            <button class="pen-size active" data-size="2"><span style="width:6px;height:6px"></span></button>
-            <button class="pen-size" data-size="4"><span style="width:10px;height:10px"></span></button>
-            <button class="pen-size" data-size="6"><span style="width:14px;height:14px"></span></button>
-          </div>
-          <div class="pen-actions">
-            <button class="toolbar-btn clear" id="clear-drawing"><i class="hgi-stroke hgi-delete-02"></i></button>
-            <button class="toolbar-btn cancel" id="cancel-drawing">Cancel</button>
-            <button class="toolbar-btn done" id="done-drawing">Done</button>
-          </div>
+      </div>
+
+      <!-- Drawing toolbar: shared across all notes, positioned via JS -->
+      <div class="drawing-toolbar" id="drawing-toolbar">
+        <div class="pen-colors">
+          <button class="pen-color active" data-color="26,26,26" style="background:#1a1a1a"></button>
+          <button class="pen-color" data-color="229,57,53" style="background:#e53935"></button>
+          <button class="pen-color" data-color="30,136,229" style="background:#1e88e5"></button>
+          <button class="pen-color" data-color="67,160,71" style="background:#43a047"></button>
+          <button class="pen-color" data-color="142,36,170" style="background:#8e24aa"></button>
+        </div>
+        <div class="pen-sizes">
+          <button class="pen-size" data-size="1"><span style="width:4px;height:4px"></span></button>
+          <button class="pen-size active" data-size="2"><span style="width:6px;height:6px"></span></button>
+          <button class="pen-size" data-size="4"><span style="width:10px;height:10px"></span></button>
+          <button class="pen-size" data-size="6"><span style="width:14px;height:14px"></span></button>
+        </div>
+        <div class="pen-actions">
+          <button class="toolbar-btn clear" id="clear-drawing"><i class="hgi-stroke hgi-delete-02"></i></button>
+          <button class="toolbar-btn cancel" id="cancel-drawing">Cancel</button>
+          <button class="toolbar-btn done" id="done-drawing">Done</button>
         </div>
       </div>
 
@@ -1197,6 +1199,7 @@
           // Enable drawing mode
           document.body.classList.add('drawing-mode-active');
           noteWrapper.classList.add('drawing-mode');
+          drawingToolbar.classList.add('visible');
 
           // Sync pen settings
           drawingCtx.strokeStyle = currentPenColor;
@@ -1274,6 +1277,7 @@
           savedImageData = null;
           document.body.classList.remove('drawing-mode-active');
           targetWrapper.classList.remove('drawing-mode');
+          drawingToolbar.classList.remove('visible');
 
           if (isOriginalNote) {
             // Original note: full close with animations
@@ -1855,7 +1859,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = 'test v8';
+      if (tv) tv.textContent = 'test v9';
     }
     </script>
   </body>

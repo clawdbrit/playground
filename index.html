@@ -1026,11 +1026,11 @@
 
           // Color configs
           const colorMap = {
-            blue: { gradient: ['#87C5DB', '#9DD5EE', '#B8E8F8', '#C4E9F5', '#C4E9F5'], shape: '#B4DCE8' },
-            yellow: { gradient: ['#D4C44A', '#E2D060', '#F0E480', '#F5EDA0', '#F5EDA0'], shape: '#EAD264' },
-            pink: { gradient: ['#D8A0B0', '#E4B8C0', '#F0C8D0', '#F5D8E0', '#F5D8E0'], shape: '#ECBDC5' }
+            blue: ['#9DD5EE', '#98C4DA', '#9BC8E7', '#ACD7E9', '#B8E3F3', '#C4E9F5'],
+            yellow: ['#D8C453', '#D4B94C', '#DEC75E', '#E8D46E', '#F0DF85', '#F7EA9C'],
+            pink: ['#DCABB5', '#D7A0AA', '#E2B4BD', '#ECC4CC', '#F2D1D8', '#F8DEE3']
           };
-          const cfg = colorMap[color];
+          const g = colorMap[color];
 
           const newWrapper = document.createElement('div');
           newWrapper.className = 'note-wrapper dragged-note';
@@ -1041,19 +1041,19 @@
           newWrapper.style.height = '340px';
           newWrapper.style.zIndex = String(10 + noteCounter);
 
-          const g = cfg.gradient;
           newWrapper.innerHTML = `
             <svg class="note-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
               <g filter="url(#nf${noteCounter})">
                 <path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#ng${noteCounter})"/>
               </g>
               <defs>
-                <linearGradient id="ng${noteCounter}" x1="153" y1="231" x2="143" y2="18" gradientUnits="userSpaceOnUse">
-                  <stop offset="0" stop-color="${g[0]}"/>
-                  <stop offset="0.25" stop-color="${g[1]}"/>
-                  <stop offset="0.5" stop-color="${g[2]}"/>
-                  <stop offset="0.75" stop-color="${g[3]}"/>
-                  <stop offset="1" stop-color="${g[4]}"/>
+                <linearGradient id="ng${noteCounter}" x1="153.102" y1="231.1" x2="143.601" y2="18.5996" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="${g[0]}"/>
+                  <stop offset="0.255906" stop-color="${g[1]}"/>
+                  <stop offset="0.812358" stop-color="${g[2]}"/>
+                  <stop offset="0.864881" stop-color="${g[3]}"/>
+                  <stop offset="0.954264" stop-color="${g[4]}"/>
+                  <stop offset="1" stop-color="${g[5]}"/>
                 </linearGradient>
                 <filter id="nf${noteCounter}" x="0" y="0" width="286.2" height="269.7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
                   <feFlood flood-opacity="0" result="BackgroundImageFix"/>
@@ -1083,6 +1083,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 124</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 125</span></div>
   </body>
 </html>

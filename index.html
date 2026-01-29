@@ -184,6 +184,7 @@
         <div class="wallet-buttons">
           <a href="#" class="wallet-btn-link" id="apple-wallet-btn">
             <img id="apple-wallet-img" src="./assets/wallet-buttons/apple-wallet-buttons/Locale=EN.svg" alt="Add to Apple Wallet">
+            <div class="wallet-qr" id="wallet-qr"></div>
           </a>
           <a href="#" class="wallet-btn-link" id="google-wallet-btn" style="display: none;">
             <img id="google-wallet-img" src="./assets/wallet-buttons/google-wallet-buttons/Locale=EN, Type=Primary.svg" alt="Add to Google Wallet">
@@ -194,11 +195,6 @@
           </a>
         </div>
         <div class="wallet-message" id="wallet-message">Coming soon!</div>
-        <div class="qr-container" id="qr-container" style="display:none;">
-          <div class="qr-label">Scan with your iPhone to add to Wallet</div>
-          <div id="qr-code"></div>
-          <button class="qr-close" id="qr-close">✕</button>
-        </div>
       </div>
     </main>
     
@@ -975,20 +971,13 @@
         // ==========================================
         const appleWalletBtn = document.getElementById('apple-wallet-btn');
         const walletMsg = document.getElementById('wallet-message');
-        const qrContainer = document.getElementById('qr-container');
-        const qrCodeEl = document.getElementById('qr-code');
-        const qrClose = document.getElementById('qr-close');
+        const walletQr = document.getElementById('wallet-qr');
+        let qrVisible = false;
 
         // Detect if user is on mobile (iOS/Android)
         function isMobile() {
           return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         }
-
-        // Close QR code
-        qrClose.addEventListener('click', () => {
-          qrContainer.style.display = 'none';
-          qrCodeEl.innerHTML = '';
-        });
 
         appleWalletBtn.addEventListener('click', async (e) => {
           e.preventDefault();
@@ -1002,21 +991,23 @@
           const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
 
           if (!isMobile()) {
-            // Desktop: show QR code
+            // Desktop: toggle QR code inside the button
+            if (qrVisible) {
+              walletQr.innerHTML = '';
+              walletQr.style.display = 'none';
+              qrVisible = false;
+              return;
+            }
+
             // Encode memo data in URL params
             const params = new URLSearchParams({
               t: btoa(unescape(encodeURIComponent(text || ''))),
               c: currentColor,
               d: drawingDataUrl.length > 1000 ? '1' : '0'
             });
-            // For drawings, we can't encode the full data URL in a QR (too large)
-            // So the QR just links to the site with text+color, no drawing
             const passUrl = `${BACKEND_URL}/api/pass-redirect?${params.toString()}`;
             
-            // Generate QR code using inline SVG
-            qrCodeEl.innerHTML = '';
             try {
-              // Use QRCode library if available, otherwise load it
               if (!window.QRCode) {
                 const script = document.createElement('script');
                 script.src = 'https://cdn.jsdelivr.net/npm/qrcode-svg@1.1.0/lib/qrcode.min.js';
@@ -1028,15 +1019,16 @@
               }
               const qr = new QRCode({
                 content: passUrl,
-                width: 160,
-                height: 160,
-                padding: 0,
-                color: '#1a1a1a',
+                width: 140,
+                height: 140,
+                padding: 2,
+                color: '#000000',
                 background: '#ffffff',
                 ecl: 'M'
               });
-              qrCodeEl.innerHTML = qr.svg();
-              qrContainer.style.display = 'flex';
+              walletQr.innerHTML = qr.svg();
+              walletQr.style.display = 'flex';
+              qrVisible = true;
             } catch (err) {
               console.error('QR generation failed:', err);
               walletMsg.textContent = 'Could not generate QR code';
@@ -1324,6 +1316,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 143</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 144</span></div>
   </body>
 </html>

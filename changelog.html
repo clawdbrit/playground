@@ -94,6 +94,25 @@
     </style>
   </head>
   <body>
+    <style>
+      body { overflow-x: hidden; }
+      body.slide-in-from-right { animation: slideInFromRight 0.35s ease-out forwards; }
+      body.slide-out-right { animation: slideOutRight 0.35s ease-in forwards; }
+      @keyframes slideInFromRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+      }
+    </style>
+    <script>
+      if (sessionStorage.getItem('page-transition') === 'forward') {
+        document.body.classList.add('slide-in-from-right');
+        sessionStorage.removeItem('page-transition');
+      }
+    </script>
     <a href="./" class="back-link" id="back-link">Wallet Memo</a>
     <h1 id="page-title">Changelog</h1>
     <p class="subtitle" id="page-subtitle">What's new in Wallet Memo</p>
@@ -215,6 +234,14 @@
     });
     const currentLang = langPicker.getCurrentLang();
     renderChangelog(currentLang);
+
+    document.getElementById('back-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      const href = e.currentTarget.href;
+      sessionStorage.setItem('page-transition', 'back');
+      document.body.classList.add('slide-out-right');
+      setTimeout(() => { window.location.href = href; }, 300);
+    });
     </script>
   </body>
 </html>

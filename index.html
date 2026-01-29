@@ -26,6 +26,26 @@
             async src="//gc.zgo.at/count.js"></script>
   </head>
   <body>
+    <style>
+      body { overflow-x: hidden; }
+      body.slide-out-left { animation: slideOutLeft 0.35s ease-in forwards; }
+      body.slide-in-from-left { animation: slideInFromLeft 0.35s ease-out forwards; }
+      @keyframes slideOutLeft {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(-100%); opacity: 0; }
+      }
+      @keyframes slideInFromLeft {
+        from { transform: translateX(-100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+    </style>
+    <script>
+      // If returning from changelog, slide in from left
+      if (sessionStorage.getItem('page-transition') === 'back') {
+        document.body.classList.add('slide-in-from-left');
+        sessionStorage.removeItem('page-transition');
+      }
+    </script>
     <div class="focus-overlay" id="focus-overlay"></div>
     <!-- Language picker -->
     <div class="lang-picker" id="lang-picker">
@@ -1940,7 +1960,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v20';
+      if (tv) tv.textContent = ' · test v21';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');
@@ -1976,6 +1996,17 @@
       const savedLang2 = localStorage.getItem('walletmemo-lang');
       if (savedLang2) applyLanguage(savedLang2);
     }
+
+    // Page transition: slide out left when clicking changelog
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('.changelog-footer-link');
+      if (!link) return;
+      e.preventDefault();
+      const href = link.href;
+      sessionStorage.setItem('page-transition', 'forward');
+      document.body.classList.add('slide-out-left');
+      setTimeout(() => { window.location.href = href; }, 300);
+    });
     </script>
   </body>
 </html>

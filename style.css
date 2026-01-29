@@ -140,8 +140,9 @@ body {
 }
 
 .hero-title {
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(72px, 15vw, 140px);
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: -2px;
   line-height: 1;
   background: linear-gradient(
@@ -694,6 +695,7 @@ body {
   flex-direction: column;
   align-items: center;
   transition: opacity .3s ease;
+  min-height: 44px;
 }
 
 .wallet-message {
@@ -865,6 +867,10 @@ body {
 
 .wallet-btn-link#apple-wallet-btn.qr-open {
   max-height: 300px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
 }
 
 .wallet-btn-link img {

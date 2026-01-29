@@ -107,6 +107,16 @@ async function createPass({ text, color, drawingDataUrl }) {
   
   // Set colors to match sticky note
   passJsonContent.backgroundColor = bgColor;
+  
+  // Logo text color: slightly darker tint of background (subtle, like watermark)
+  const logoTextColors = {
+    blue: 'rgb(120, 175, 200)',    // darker blue tint
+    yellow: 'rgb(190, 175, 60)',   // darker yellow tint
+    pink: 'rgb(195, 150, 160)'    // darker pink tint
+  };
+  passJsonContent.foregroundColor = logoTextColors[color] || logoTextColors.blue;
+  passJsonContent.labelColor = logoTextColors[color] || logoTextColors.blue;
+  
   passJsonContent.serialNumber = `memo-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   
   // Write modified pass.json temporarily
@@ -315,49 +325,7 @@ async function generateStripImage(color, drawingDataUrl, text) {
     }
   }
 
-  // Render user text onto the strip
-  if (text && text.trim()) {
-    ctx.save();
-    ctx.font = '48px "Patrick Hand"';
-    ctx.fillStyle = '#1a1a1a';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-
-    const maxWidth = width * 0.8;
-    const lineHeight = 60;
-    const words = text.split('\n');
-    const lines = [];
-
-    // Split by newlines first, then wrap long lines
-    for (const paragraph of words) {
-      const paraWords = paragraph.split(' ');
-      let currentLine = '';
-      for (const word of paraWords) {
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
-        if (ctx.measureText(testLine).width > maxWidth && currentLine) {
-          lines.push(currentLine);
-          currentLine = word;
-        } else {
-          currentLine = testLine;
-        }
-      }
-      if (currentLine) lines.push(currentLine);
-    }
-
-    // Position text: if there's a drawing, put text at top; otherwise center vertically
-    const totalTextHeight = lines.length * lineHeight;
-    let startY;
-    if (drawingDataUrl && drawingDataUrl.length > 1000) {
-      startY = 24; // Top of strip when drawing present
-    } else {
-      startY = (height - totalTextHeight) / 2;
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-      ctx.fillText(lines[i], width / 2, startY + i * lineHeight);
-    }
-    ctx.restore();
-  }
+  // Text is now shown in coupon secondaryFields only, not on strip image
 
   return canvas.toBuffer('image/png');
 }

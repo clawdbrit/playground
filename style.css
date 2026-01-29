@@ -868,10 +868,17 @@ body {
   box-shadow: 0 0 0 1px rgba(0,0,0,1);
   max-height: 44px;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 20;
+}
+
+/* Desktop only: absolute position so QR doesn't shift page */
+@media (min-width: 601px) {
+  .wallet-btn-link#apple-wallet-btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
 }
 
 .wallet-btn-link#apple-wallet-btn.qr-open {

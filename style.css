@@ -900,7 +900,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0;
-    margin-bottom: -2px;
+    margin-bottom: -4px;
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
     box-sizing: border-box;

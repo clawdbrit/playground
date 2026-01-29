@@ -798,15 +798,17 @@ body {
     background: #000;
     box-shadow: 0 0 0 1px rgba(0,0,0,1);
     max-height: 42px;
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 20;
-    vertical-align: top;
-    position: relative;
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: column-reverse;
   }
   .wallet-btn-link#apple-wallet-btn.qr-open {
     max-height: 250px;
     z-index: 30;
-    transform: translateY(-104px);
   }
   .wallet-qr {
     display: flex;

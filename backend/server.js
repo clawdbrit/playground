@@ -290,9 +290,9 @@ async function generateStripImage(color, drawingDataUrl, text) {
   
   // Flat solid colors for wallet pass (no gradient)
   const flatColors = {
-    blue: '#B8E8F8',
-    yellow: '#F0E480',
-    pink: '#F0C8D0'
+    blue: 'rgb(157, 213, 238)',
+    yellow: 'rgb(226, 208, 96)',
+    pink: 'rgb(228, 184, 192)'
   };
 
   ctx.fillStyle = flatColors[color] || flatColors.blue;
@@ -340,9 +340,9 @@ async function generateBackgroundImage(color, drawingDataUrl) {
   
   // Flat solid colors for wallet pass (no gradient)
   const flatColors = {
-    blue: '#B8E8F8',
-    yellow: '#F0E480',
-    pink: '#F0C8D0'
+    blue: 'rgb(157, 213, 238)',
+    yellow: 'rgb(226, 208, 96)',
+    pink: 'rgb(228, 184, 192)'
   };
 
   ctx.fillStyle = flatColors[color] || flatColors.blue;
@@ -390,9 +390,9 @@ async function generateIconImage(color) {
 
   // Flat solid colors (no gradient)
   const flatColors = {
-    blue: '#B8E8F8',
-    yellow: '#F0E480',
-    pink: '#F0C8D0'
+    blue: 'rgb(157, 213, 238)',
+    yellow: 'rgb(226, 208, 96)',
+    pink: 'rgb(228, 184, 192)'
   };
 
   ctx.fillStyle = flatColors[color] || flatColors.blue;

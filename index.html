@@ -587,7 +587,6 @@
           }
 
           wrapper.addEventListener('note:lift', () => {
-            console.log('note:lift fired', noteId, 'noteIsFlat:', noteIsFlat, 'shape:', !!shape, 'stops:', stops.length);
             if (!noteIsFlat) {
               noteIsFlat = true;
               animateNotePath(statePoints.curled, statePoints.flat);
@@ -597,7 +596,6 @@
           });
 
           wrapper.addEventListener('note:stick', () => {
-            console.log('note:stick fired', noteId, 'noteIsFlat:', noteIsFlat);
             if (noteIsFlat) {
               noteIsFlat = false;
               animateNotePath(statePoints.flat, statePoints.curled);
@@ -605,6 +603,33 @@
               wrapper.classList.remove('flat');
             }
           });
+
+          // Click anywhere on note to focus textarea
+          const noteTextarea = wrapper.querySelector('textarea');
+          if (noteTextarea) {
+            wrapper.addEventListener('click', (e) => {
+              if (e.target.closest('.note-menu-btn') || e.target.closest('.note-dropdown')) return;
+              noteTextarea.focus();
+            });
+
+            noteTextarea.addEventListener('focus', () => {
+              if (!noteIsFlat) {
+                noteIsFlat = true;
+                animateNotePath(statePoints.curled, statePoints.flat);
+                animateNoteGradient(true);
+                wrapper.classList.add('flat');
+              }
+            });
+
+            noteTextarea.addEventListener('blur', () => {
+              if (noteIsFlat) {
+                noteIsFlat = false;
+                animateNotePath(statePoints.flat, statePoints.curled);
+                animateNoteGradient(false);
+                wrapper.classList.remove('flat');
+              }
+            });
+          }
         };
 
         // Get textarea element
@@ -1207,6 +1232,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 132</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 133</span></div>
   </body>
 </html>

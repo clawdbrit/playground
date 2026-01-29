@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@300&family=Fraunces:wght@300&family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-    <link rel="stylesheet" href="./style.css?v=5" />
+    <link rel="stylesheet" href="./style.css?v=6" />
     <!-- Hreflang alternate links for SEO -->
     <link rel="alternate" hreflang="en" href="https://walletmemo.com/" />
     <link rel="alternate" hreflang="es" href="https://walletmemo.com/?lang=es" />
@@ -202,7 +202,7 @@
           </a>
         </div>
         <div class="wallet-message" id="wallet-message" data-i18n="comingSoonExcl">Coming soon!</div>
-        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><svg class="mail-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:4px;position:relative;top:1.5px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg><span data-i18n="emailUs">Email Us</span></a> · <span class="copyright">© 2026 Wallet Memo</span><!-- Build 195 --></div>
+        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><svg class="mail-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:4px;position:relative;top:1.5px;"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M2 7l10 7 10-7"/></svg><span data-i18n="emailUs">Email Us</span></a> · <span class="copyright">© 2026 Wallet Memo</span> · <span class="test-version" id="test-version"></span><!-- Build 195 --></div>
       </div>
     </main>
     
@@ -1413,6 +1413,7 @@
           let isDragging = false;
           let startX, startY, origX = 0, origY = 0;
           let offsetX = 0, offsetY = 0;
+          let tiltDeg = 3;
 
           el.addEventListener('mousemove', (e) => {
             if (isDragging) return;
@@ -1451,7 +1452,9 @@
             // Lift off the wall - go flat
             el.classList.add('flat');
             el.dispatchEvent(new Event('note:lift'));
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(3deg)`;
+            const elRect = el.getBoundingClientRect();
+            const tiltDeg = (e.clientX < elRect.left + elRect.width / 2) ? -3 : 3;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(${tiltDeg}deg)`;
             // Show add button immediately on grab
             if (!hasMoved) {
               hasMoved = true;
@@ -1465,7 +1468,7 @@
             const dy = e.clientY - startY;
             offsetX = origX + dx;
             offsetY = origY + dy;
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(3deg)`;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(${tiltDeg}deg)`;
           });
 
           document.addEventListener('mouseup', () => {
@@ -1616,7 +1619,69 @@
           ta.maxLength = 140;
           ta.style.cssText = "font-family:'Patrick Hand',cursive;font-size:20px;line-height:1.5;color:#1a1a1a;border:none;background:transparent;resize:none;outline:none;text-align:center;width:100%;overflow:hidden;";
           noteDiv.appendChild(ta);
-          
+
+          // Add menu button to spawned note
+          const spawnMenuBtn = document.createElement('button');
+          spawnMenuBtn.className = 'note-menu-btn';
+          spawnMenuBtn.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+
+          const spawnDropdown = document.createElement('div');
+          spawnDropdown.className = 'note-dropdown';
+          spawnDropdown.innerHTML = `
+            <button class="dropdown-item spawn-color-btn">
+              <span class="color-icon" style="background:#B4DCE8;"></span>
+              <span>Change Color</span>
+            </button>
+            <div class="color-submenu">
+              <div class="color-swatch" data-color="blue" style="background: #B4DCE8;"></div>
+              <div class="color-swatch" data-color="yellow" style="background: #EAD264;"></div>
+              <div class="color-swatch" data-color="pink" style="background: #ECBDC5;"></div>
+            </div>
+          `;
+          noteDiv.appendChild(spawnMenuBtn);
+          noteDiv.appendChild(spawnDropdown);
+
+          // Wire up spawned menu
+          const spawnColorBtn = spawnDropdown.querySelector('.spawn-color-btn');
+          const spawnColorSub = spawnDropdown.querySelector('.color-submenu');
+          const spawnSwatches = spawnDropdown.querySelectorAll('.color-swatch');
+          const spawnColorIcon = spawnDropdown.querySelector('.color-icon');
+
+          spawnMenuBtn.addEventListener('mousedown', (e) => e.preventDefault());
+          spawnDropdown.addEventListener('mousedown', (e) => e.preventDefault());
+          spawnMenuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            spawnMenuBtn.classList.toggle('active');
+            spawnDropdown.classList.toggle('open');
+          });
+          document.addEventListener('click', (e) => {
+            if (!spawnDropdown.contains(e.target) && !spawnMenuBtn.contains(e.target)) {
+              spawnDropdown.classList.remove('open');
+              spawnMenuBtn.classList.remove('active');
+              spawnColorSub.classList.remove('open');
+            }
+          });
+          spawnColorBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            spawnColorSub.classList.toggle('open');
+          });
+          spawnSwatches.forEach(sw => {
+            sw.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const ck = sw.dataset.color;
+              const theme = colorThemes[ck];
+              if (!theme) return;
+              const stops = svgNode.querySelectorAll('stop');
+              theme.gradient.forEach((c, i) => { if (stops[i]) stops[i].setAttribute('stop-color', c); });
+              spawnColorIcon.style.background = colorIconColors[ck];
+              spawnSwatches.forEach(s => s.classList.remove('active'));
+              sw.classList.add('active');
+              spawnDropdown.classList.remove('open');
+              spawnMenuBtn.classList.remove('active');
+              spawnColorSub.classList.remove('open');
+            });
+          });
+
           // Add shadow layer (same as original note)
           const shadowImg = document.createElement('img');
           shadowImg.src = './assets/paper-stuff/shadow-layer.svg';
@@ -1639,6 +1704,11 @@
           addBtn.style.display = 'none';
         });
       })();
+    // Show test version on test site
+    if (location.hostname.includes('clawdbrit')) {
+      const tv = document.getElementById('test-version');
+      if (tv) tv.textContent = 'test v6';
+    }
     </script>
   </body>
 </html>

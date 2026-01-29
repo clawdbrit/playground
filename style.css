@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@900&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { touch-action: manipulation; }
@@ -144,9 +144,9 @@ body {
 }
 
 .hero-title {
-  font-family: 'Lora', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
+  font-family: 'Fraunces', 'Noto Serif JP', 'Noto Serif KR', 'Noto Serif SC', serif;
   font-size: clamp(72px, 15vw, 140px);
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: -2px;
   line-height: 1;
   background: linear-gradient(

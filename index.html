@@ -6,7 +6,7 @@
     <title>Wallet Memo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Lora:wght@700&family=Fraunces:wght@900&family=Instrument+Serif&family=Cormorant+Garamond:wght@700&family=Libre+Caslon+Display&family=DM+Serif+Display&family=Bitter:wght@800&family=Merriweather:wght@900&family=Vollkorn:wght@900&family=Source+Serif+4:wght@900&family=Noto+Serif+JP:wght@700;900&family=Noto+Serif+KR:wght@700;900&family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Fraunces:wght@900&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
     <link rel="stylesheet" href="./style.css" />
@@ -215,36 +215,6 @@
       document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
       document.addEventListener('gestureend', function(e) { e.preventDefault(); });
 
-
-      // Font tester - cycles through serif fonts
-      (function() {
-        const fonts = [
-          { name: 'Lora', weight: '700', label: 'Lora 700' },
-          { name: 'Fraunces', weight: '900', label: 'Fraunces 900' },
-          { name: 'Instrument Serif', weight: '400', label: 'Instrument Serif 400' },
-          { name: 'Cormorant Garamond', weight: '700', label: 'Cormorant Garamond 700' },
-          { name: 'Libre Caslon Display', weight: '400', label: 'Libre Caslon Display 400' },
-          { name: 'DM Serif Display', weight: '400', label: 'DM Serif Display 400' },
-          { name: 'Bitter', weight: '800', label: 'Bitter 800' },
-          { name: 'Merriweather', weight: '900', label: 'Merriweather 900' },
-          { name: 'Vollkorn', weight: '900', label: 'Vollkorn 900' },
-          { name: 'Source Serif 4', weight: '900', label: 'Source Serif 4 900' },
-        ];
-        let idx = 0;
-        const title = document.querySelector('.hero-title');
-        const label = document.createElement('div');
-        label.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.7);color:#fff;padding:6px 14px;border-radius:20px;font-size:13px;font-family:system-ui;z-index:9999;transition:opacity .3s;';
-        document.body.appendChild(label);
-        function cycle() {
-          const f = fonts[idx];
-          title.style.fontFamily = "'" + f.name + "', serif";
-          title.style.fontWeight = f.weight;
-          label.textContent = (idx+1) + '/' + fonts.length + ' — ' + f.label;
-          idx = (idx + 1) % fonts.length;
-        }
-        cycle();
-        setInterval(cycle, 3000);
-      })();
 
       // ==========================================
       // i18n Translations

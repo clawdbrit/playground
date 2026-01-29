@@ -894,14 +894,14 @@ body {
     vertical-align: top;
   }
   .wallet-btn-link#apple-wallet-btn.qr-open {
-    max-height: 300px;
+    max-height: 250px;
     z-index: 30;
   }
   .wallet-qr {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 6px 6px 8px;
+    padding: 6px 6px 4px;
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
     box-sizing: border-box;
@@ -1025,15 +1025,14 @@ body {
   transition: color .15s ease;
 }
 
-.footer-link i {
-  position: relative;
-  top: 1px;
+.footer-link .mail-icon {
+  transition: fill .15s ease;
 }
 
 .footer-link:hover {
   color: rgba(0,0,0,0.7);
 }
 
-.footer-link:hover i {
-  -webkit-text-stroke: 1px currentColor;
+.footer-link:hover .mail-icon {
+  fill: currentColor;
 }

@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@300&family=Fraunces:wght@300&family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-    <link rel="stylesheet" href="./style.css?v=11" />
+    <link rel="stylesheet" href="./style.css?v=12" />
     <!-- Hreflang alternate links for SEO -->
     <link rel="alternate" hreflang="en" href="https://walletmemo.com/" />
     <link rel="alternate" hreflang="es" href="https://walletmemo.com/?lang=es" />
@@ -217,6 +217,30 @@
       document.addEventListener('gesturechange', function(e) { e.preventDefault(); });
       document.addEventListener('gestureend', function(e) { e.preventDefault(); });
 
+
+      // ==========================================
+      // Note Registry & Active Note Tracking
+      // ==========================================
+      window.noteRegistry = new Map();
+      window.activeNoteId = null;
+      window.lastActiveNoteId = null;
+
+      window.setActiveNote = function(noteId) {
+        window.activeNoteId = noteId;
+      };
+      window.deactivateNote = function() {
+        if (window.activeNoteId) {
+          window.lastActiveNoteId = window.activeNoteId;
+          window.activeNoteId = null;
+        }
+      };
+      window.getTargetNote = function() {
+        var id = window.activeNoteId || window.lastActiveNoteId;
+        if (id && window.noteRegistry.has(id)) return window.noteRegistry.get(id);
+        // fallback to note-0
+        if (window.noteRegistry.has('note-0')) return window.noteRegistry.get('note-0');
+        return null;
+      };
 
       // ==========================================
       // i18n Translations
@@ -993,6 +1017,7 @@
         });
 
         textarea.addEventListener('focus', () => {
+          setActiveNote('note-0');
           if (!isFlat) {
             isFlat = true;
             animatePath(statePoints.curled, statePoints.flat);
@@ -1015,6 +1040,7 @@
         });
 
         textarea.addEventListener('blur', () => {
+          deactivateNote();
           // Don't close note when entering drawing mode
           if (isDrawingMode) return;
           if (isFlat) {
@@ -1079,6 +1105,9 @@
             const colorKey = swatch.dataset.color;
             currentColor = colorKey;
             updateNoteColors(colorKey);
+            // Update registry
+            var reg = window.noteRegistry.get('note-0');
+            if (reg) reg.color = colorKey;
 
             // Clear drawing when color changes (drawing is tied to note color)
             if (drawingCtx) {
@@ -1135,6 +1164,16 @@
 
         initNoteDrawingLayer();
 
+        // Register original note as note-0
+        noteWrapper.dataset.noteId = 'note-0';
+        window.noteRegistry.set('note-0', {
+          wrapper: noteWrapper,
+          color: currentColor,
+          getText: function() { return textarea.value; },
+          getDrawing: function() { return noteDrawingLayer.toDataURL('image/png'); }
+        });
+        window.lastActiveNoteId = 'note-0';
+
         // Close any active drawing mode (used when switching notes)
         window.closeActiveDrawingMode = function() {
           if (activeDrawingNote) {
@@ -1161,6 +1200,7 @@
         drawBtn.addEventListener('click', () => {
           dropdown.classList.remove('open');
           menuBtn.classList.remove('active');
+          setActiveNote('note-0');
 
           // Close any other note's drawing mode
           if (activeDrawingNote && activeDrawingNote !== noteWrapper) {
@@ -1272,6 +1312,7 @@
           const targetWrapper = activeDrawingNote || noteWrapper;
           const isOriginalNote = (targetWrapper === noteWrapper);
 
+          deactivateNote();
           isDrawingMode = false;
           isDrawing = false;
           savedImageData = null;
@@ -1374,11 +1415,11 @@
 
         appleWalletBtn.addEventListener('click', async (e) => {
           e.preventDefault();
-          // Get note content
-          const text = document.getElementById('memo').value;
-          
-          // Get drawing data - always send canvas (backend handles empty gracefully)
-          const drawingDataUrl = noteDrawingLayer.toDataURL('image/png');
+          // Get note content from active/last active note via registry
+          const targetNote = window.getTargetNote();
+          const text = targetNote ? targetNote.getText() : document.getElementById('memo').value;
+          const drawingDataUrl = targetNote ? targetNote.getDrawing() : noteDrawingLayer.toDataURL('image/png');
+          const noteColor = targetNote ? targetNote.color : currentColor;
 
           const BACKEND_URL = 'https://sandbox-staging.up.railway.app';
 
@@ -1399,7 +1440,7 @@
               const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, color: currentColor, drawingDataUrl })
+                body: JSON.stringify({ text, color: noteColor, drawingDataUrl })
               });
               const { token } = await prepRes.json();
               const passUrl = `${BACKEND_URL}/api/download-pass/${token}`;
@@ -1440,7 +1481,7 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 text: text,
-                color: currentColor,
+                color: noteColor,
                 drawingDataUrl: drawingDataUrl
               })
             });
@@ -1516,6 +1557,8 @@
             origY = offsetY;
             el.classList.remove('can-grab');
             el.classList.add('is-grabbing');
+            // Track active note
+            if (el.dataset.noteId) setActiveNote(el.dataset.noteId);
             el.style.transition = 'none';
             // Lower all other notes, raise this one highest
             document.querySelectorAll('.note-wrapper').forEach(n => {
@@ -1552,6 +1595,7 @@
             isDragging = false;
             el.classList.remove('is-grabbing');
             el.classList.add('can-grab');
+            deactivateNote();
             el.style.transition = '';
             // Stick back to wall - remove flat, go back to curled
             el.classList.remove('flat');
@@ -1783,6 +1827,10 @@
               const stops = svgNode.querySelectorAll('stop');
               theme.gradient.forEach((c, i) => { if (stops[i]) stops[i].setAttribute('stop-color', c); });
               spawnColorIcon.style.background = colorIconColors[ck];
+              // Update registry color
+              spawnColor = ck;
+              var reg = window.noteRegistry.get(spawnNoteId);
+              if (reg) reg.color = ck;
               // Clear drawing when color changes
               if (spawnDrawingCtx) {
                 spawnDrawingCtx.clearRect(0, 0, spawnCanvas.width, spawnCanvas.height);
@@ -1799,6 +1847,7 @@
           spawnDrawBtn.addEventListener('click', () => {
             spawnDropdown.classList.remove('open');
             spawnMenuBtn.classList.remove('active');
+            setActiveNote(spawnNoteId);
 
             // Close any other note's drawing mode
             if (activeDrawingNote && activeDrawingNote !== newWrapper) {
@@ -1847,6 +1896,25 @@
           newWrapper.appendChild(svgNode);
           newWrapper.appendChild(noteDiv);
 
+          // Assign note ID
+          const spawnNoteId = 'note-' + noteCounter;
+          newWrapper.dataset.noteId = spawnNoteId;
+
+          // Track color in closure for registry updates
+          let spawnColor = color;
+
+          // Register in noteRegistry
+          window.noteRegistry.set(spawnNoteId, {
+            wrapper: newWrapper,
+            color: spawnColor,
+            getText: function() { return ta.value; },
+            getDrawing: function() { return spawnCanvas.toDataURL('image/png'); }
+          });
+
+          // Track active note on spawned textarea focus/blur
+          ta.addEventListener('focus', function() { setActiveNote(spawnNoteId); });
+          ta.addEventListener('blur', function() { deactivateNote(); });
+
           wrapper.parentElement.insertBefore(newWrapper, addBtn);
           // Set random placeholder
           if (ta) ta.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
@@ -1863,7 +1931,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = 'test v11';
+      if (tv) tv.textContent = 'test v12';
 
       // Add changelog link to footer
       const footerArea = document.querySelector('.build-hover-area');

@@ -1006,12 +1006,12 @@ body {
   right: 0;
   text-align: center;
   font-size: 11px;
-  color: rgba(0,0,0,0.4);
+  color: rgba(0,0,0,0.5);
 }
 
 .build-hover-area .copyright {
   font-size: 11px;
-  color: rgba(0,0,0,0.4);
+  color: rgba(0,0,0,0.5);
 }
 
 @media (max-width: 600px) {

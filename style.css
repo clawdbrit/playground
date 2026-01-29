@@ -240,7 +240,7 @@ body {
     transform: scale(var(--mobile-note-scale, 1.1));
   }
   .note-wrapper.flat {
-    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-82px);
+    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-100px);
   }
 }
 
@@ -312,7 +312,8 @@ body {
 }
 
 .note:hover .note-menu-btn,
-.note-menu-btn.active {
+.note-menu-btn.active,
+.note-wrapper.flat .note-menu-btn {
   opacity: 1;
 }
 
@@ -700,6 +701,8 @@ body {
   align-items: center;
   transition: opacity .3s ease;
   height: 54px;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
 .wallet-message {
@@ -784,7 +787,7 @@ body {
   /* Scale up bigger on mobile when clicked/focused - almost edge to edge */
   .note-wrapper.flat,
   .note-wrapper.flat:hover {
-    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-82px);
+    transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-100px);
   }
 
   .note-paper {
@@ -873,7 +876,7 @@ body {
 /* QR Code inside wallet button — DESKTOP ONLY */
 @media (min-width: 601px) {
   .wallet-btn-link#apple-wallet-btn {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: stretch;
     overflow: hidden;
@@ -883,10 +886,7 @@ body {
     max-height: 44px;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 20;
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    vertical-align: top;
   }
   .wallet-btn-link#apple-wallet-btn.qr-open {
     max-height: 300px;

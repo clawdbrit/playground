@@ -657,10 +657,10 @@
         function updateMobileLayout() {
           if (window.innerWidth > 600) return; // Desktop doesn't need this
           const noteWidth = noteWrapper.offsetWidth || 320;
-          const baseScale = (window.innerWidth - 32) / noteWidth;
+          const baseScale = (window.innerWidth - 16) / noteWidth;
           document.documentElement.style.setProperty('--mobile-note-scale', baseScale.toFixed(3));
-          // Focused state is slightly bigger than base
-          document.documentElement.style.setProperty('--mobile-note-focus-scale', (baseScale * 1.05).toFixed(3));
+          // Focused state is bigger than base
+          document.documentElement.style.setProperty('--mobile-note-focus-scale', (baseScale * 1.08).toFixed(3));
         }
         updateMobileLayout();
         window.addEventListener('resize', updateMobileLayout);
@@ -708,7 +708,7 @@
             const isMobileView = window.innerWidth <= 600;
             const mobileScale = getComputedStyle(document.documentElement).getPropertyValue('--mobile-note-focus-scale') || '1.15';
             if (isMobileView) {
-              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(-82px)';
+              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(-100px)';
             } else {
               noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(1.1)';
             }
@@ -1312,6 +1312,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 169</span></div>
+    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 170</span></div>
   </body>
 </html>

@@ -872,6 +872,7 @@ body {
     overflow: visible;
   }
   .wallet-btn-link#apple-wallet-btn {
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     overflow: hidden;
@@ -882,7 +883,6 @@ body {
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 20;
-    margin: 0 auto;
   }
   .wallet-btn-link#apple-wallet-btn.qr-open {
     max-height: 300px;

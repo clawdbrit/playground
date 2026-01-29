@@ -541,7 +541,7 @@
         }
 
         // Initialize lift/stick animations on any note wrapper
-        function initNoteAnimations(wrapper, colorKey, noteId, stopElements) {
+        window.initNoteAnimations = function(wrapper, colorKey, noteId, stopElements) {
           const shape = wrapper.querySelector('.note-paper path');
           // Use passed-in stops or query from wrapper
           const stops = stopElements || wrapper.querySelectorAll('svg stop') || [];
@@ -605,7 +605,7 @@
               wrapper.classList.remove('flat');
             }
           });
-        }
+        };
 
         // Get textarea element
         const textarea = document.getElementById('memo');
@@ -1207,6 +1207,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 131</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 132</span></div>
   </body>
 </html>

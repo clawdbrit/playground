@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-svg@1.1.0/lib/qrcode.min.js"></script>
+    <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
     <link rel="stylesheet" href="./style.css" />
           <!-- GoatCounter analytics -->
     <script data-goatcounter="https://walletmemo.goatcounter.com/count"
@@ -1004,20 +1004,18 @@
             const passUrl = `${BACKEND_URL}/api/pass-redirect?${params.toString()}`;
             
             try {
-              const QR = window.QRCode || QRCode;
-              console.log('QRCode available:', typeof QR, 'passUrl length:', passUrl.length);
-              const qr = new QR({
-                content: passUrl,
-                width: 140,
-                height: 140,
-                padding: 2,
-                color: '#000000',
-                background: '#ffffff',
-                ecl: 'M'
-              });
-              const svgStr = qr.svg();
-              console.log('QR SVG generated, length:', svgStr.length);
-              walletQr.innerHTML = svgStr;
+              const qr = qrcode(0, 'M');
+              qr.addData(passUrl);
+              qr.make();
+              // Create image from data URL
+              const img = document.createElement('img');
+              img.src = qr.createDataURL(4, 8);
+              img.style.width = '100%';
+              img.style.height = 'auto';
+              img.style.borderRadius = '6px';
+              img.style.display = 'block';
+              walletQr.innerHTML = '';
+              walletQr.appendChild(img);
               appleWalletBtn.classList.add('qr-open');
               qrVisible = true;
             } catch (err) {
@@ -1305,6 +1303,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 150</span></div>
+    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 151</span></div>
   </body>
 </html>

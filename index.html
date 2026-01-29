@@ -60,12 +60,12 @@
               <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
               <feOffset/>
               <feGaussianBlur stdDeviation="5.14583"/>
-              <feColorMatrix id="shadowColor1" type="matrix" values="0 0 0 0 0.101961 0 0 0 0 0.55098 0 0 0 0 1 0 0 0 0.1 0"/>
+              <feColorMatrix id="shadowColor1" type="matrix" values="0 0 0 0 0.101961 0 0 0 0 0.55098 0 0 0 0 1 0 0 0 0 0"/>
               <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
               <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
               <feOffset dy="10"/>
               <feGaussianBlur stdDeviation="14.3"/>
-              <feColorMatrix id="shadowColor2" type="matrix" values="0 0 0 0 0 0 0 0 0 0.334596 0 0 0 0 0.608357 0 0 0 0.09 0"/>
+              <feColorMatrix id="shadowColor2" type="matrix" values="0 0 0 0 0 0 0 0 0 0.334596 0 0 0 0 0.608357 0 0 0 0 0"/>
               <feBlend mode="normal" in2="effect1_dropShadow" result="effect2_dropShadow"/>
               <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
               <feOffset dy="0.2"/>
@@ -197,7 +197,7 @@
       </div>
     </main>
     
-    <div class="build-hover-area"><span class="build-number">Build 112</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 113</span></div>
     </div>
 
     <script>
@@ -889,7 +889,7 @@
         // Create the "add new note" button that sits behind the note
         const addBtn = document.createElement('div');
         addBtn.className = 'add-note-btn';
-        addBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+        addBtn.innerHTML = '<i class="hgi-stroke hgi-add-01"></i>';
         addBtn.style.display = 'none';
         wrapper.parentElement.insertBefore(addBtn, wrapper);
 
@@ -995,8 +995,8 @@
           newWrapper.style.position = 'absolute';
           newWrapper.style.top = wrapper.offsetTop + 'px';
           newWrapper.style.left = wrapper.offsetLeft + 'px';
-          newWrapper.style.width = '344px';
-          newWrapper.style.height = '324px';
+          newWrapper.style.width = '360px';
+          newWrapper.style.height = '340px';
           newWrapper.style.zIndex = String(10 + noteCounter);
 
           newWrapper.innerHTML = `
@@ -1017,7 +1017,7 @@
                 </filter>
               </defs>
             </svg>
-            <div class="note" style="width:344px;height:324px;padding:48px 57px;position:absolute;top:0;left:0;z-index:2;">
+            <div class="note" style="width:360px;height:340px;padding:48px 57px;position:absolute;top:0;left:0;z-index:2;display:flex;flex-direction:column;justify-content:center;">
               <textarea class="textarea" maxlength="140" style="font-family:'Patrick Hand',cursive;font-size:20px;line-height:1.5;color:#1a1a1a;border:none;background:transparent;resize:none;outline:none;text-align:center;width:100%;height:100%;transform:skewX(-3deg) skewY(1deg);"></textarea>
             </div>`;
 

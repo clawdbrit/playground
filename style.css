@@ -213,11 +213,12 @@ body {
 
 .note-wrapper {
   position: relative;
-  width: 344px;
-  height: 324px;
+  width: 360px;
+  height: 340px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   z-index: 10;
+  margin-top: 8px;
 }
 
 @media (hover: hover) {
@@ -266,8 +267,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 344px;
-  height: 324px;
+  width: 360px;
+  height: 340px;
   z-index: 1;
   pointer-events: none;
 }
@@ -278,8 +279,8 @@ body {
   flex-direction: column;
   justify-content: center;
   background: transparent;
-  width: 344px;
-  height: 324px;
+  width: 360px;
+  height: 340px;
   padding: 48px 57px;
   border-radius: 0;
   box-shadow: none;
@@ -693,7 +694,7 @@ body {
 
 .contact-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
+  filter: brightness(0.9);
 }
 
 .contact-btn:active {
@@ -886,33 +887,31 @@ body {
 
 /* Hidden build number - shows on hover over bottom-left corner */
 .add-note-btn {
-  width: 344px;
-  height: 324px;
-  border: 3px dashed rgba(0,0,0,0.12);
-  border-radius: 8px;
+  width: 200px;
+  height: 200px;
+  border: none;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
   position: absolute;
-  background: rgba(0,0,0,0.02);
-}
-
-.add-note-btn:hover {
-  border-color: rgba(0,0,0,0.25);
   background: rgba(0,0,0,0.04);
 }
 
-.add-note-btn svg {
-  width: 48px;
-  height: 48px;
-  stroke: rgba(0,0,0,0.2);
-  transition: stroke 0.3s ease;
+.add-note-btn:hover {
+  background: rgba(0,0,0,0.07);
 }
 
-.add-note-btn:hover svg {
-  stroke: rgba(0,0,0,0.4);
+.add-note-btn i {
+  font-size: 36px;
+  color: rgba(0,0,0,0.2);
+  transition: color 0.3s ease;
+}
+
+.add-note-btn:hover i {
+  color: rgba(0,0,0,0.4);
 }
 
 .dragged-note {
@@ -921,14 +920,15 @@ body {
 }
 
 .build-hover-area {
-  width: 344px;
-  margin: 4px auto 0;
-  text-align: right;
-  padding-right: 8px;
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
 .build-number {
   font-size: 11px;
-  color: rgba(0,0,0,0.3);
+  color: rgba(0,0,0,0.5);
   user-select: none;
 }

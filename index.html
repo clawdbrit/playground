@@ -197,7 +197,7 @@
       </div>
     </main>
     
-    <div class="build-hover-area"><span class="build-number">Build 105</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 106</span></div>
     </div>
 
     <script>
@@ -873,6 +873,71 @@
             appleWalletBtn.style.opacity = '1';
             appleWalletBtn.style.pointerEvents = 'auto';
           }
+        });
+      })();
+
+      // Desktop drag-to-move sticky note
+      (function() {
+        if ('ontouchstart' in window) return; // Skip on mobile
+
+        const wrapper = document.getElementById('note-wrapper');
+        const note = document.getElementById('sticky-note');
+        const menuBtn = document.getElementById('menu-btn');
+        const dragZoneHeight = 48; // Top area of the note acts as drag handle
+        let isDragging = false;
+        let startX, startY, origX, origY;
+        let offsetX = 0, offsetY = 0;
+
+        // Show grab cursor in the top drag zone
+        wrapper.addEventListener('mousemove', (e) => {
+          if (isDragging) return;
+          const rect = wrapper.getBoundingClientRect();
+          const relY = e.clientY - rect.top;
+          const relX = e.clientX - rect.left;
+          // Check if in top zone and not over menu button
+          if (relY < dragZoneHeight && !e.target.closest('.note-menu-btn') && !e.target.closest('.note-dropdown')) {
+            wrapper.style.cursor = 'grab';
+          } else {
+            wrapper.style.cursor = '';
+          }
+        });
+
+        wrapper.addEventListener('mousedown', (e) => {
+          const rect = wrapper.getBoundingClientRect();
+          const relY = e.clientY - rect.top;
+          if (relY >= dragZoneHeight) return;
+          if (e.target.closest('.note-menu-btn') || e.target.closest('.note-dropdown')) return;
+
+          e.preventDefault();
+          isDragging = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          origX = offsetX;
+          origY = offsetY;
+          wrapper.style.cursor = 'grabbing';
+          wrapper.style.transition = 'none';
+          wrapper.style.zIndex = '100';
+          // Lift effect
+          wrapper.style.filter = 'drop-shadow(0 8px 24px rgba(0,0,0,0.2))';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          offsetX = origX + dx;
+          offsetY = origY + dy;
+          wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        });
+
+        document.addEventListener('mouseup', () => {
+          if (!isDragging) return;
+          isDragging = false;
+          wrapper.style.cursor = 'grab';
+          wrapper.style.transition = '';
+          wrapper.style.filter = '';
+          // Keep the position
+          wrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
         });
       })();
     </script>

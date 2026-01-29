@@ -27,7 +27,7 @@
   </head>
   <body>
     <style>
-      html { background: linear-gradient(to bottom, #fafafa, #e5e5e5); min-height: 100vh; }
+      html { background: linear-gradient(to bottom, #fafafa, #e5e5e5); background-attachment: fixed; min-height: 100vh; }
       html, body { overflow-x: hidden; }
       html.page-slide-out-left .page-content { animation: slideOutLeft 0.35s ease-in forwards; }
       html.page-slide-in-left .page-content { animation: slideInFromLeft 0.4s ease-out forwards; }
@@ -1962,7 +1962,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v27';
+      if (tv) tv.textContent = ' · test v28';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

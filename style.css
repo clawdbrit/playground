@@ -883,7 +883,7 @@ body {
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    border-radius: 5px;
+    border-radius: 7px;
     background: #000;
     box-shadow: 0 0 0 1px rgba(0,0,0,1);
     max-height: 42px;
@@ -900,6 +900,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 0;
+    margin-bottom: -2px;
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
     box-sizing: border-box;

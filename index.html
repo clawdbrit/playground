@@ -1439,7 +1439,14 @@
             origY = offsetY;
             el.style.cursor = 'grabbing';
             el.style.transition = 'none';
-            el.style.zIndex = String(50 + noteCounter);
+            // Lower all other notes, raise this one highest
+            document.querySelectorAll('.note-wrapper').forEach(n => {
+              if (n !== el) {
+                n.style.zIndex = '1';
+                n.style.transition = 'transform 0.3s ease';
+              }
+            });
+            el.style.zIndex = '100';
             // Lift off the wall - go flat
             el.classList.add('flat');
             el.dispatchEvent(new Event('note:lift'));

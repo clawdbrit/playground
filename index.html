@@ -701,8 +701,14 @@
             noteWrapper.classList.add('flat');
             noteWrapper.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
             const current = noteWrapper.style.transform || '';
-            const base = current.replace(/scale\([^)]*\)/g, '').trim();
-            noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(1.1)';
+            const base = current.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
+            const isMobileView = window.innerWidth <= 600;
+            const mobileScale = getComputedStyle(document.documentElement).getPropertyValue('--mobile-note-scale') || '1.1';
+            if (isMobileView) {
+              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(-78px)';
+            } else {
+              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(1.1)';
+            }
             focusOverlay.classList.add('active');
             langPicker2.classList.add('hidden');
           }
@@ -1303,6 +1309,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 164</span></div>
+    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 165</span></div>
   </body>
 </html>

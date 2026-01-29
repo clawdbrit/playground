@@ -192,7 +192,7 @@
           </a>
         </div>
         <div class="wallet-message" id="wallet-message">Coming soon!</div>
-        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 189</span></div>
+        <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 190</span></div>
       </div>
     </main>
     
@@ -941,6 +941,13 @@
             langPicker2.classList.remove('hidden');
           }
           textarea.blur();
+          // Force Safari to re-render the SVG filter/shadow (fixes rectangular artifact)
+          const svgEl = noteWrapper.querySelector('.note-paper');
+          if (svgEl) {
+            svgEl.style.display = 'none';
+            svgEl.offsetHeight; // force reflow
+            svgEl.style.display = '';
+          }
         }
 
         // Pen color picker

@@ -6,7 +6,8 @@
     <title>Changelog — Wallet Memo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&family=Cormorant+Garamond:wght@300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Cormorant+Garamond:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="lang-picker.css">
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -42,16 +43,6 @@
         letter-spacing: 0.08em;
         margin-bottom: 40px;
       }
-      .date-group { margin-bottom: 32px; }
-      .date-group h2 {
-        font-family: 'Inter', sans-serif;
-        font-weight: 400;
-        font-size: 15px;
-        color: #333;
-        margin-bottom: 12px;
-        padding-bottom: 6px;
-        border-bottom: 1px solid #e0e0e0;
-      }
       .version-tag {
         display: inline-block;
         font-size: 11px;
@@ -62,6 +53,16 @@
         padding: 1px 6px;
         margin-left: 8px;
         vertical-align: middle;
+      }
+      .date-group { margin-bottom: 32px; }
+      .date-group h2 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 400;
+        font-size: 15px;
+        color: #333;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #e0e0e0;
       }
       .date-group ul { list-style: none; }
       .date-group li {
@@ -84,31 +85,112 @@
     </style>
   </head>
   <body>
-    <a href="./" class="back-link">Wallet Memo</a>
-    <h1>Changelog</h1>
-    <p class="subtitle">What's new in Wallet Memo</p>
+    <a href="./" class="back-link" id="back-link">Wallet Memo</a>
+    <h1 id="page-title">Changelog</h1>
+    <p class="subtitle" id="page-subtitle">What's new in Wallet Memo</p>
 
-    <div class="date-group">
-      <h2>January 29, 2026 <span class="version-tag">v1.1</span></h2>
-      <ul>
-        <li><span class="cl-tag cl-new">✨ New</span> Draw on any sticky note — full pen, colors, sizes, undo</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Multiple sticky notes with drag-to-move</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Menu button on every note (color change + draw)</li>
-        <li><span class="cl-tag cl-new">✨ New</span> QR code scanning now includes your drawing</li>
-        <li><span class="cl-tag cl-design">🎨 Design</span> New title font (Cormorant Garamond) + refined tagline</li>
-        <li><span class="cl-tag cl-design">🎨 Design</span> Improved Apple Wallet pass colors and styling</li>
-      </ul>
-    </div>
+    <div id="changelog-entries"></div>
 
-    <div class="date-group">
-      <h2>January 28, 2026 <span class="version-tag">v1.0</span></h2>
-      <ul>
-        <li><span class="cl-tag cl-new">✨ New</span> Wallet Memo launches — sticky notes for Apple Wallet</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Drawing mode with pen colors and sizes</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Color themes: blue, yellow, pink</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Apple Wallet pass generation</li>
-        <li><span class="cl-tag cl-new">✨ New</span> Multi-language support (EN, ES, FR, DE, JP, KR, ZH)</li>
-      </ul>
-    </div>
+    <script src="lang-picker.js"></script>
+    <script>
+    // ==========================================
+    // i18n - Static UI translations
+    // ==========================================
+    const uiStrings = {
+      en: { back: "Wallet Memo", title: "Changelog", subtitle: "What's new in Wallet Memo" },
+      es: { back: "Nota de Cartera", title: "Registro de cambios", subtitle: "Novedades en Wallet Memo" },
+      fr: { back: "Mémo Portefeuille", title: "Journal des modifications", subtitle: "Nouveautés de Wallet Memo" },
+      de: { back: "Wallet-Notiz", title: "Änderungsprotokoll", subtitle: "Neues in Wallet Memo" },
+      ja: { back: "ウォレットメモ", title: "変更履歴", subtitle: "Wallet Memoの新機能" },
+      zh: { back: "钱包备忘录", title: "更新日志", subtitle: "Wallet Memo的新功能" },
+      ko: { back: "지갑 메모", title: "변경 이력", subtitle: "Wallet Memo의 새로운 기능" },
+      pt: { back: "Memo Carteira", title: "Registro de alterações", subtitle: "Novidades no Wallet Memo" },
+    };
+
+    // ==========================================
+    // Tag labels per language
+    // ==========================================
+    const tagLabels = {
+      new:     { en: "✨ New", es: "✨ Nuevo", fr: "✨ Nouveau", de: "✨ Neu", ja: "✨ 新機能", zh: "✨ 新增", ko: "✨ 새 기능", pt: "✨ Novo" },
+      fix:     { en: "🔧 Fix", es: "🔧 Corrección", fr: "🔧 Correction", de: "🔧 Fix", ja: "🔧 修正", zh: "🔧 修复", ko: "🔧 수정", pt: "🔧 Correção" },
+      design:  { en: "🎨 Design", es: "🎨 Diseño", fr: "🎨 Design", de: "🎨 Design", ja: "🎨 デザイン", zh: "🎨 设计", ko: "🎨 디자인", pt: "🎨 Design" },
+      improve: { en: "⚡ Improve", es: "⚡ Mejora", fr: "⚡ Amélioration", de: "⚡ Verbesserung", ja: "⚡ 改善", zh: "⚡ 改进", ko: "⚡ 개선", pt: "⚡ Melhoria" },
+    };
+
+    // ==========================================
+    // Changelog Entries Data
+    // ==========================================
+    const entries = [
+      {
+        date: { en: "January 29, 2026", es: "29 de enero de 2026", fr: "29 janvier 2026", de: "29. Januar 2026", ja: "2026年1月29日", zh: "2026年1月29日", ko: "2026년 1월 29일", pt: "29 de janeiro de 2026" },
+        version: "v1.1",
+        items: [
+          { tag: "new", text: { en: "Draw on any sticky note — full pen, colors, sizes, undo", es: "Dibuja en cualquier nota adhesiva — pluma, colores, tamaños, deshacer", fr: "Dessinez sur n'importe quelle note — stylo, couleurs, tailles, annuler", de: "Auf jeder Notiz zeichnen — Stift, Farben, Größen, Rückgängig", ja: "付箋にお絵描き — ペン、色、サイズ、元に戻す", zh: "在任何便签上绘图 — 画笔、颜色、大小、撤销", ko: "스티커 노트에 그리기 — 펜, 색상, 크기, 실행 취소", pt: "Desenhe em qualquer nota — caneta, cores, tamanhos, desfazer" } },
+          { tag: "new", text: { en: "Multiple sticky notes with drag-to-move", es: "Múltiples notas adhesivas con arrastrar para mover", fr: "Notes multiples avec glisser-déplacer", de: "Mehrere Notizen mit Drag-to-Move", ja: "ドラッグ移動対応の複数付箋", zh: "支持拖动移动的多个便签", ko: "드래그하여 이동하는 여러 스티커 노트", pt: "Múltiplas notas com arrastar para mover" } },
+          { tag: "new", text: { en: "Menu button on every note (color change + draw)", es: "Botón de menú en cada nota (cambio de color + dibujar)", fr: "Bouton menu sur chaque note (couleur + dessin)", de: "Menü-Button auf jeder Notiz (Farbe + Zeichnen)", ja: "各ノートのメニューボタン（色変更+描画）", zh: "每个笔记上的菜单按钮（颜色更改+绘图）", ko: "모든 노트의 메뉴 버튼 (색상 변경 + 그리기)", pt: "Botão de menu em cada nota (cor + desenho)" } },
+          { tag: "new", text: { en: "QR code scanning now includes your drawing", es: "El escaneo de código QR ahora incluye tu dibujo", fr: "Le scan QR inclut maintenant votre dessin", de: "QR-Code-Scan enthält jetzt Ihre Zeichnung", ja: "QRコードスキャンに描画が含まれるように", zh: "QR码扫描现在包含您的绘图", ko: "QR 코드 스캔에 이제 그림이 포함됨", pt: "Escaneamento QR agora inclui seu desenho" } },
+          { tag: "design", text: { en: "New title font (Cormorant Garamond) + refined tagline", es: "Nueva fuente de título (Cormorant Garamond) + eslogan refinado", fr: "Nouvelle police titre (Cormorant Garamond) + slogan raffiné", de: "Neue Titelschrift (Cormorant Garamond) + verfeinerte Tagline", ja: "新タイトルフォント（Cormorant Garamond）+ 洗練されたタグライン", zh: "新标题字体（Cormorant Garamond）+ 精炼标语", ko: "새 제목 글꼴 (Cormorant Garamond) + 세련된 태그라인", pt: "Nova fonte de título (Cormorant Garamond) + tagline refinada" } },
+          { tag: "design", text: { en: "Improved Apple Wallet pass colors and styling", es: "Colores y estilo mejorados del pase Apple Wallet", fr: "Couleurs et style améliorés du pass Apple Wallet", de: "Verbesserte Apple Wallet Pass-Farben und -Styling", ja: "Apple Walletパスの色とスタイルを改善", zh: "改进的Apple Wallet通行证颜色和样式", ko: "Apple Wallet 패스 색상 및 스타일 개선", pt: "Cores e estilo melhorados do passe Apple Wallet" } },
+        ]
+      },
+      {
+        date: { en: "January 28, 2026", es: "28 de enero de 2026", fr: "28 janvier 2026", de: "28. Januar 2026", ja: "2026年1月28日", zh: "2026年1月28日", ko: "2026년 1월 28일", pt: "28 de janeiro de 2026" },
+        version: "v1.0",
+        items: [
+          { tag: "new", text: { en: "Wallet Memo launches — sticky notes for Apple Wallet", es: "Wallet Memo se lanza — notas adhesivas para Apple Wallet", fr: "Wallet Memo est lancé — notes pour Apple Wallet", de: "Wallet Memo startet — Notizen für Apple Wallet", ja: "Wallet Memoリリース — Apple Walletの付箋メモ", zh: "Wallet Memo发布 — Apple Wallet的便签", ko: "Wallet Memo 출시 — Apple Wallet용 스티커 노트", pt: "Wallet Memo lançado — notas para Apple Wallet" } },
+          { tag: "new", text: { en: "Drawing mode with pen colors and sizes", es: "Modo de dibujo con colores y tamaños de pluma", fr: "Mode dessin avec couleurs et tailles de stylo", de: "Zeichenmodus mit Stiftfarben und -größen", ja: "ペンの色とサイズ付き描画モード", zh: "绘图模式支持画笔颜色和大小", ko: "펜 색상과 크기가 있는 그리기 모드", pt: "Modo de desenho com cores e tamanhos de caneta" } },
+          { tag: "new", text: { en: "Color themes: blue, yellow, pink", es: "Temas de color: azul, amarillo, rosa", fr: "Thèmes de couleur : bleu, jaune, rose", de: "Farbthemen: Blau, Gelb, Rosa", ja: "カラーテーマ：青、黄、ピンク", zh: "颜色主题：蓝色、黄色、粉色", ko: "색상 테마: 파란색, 노란색, 분홍색", pt: "Temas de cor: azul, amarelo, rosa" } },
+          { tag: "new", text: { en: "Apple Wallet pass generation", es: "Generación de pase de Apple Wallet", fr: "Génération de pass Apple Wallet", de: "Apple Wallet Pass-Generierung", ja: "Apple Walletパスの生成", zh: "Apple Wallet通行证生成", ko: "Apple Wallet 패스 생성", pt: "Geração de passe Apple Wallet" } },
+          { tag: "new", text: { en: "Multi-language support (EN, ES, FR, DE, JP, KR, ZH)", es: "Soporte multilingüe (EN, ES, FR, DE, JP, KR, ZH)", fr: "Support multilingue (EN, ES, FR, DE, JP, KR, ZH)", de: "Mehrsprachige Unterstützung (EN, ES, FR, DE, JP, KR, ZH)", ja: "多言語対応（EN, ES, FR, DE, JP, KR, ZH）", zh: "多语言支持（EN, ES, FR, DE, JP, KR, ZH）", ko: "다국어 지원 (EN, ES, FR, DE, JP, KR, ZH)", pt: "Suporte multilíngue (EN, ES, FR, DE, JP, KR, ZH)" } },
+        ]
+      },
+    ];
+
+    // ==========================================
+    // Render
+    // ==========================================
+    function renderChangelog(lang) {
+      const ui = uiStrings[lang] || uiStrings.en;
+      document.getElementById('back-link').textContent = ui.back;
+      document.getElementById('page-title').textContent = ui.title;
+      document.getElementById('page-subtitle').textContent = ui.subtitle;
+      document.title = ui.title + ' — ' + ui.back;
+
+      const container = document.getElementById('changelog-entries');
+      container.innerHTML = '';
+
+      entries.forEach(entry => {
+        const group = document.createElement('div');
+        group.className = 'date-group';
+
+        const h2 = document.createElement('h2');
+        h2.innerHTML = (entry.date[lang] || entry.date.en) + ' <span class="version-tag">' + entry.version + '</span>';
+        group.appendChild(h2);
+
+        const ul = document.createElement('ul');
+        entry.items.forEach(item => {
+          const li = document.createElement('li');
+          const tagLabel = tagLabels[item.tag] || tagLabels.new;
+          const cssClass = 'cl-' + item.tag;
+          li.innerHTML = '<span class="cl-tag ' + cssClass + '">' + (tagLabel[lang] || tagLabel.en) + '</span> ' + (item.text[lang] || item.text.en);
+          ul.appendChild(li);
+        });
+        group.appendChild(ul);
+
+        container.appendChild(group);
+      });
+    }
+
+    // ==========================================
+    // Language Picker (shared component)
+    // ==========================================
+    const langPicker = createLangPicker(document.body, {
+      onLanguageChange: (lang) => {
+        renderChangelog(lang);
+      }
+    });
+    const currentLang = langPicker.getCurrentLang();
+    renderChangelog(currentLang);
+    </script>
   </body>
 </html>

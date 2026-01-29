@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Cormorant+Garamond:wght@300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="lang-picker.css">
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       body {
@@ -95,96 +96,16 @@
         left: 2px;
         color: #999;
       }
-      /* Language picker */
-      .lang-picker {
-        position: fixed;
-        top: 16px;
-        right: 16px;
-        z-index: 100;
-        font-family: 'Inter', sans-serif;
-      }
-      .lang-btn {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        background: rgba(255,255,255,0.9);
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-size: 12px;
-        font-weight: 400;
-        color: #555;
-        cursor: pointer;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-      }
-      .lang-btn:hover { border-color: #bbb; color: #333; }
-      .lang-btn svg { width: 16px; height: 16px; }
-      .lang-btn .chevron { width: 12px; height: 12px; transition: transform 0.2s; }
-      .lang-picker.open .chevron { transform: rotate(180deg); }
-      .lang-dropdown {
-        display: none;
-        position: absolute;
-        top: calc(100% + 4px);
-        right: 0;
-        background: rgba(255,255,255,0.95);
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        padding: 4px;
-        min-width: 120px;
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      }
-      .lang-picker.open .lang-dropdown { display: block; }
-      .lang-option {
-        display: block;
-        width: 100%;
-        text-align: left;
-        border: none;
-        background: none;
-        padding: 6px 10px;
-        font-size: 13px;
-        color: #555;
-        cursor: pointer;
-        border-radius: 4px;
-        font-family: inherit;
-      }
-      .lang-option:hover { background: #f0f0f0; color: #1a1a1a; }
-      .lang-option.active { color: #1a1a1a; font-weight: 400; }
     </style>
   </head>
   <body>
-    <!-- Language picker -->
-    <div class="lang-picker" id="lang-picker">
-      <button class="lang-btn" id="lang-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-        </svg>
-        <span id="current-lang">EN</span>
-        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 9l6 6 6-6"/>
-        </svg>
-      </button>
-      <div class="lang-dropdown" id="lang-dropdown">
-        <button class="lang-option" data-lang="en">English</button>
-        <button class="lang-option" data-lang="es">Español</button>
-        <button class="lang-option" data-lang="fr">Français</button>
-        <button class="lang-option" data-lang="de">Deutsch</button>
-        <button class="lang-option" data-lang="ja">日本語</button>
-        <button class="lang-option" data-lang="zh">中文</button>
-        <button class="lang-option" data-lang="ko">한국어</button>
-        <button class="lang-option" data-lang="pt">Português</button>
-      </div>
-    </div>
-
     <a href="./" class="back-link" id="back-link">Wallet Memo</a>
     <h1 id="page-title">Changelog <span class="test-badge">TEST</span></h1>
     <p class="subtitle" id="page-subtitle">All changes — test builds</p>
 
     <div id="changelog-entries"></div>
 
+    <script src="lang-picker.js"></script>
     <script>
     // ==========================================
     // i18n - Static UI translations
@@ -203,11 +124,6 @@
     // ==========================================
     // Changelog Entries Data
     // ==========================================
-    // To add a new changelog entry:
-    // 1. Add English text
-    // 2. Run: RAM will auto-translate when pushing (or use the translate script)
-    // Translations are stored inline for simplicity
-
     const categoryMeta = {
       new:     { emoji: "✨", label: { en: "New", es: "Nuevo", fr: "Nouveau", de: "Neu", ja: "新機能", zh: "新增", ko: "새 기능", pt: "Novo" } },
       fix:     { emoji: "🔧", label: { en: "Fixes", es: "Correcciones", fr: "Corrections", de: "Fehlerbehebungen", ja: "修正", zh: "修复", ko: "수정", pt: "Correções" } },
@@ -342,13 +258,9 @@
     // ==========================================
     // Render & Language Switching
     // ==========================================
-    const langDisplayMap = {
-      en: 'EN', es: 'ES', fr: 'FR', de: 'DE', ja: 'JA', zh: 'ZH', ko: 'KO', pt: 'PT'
-    };
-    // Category render order
     const categoryOrder = ['new', 'fix', 'design', 'improve'];
 
-    function render(lang) {
+    function renderChangelog(lang) {
       const ui = uiStrings[lang] || uiStrings.en;
       document.getElementById('back-link').textContent = ui.back;
       document.getElementById('page-title').innerHTML = ui.title + ' <span class="test-badge">TEST</span>';
@@ -387,48 +299,28 @@
 
         container.appendChild(group);
       });
-
-      // Update picker display
-      document.getElementById('current-lang').textContent = langDisplayMap[lang] || 'EN';
-      document.querySelectorAll('.lang-option').forEach(opt => {
-        opt.classList.toggle('active', opt.dataset.lang === lang);
-      });
     }
 
     // ==========================================
-    // Language Picker
+    // Language Picker (shared component)
     // ==========================================
-    (function() {
-      const picker = document.getElementById('lang-picker');
-      const btn = document.getElementById('lang-btn');
-      const options = document.querySelectorAll('.lang-option');
-
-      // Get language from localStorage (shared with main page)
-      let currentLang = localStorage.getItem('walletmemo-lang');
-      if (!currentLang) {
-        const browserLang = (navigator.language || navigator.userLanguage).split('-')[0];
-        currentLang = langDisplayMap[browserLang] ? browserLang : 'en';
+    const langPicker = createLangPicker(document.body, {
+      languages: [
+        { code: 'en', label: 'English' },
+        { code: 'es', label: 'Español' },
+        { code: 'fr', label: 'Français' },
+        { code: 'de', label: 'Deutsch' },
+        { code: 'ja', label: '日本語' },
+        { code: 'zh', label: '中文' },
+        { code: 'ko', label: '한국어' },
+        { code: 'pt', label: 'Português' },
+      ],
+      onLanguageChange: (lang) => {
+        renderChangelog(lang);
       }
-
-      render(currentLang);
-
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        picker.classList.toggle('open');
-      });
-
-      document.addEventListener('click', () => picker.classList.remove('open'));
-
-      options.forEach(opt => {
-        opt.addEventListener('click', (e) => {
-          e.stopPropagation();
-          currentLang = opt.dataset.lang;
-          localStorage.setItem('walletmemo-lang', currentLang);
-          render(currentLang);
-          picker.classList.remove('open');
-        });
-      });
-    })();
+    });
+    const currentLang = langPicker.getCurrentLang();
+    renderChangelog(currentLang);
     </script>
   </body>
 </html>

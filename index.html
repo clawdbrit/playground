@@ -541,12 +541,10 @@
         }
 
         // Initialize lift/stick animations on any note wrapper
-        function initNoteAnimations(wrapper, colorKey, noteId) {
+        function initNoteAnimations(wrapper, colorKey, noteId, stopElements) {
           const shape = wrapper.querySelector('.note-paper path');
-          // Query stops by gradient ID for reliability (SVG namespace/casing)
-          const gradientId = `ng${noteId}`;
-          const gradEl = document.getElementById(gradientId);
-          const stops = gradEl ? gradEl.querySelectorAll('stop') : wrapper.querySelectorAll('stop');
+          // Use passed-in stops or query from wrapper
+          const stops = stopElements || wrapper.querySelectorAll('svg stop') || [];
           let noteIsFlat = false;
           let noteAnimId = null;
           let noteGradAnimId = null;
@@ -1186,7 +1184,9 @@
           const ta = newWrapper.querySelector('textarea');
           if (ta) ta.placeholder = placeholders[Math.floor(Math.random() * placeholders.length)];
           makeDraggable(newWrapper);
-          initNoteAnimations(newWrapper, color, noteCounter);
+          // Query stops AFTER insertion into DOM so SVG namespace is resolved
+          const noteStops = newWrapper.getElementsByTagName('stop');
+          initNoteAnimations(newWrapper, color, noteCounter, noteStops);
 
           // Hide add button until this new one is dragged
           hasMoved = false;
@@ -1194,6 +1194,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 127</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 128</span></div>
   </body>
 </html>

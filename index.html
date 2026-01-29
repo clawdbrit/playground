@@ -946,7 +946,7 @@
             // Lift off the wall - go flat
             el.classList.add('flat');
             el.dispatchEvent(new Event('note:lift'));
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03)`;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(3deg)`;
             // Show add button immediately on grab
             if (!hasMoved) {
               hasMoved = true;
@@ -960,7 +960,7 @@
             const dy = e.clientY - startY;
             offsetX = origX + dx;
             offsetY = origY + dy;
-            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03)`;
+            el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(3deg)`;
           });
 
           document.addEventListener('mouseup', () => {
@@ -1056,6 +1056,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><span class="build-number">Build 119</span></div>
+    <div class="build-hover-area"><span class="build-number">Build 120</span></div>
   </body>
 </html>

@@ -868,35 +868,60 @@ body {
   }
 }
 
-/* QR Code inside wallet button */
-.wallet-btn-link#apple-wallet-btn {
-  flex-direction: column;
-  align-items: stretch;
-  overflow: hidden;
-  border-radius: 12px;
-  background: #000;
-  box-shadow: 0 0 0 1px rgba(0,0,0,1);
-  max-height: 44px;
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  z-index: 20;
-  margin: 0 auto;
-}
-
-/* Desktop only: QR expands without shifting page */
+/* QR Code inside wallet button — DESKTOP ONLY */
 @media (min-width: 601px) {
   .wallet-buttons {
     height: 44px;
     overflow: visible;
   }
   .wallet-btn-link#apple-wallet-btn {
+    flex-direction: column;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #000;
+    box-shadow: 0 0 0 1px rgba(0,0,0,1);
+    max-height: 44px;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
+    z-index: 20;
+    margin: 0 auto;
+  }
+  .wallet-btn-link#apple-wallet-btn.qr-open {
+    max-height: 300px;
+    z-index: 30;
+  }
+  .wallet-qr {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px 4px 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease 0.1s;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .wallet-qr img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+  }
+  .wallet-btn-link#apple-wallet-btn.qr-open .wallet-qr {
+    opacity: 1;
+  }
+  .wallet-qr svg {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
   }
 }
 
-.wallet-btn-link#apple-wallet-btn.qr-open {
-  max-height: 300px;
-  z-index: 30;
+/* Mobile: hide QR, plain button */
+@media (max-width: 600px) {
+  .wallet-qr {
+    display: none !important;
+  }
 }
 
 .wallet-btn-link img {
@@ -904,34 +929,6 @@ body {
   width: auto;
   display: block;
   flex-shrink: 0;
-}
-
-.wallet-qr {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4px 4px 8px;
-  opacity: 0;
-  transition: opacity 0.3s ease 0.1s;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.wallet-qr img {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
-  display: block;
-}
-
-.wallet-btn-link#apple-wallet-btn.qr-open .wallet-qr {
-  opacity: 1;
-}
-
-.wallet-qr svg {
-  width: 100%;
-  height: auto;
-  border-radius: 6px;
 }
 
 /* Footer */

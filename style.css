@@ -883,10 +883,10 @@ body {
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    border-radius: 8px;
+    border-radius: 5px;
     background: #000;
     box-shadow: 0 0 0 1px rgba(0,0,0,1);
-    max-height: 44px;
+    max-height: 42px;
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 20;
     vertical-align: top;
@@ -899,7 +899,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2px 0 3px;
+    padding: 2px 0 2px;
     opacity: 0;
     transition: opacity 0.3s ease 0.1s;
     box-sizing: border-box;
@@ -1001,6 +1001,13 @@ body {
   left: 0;
   right: 0;
   text-align: center;
+}
+
+@media (max-width: 600px) {
+  .build-hover-area {
+    position: static;
+    margin-top: 8px;
+  }
 }
 
 .build-number {

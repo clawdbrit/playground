@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@300&family=Fraunces:wght@300&family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-    <link rel="stylesheet" href="./style.css?v=6" />
+    <link rel="stylesheet" href="./style.css?v=7" />
     <!-- Hreflang alternate links for SEO -->
     <link rel="alternate" hreflang="en" href="https://walletmemo.com/" />
     <link rel="alternate" hreflang="es" href="https://walletmemo.com/?lang=es" />
@@ -631,8 +631,8 @@
         const cancelBtn = document.getElementById('cancel-drawing');
         const doneBtn = document.getElementById('done-drawing');
 
-        // Color theme definitions
-        const colorThemes = {
+        // Color theme definitions (exposed for spawned notes)
+        window.colorThemes = {
           blue: {
             gradient: ['#9DD5EE', '#98C4DA', '#9BC8E7', '#ACD7E9', '#B8E3F3', '#C4E9F5'],
             shadow1: [0.101961, 0.55098, 1],      // Blue tint
@@ -664,7 +664,7 @@
         let currentColor = getRandomColor();
 
         // Color icon colors (mid-tone for each theme)
-        const colorIconColors = {
+        window.colorIconColors = {
           blue: '#B4DCE8',
           yellow: '#E2D060',
           pink: '#E4B8C0'
@@ -1109,6 +1109,12 @@
         let isDrawing = false;
         let savedImageData = null;
 
+        // Shared drawing state for multi-note support
+        window.activeDrawingNote = null;    // which wrapper is in drawing mode
+        window.activeDrawingCanvas = null;
+        window.activeDrawingCtx = null;
+        window.activeSavedImageData = null;
+
         // Initialize note drawing layer
         function initNoteDrawingLayer() {
           noteDrawingLayer.width = stickyNote.offsetWidth * 2;
@@ -1122,20 +1128,49 @@
         }
         
         // Pen settings
-        let currentPenColor = 'rgba(26, 26, 26, 0.9)';
-        let currentPenSize = 4;
+        window.currentPenColor = 'rgba(26, 26, 26, 0.9)';
+        window.currentPenSize = 4;
 
         initNoteDrawingLayer();
+
+        // Close any active drawing mode (used when switching notes)
+        window.closeActiveDrawingMode = function() {
+          if (activeDrawingNote) {
+            if (activeSavedImageData && activeDrawingCtx) {
+              activeDrawingCtx.putImageData(activeSavedImageData, 0, 0);
+            }
+            document.body.classList.remove('drawing-mode-active');
+            activeDrawingNote.classList.remove('drawing-mode');
+            activeDrawingNote.dispatchEvent(new Event('note:stick'));
+            activeDrawingNote = null;
+            activeDrawingCanvas = null;
+            activeDrawingCtx = null;
+            activeSavedImageData = null;
+          }
+          isDrawingMode = false;
+          isDrawing = false;
+        };
 
         // Open drawing mode
         drawBtn.addEventListener('click', () => {
           dropdown.classList.remove('open');
           menuBtn.classList.remove('active');
 
+          // Close any other note's drawing mode
+          if (activeDrawingNote && activeDrawingNote !== noteWrapper) {
+            closeActiveDrawingMode();
+          }
+
           isDrawingMode = true;
 
           // Save current drawing state for cancel
           savedImageData = drawingCtx.getImageData(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+
+          // Set shared active state
+          activeDrawingNote = noteWrapper;
+          activeDrawingCanvas = noteDrawingLayer;
+          activeDrawingCtx = drawingCtx;
+          activeSavedImageData = savedImageData;
 
           // Put note in flat state
           if (!isFlat) {
@@ -1147,8 +1182,7 @@
           }
 
           // Hide keyboard but keep note open
-          // Temporarily prevent blur from closing the note
-          isDrawingMode = true; // already set above, but ensures blur check works
+          isDrawingMode = true;
           textarea.blur();
           // Re-assert flat state since blur removes it
           isFlat = true;
@@ -1159,54 +1193,65 @@
           // Enable drawing mode
           document.body.classList.add('drawing-mode-active');
           noteWrapper.classList.add('drawing-mode');
+
+          // Sync pen settings
+          drawingCtx.strokeStyle = currentPenColor;
+          drawingCtx.lineWidth = currentPenSize;
         });
 
-        // Drawing on canvas
-        noteDrawingLayer.addEventListener('pointerdown', (e) => {
-          if (!isDrawingMode) return;
+        // Drawing on canvas - use event delegation via document for any active canvas
+        function handleDrawPointerDown(e) {
+          const canvas = e.target.closest('.note-drawing-layer');
+          if (!canvas || !isDrawingMode) return;
+          // Only draw on the active note's canvas
+          if (activeDrawingCanvas && canvas !== activeDrawingCanvas) return;
           isDrawing = true;
-          const rect = noteDrawingLayer.getBoundingClientRect();
-          const scaleX = noteDrawingLayer.width / rect.width / 2;
-          const scaleY = noteDrawingLayer.height / rect.height / 2;
+          const ctx = activeDrawingCtx || drawingCtx;
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / rect.width / 2;
+          const scaleY = canvas.height / rect.height / 2;
           const x = (e.clientX - rect.left) * scaleX;
           const y = (e.clientY - rect.top) * scaleY;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+        }
 
-          drawingCtx.beginPath();
-          drawingCtx.moveTo(x, y);
-        });
-
-        noteDrawingLayer.addEventListener('pointermove', (e) => {
+        function handleDrawPointerMove(e) {
           if (!isDrawingMode || !isDrawing) return;
-
-          const rect = noteDrawingLayer.getBoundingClientRect();
-          const scaleX = noteDrawingLayer.width / rect.width / 2;
-          const scaleY = noteDrawingLayer.height / rect.height / 2;
+          const canvas = activeDrawingCanvas || noteDrawingLayer;
+          const ctx = activeDrawingCtx || drawingCtx;
+          const rect = canvas.getBoundingClientRect();
+          const scaleX = canvas.width / rect.width / 2;
+          const scaleY = canvas.height / rect.height / 2;
           const x = (e.clientX - rect.left) * scaleX;
           const y = (e.clientY - rect.top) * scaleY;
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+        }
 
-          drawingCtx.lineTo(x, y);
-          drawingCtx.stroke();
-          drawingCtx.beginPath();
-          drawingCtx.moveTo(x, y);
-        });
-
-        noteDrawingLayer.addEventListener('pointerup', () => {
+        function handleDrawPointerUp() {
           isDrawing = false;
-        });
+        }
 
-        noteDrawingLayer.addEventListener('pointerleave', () => {
-          isDrawing = false;
-        });
+        document.addEventListener('pointerdown', handleDrawPointerDown);
+        document.addEventListener('pointermove', handleDrawPointerMove);
+        document.addEventListener('pointerup', handleDrawPointerUp);
 
         // Clear drawing
         clearBtn.addEventListener('click', () => {
-          drawingCtx.clearRect(0, 0, noteDrawingLayer.width, noteDrawingLayer.height);
+          const ctx = activeDrawingCtx || drawingCtx;
+          const canvas = activeDrawingCanvas || noteDrawingLayer;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
         });
 
         // Cancel drawing - restore previous state
         cancelBtn.addEventListener('click', () => {
-          if (savedImageData) {
-            drawingCtx.putImageData(savedImageData, 0, 0);
+          const ctx = activeDrawingCtx || drawingCtx;
+          const sd = activeSavedImageData || savedImageData;
+          if (sd) {
+            ctx.putImageData(sd, 0, 0);
           }
           closeDrawingMode();
         });
@@ -1217,38 +1262,55 @@
         });
 
         function closeDrawingMode() {
+          const targetWrapper = activeDrawingNote || noteWrapper;
+          const isOriginalNote = (targetWrapper === noteWrapper);
+
           isDrawingMode = false;
           isDrawing = false;
           savedImageData = null;
           document.body.classList.remove('drawing-mode-active');
-          noteWrapper.classList.remove('drawing-mode');
-          // Return to initial closed state
-          if (isFlat) {
-            isFlat = false;
-            animatePath(statePoints.flat, statePoints.curled);
-            animateGradient(false);
-            noteShadow.src = './assets/paper-stuff/shadow-layer.svg';
-            noteWrapper.classList.remove('flat');
-            const current = noteWrapper.style.transform || '';
-            noteWrapper.style.transform = current.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
-            focusOverlay.classList.remove('active');
-            langPicker2.classList.remove('hidden');
+          targetWrapper.classList.remove('drawing-mode');
+
+          if (isOriginalNote) {
+            // Original note: full close with animations
+            if (isFlat) {
+              isFlat = false;
+              animatePath(statePoints.flat, statePoints.curled);
+              animateGradient(false);
+              noteShadow.src = './assets/paper-stuff/shadow-layer.svg';
+              noteWrapper.classList.remove('flat');
+              const current = noteWrapper.style.transform || '';
+              noteWrapper.style.transform = current.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
+              focusOverlay.classList.remove('active');
+              langPicker2.classList.remove('hidden');
+            }
+            textarea.blur();
+          } else {
+            // Spawned note: dispatch stick event
+            targetWrapper.dispatchEvent(new Event('note:stick'));
+            targetWrapper.classList.remove('flat');
+            const ta = targetWrapper.querySelector('textarea');
+            if (ta) ta.blur();
           }
-          textarea.blur();
-          // Force Safari to re-render the SVG filter/shadow (fixes rectangular artifact)
+
+          // Clear active state
+          activeDrawingNote = null;
+          activeDrawingCanvas = null;
+          activeDrawingCtx = null;
+          activeSavedImageData = null;
+
+          // Force Safari to re-render the SVG filter/shadow
           requestAnimationFrame(() => {
-            const notePaperEl = noteWrapper.querySelector('.note-paper');
+            const notePaperEl = targetWrapper.querySelector('.note-paper');
             if (notePaperEl) {
-              // Toggle will-change to force compositing layer reset
               notePaperEl.style.willChange = 'transform';
               requestAnimationFrame(() => {
                 notePaperEl.style.willChange = '';
               });
             }
-            // Also force the note-wrapper to re-composite
-            noteWrapper.style.willChange = 'transform';
+            targetWrapper.style.willChange = 'transform';
             requestAnimationFrame(() => {
-              noteWrapper.style.willChange = '';
+              targetWrapper.style.willChange = '';
             });
           });
         }
@@ -1261,7 +1323,8 @@
             btn.classList.add('active');
             const rgb = btn.dataset.color;
             currentPenColor = `rgba(${rgb}, 0.9)`;
-            if (drawingCtx) drawingCtx.strokeStyle = currentPenColor;
+            const ctx = activeDrawingCtx || drawingCtx;
+            if (ctx) ctx.strokeStyle = currentPenColor;
           });
         });
 
@@ -1272,7 +1335,8 @@
             document.querySelectorAll('.pen-size').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             currentPenSize = parseInt(btn.dataset.size);
-            if (drawingCtx) drawingCtx.lineWidth = currentPenSize;
+            const ctx = activeDrawingCtx || drawingCtx;
+            if (ctx) ctx.lineWidth = currentPenSize;
           });
         });
 
@@ -1620,6 +1684,11 @@
           ta.style.cssText = "font-family:'Patrick Hand',cursive;font-size:20px;line-height:1.5;color:#1a1a1a;border:none;background:transparent;resize:none;outline:none;text-align:center;width:100%;overflow:hidden;";
           noteDiv.appendChild(ta);
 
+          // Add drawing canvas to spawned note
+          const spawnCanvas = document.createElement('canvas');
+          spawnCanvas.className = 'note-drawing-layer';
+          noteDiv.appendChild(spawnCanvas);
+
           // Add menu button to spawned note
           const spawnMenuBtn = document.createElement('button');
           spawnMenuBtn.className = 'note-menu-btn';
@@ -1629,7 +1698,7 @@
           spawnDropdown.className = 'note-dropdown';
           spawnDropdown.innerHTML = `
             <button class="dropdown-item spawn-color-btn">
-              <span class="color-icon" style="background:#B4DCE8;"></span>
+              <span class="color-icon" style="background:${colorIconColors[color]};"></span>
               <span>Change Color</span>
             </button>
             <div class="color-submenu">
@@ -1637,15 +1706,43 @@
               <div class="color-swatch" data-color="yellow" style="background: #EAD264;"></div>
               <div class="color-swatch" data-color="pink" style="background: #ECBDC5;"></div>
             </div>
+            <button class="dropdown-item" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span>Add Stamp</span> <span class="coming-soon-tag">Coming soon</span>
+            </button>
+            <button class="dropdown-item" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+              <span>Stickers</span> <span class="coming-soon-tag">Coming soon</span>
+            </button>
+            <button class="dropdown-item spawn-draw-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/></svg>
+              <span>Draw on Note</span>
+            </button>
           `;
           noteDiv.appendChild(spawnMenuBtn);
           noteDiv.appendChild(spawnDropdown);
+
+          // Init drawing canvas for this note
+          let spawnDrawingCtx = null;
+          function initSpawnCanvas() {
+            spawnCanvas.width = noteDiv.offsetWidth * 2;
+            spawnCanvas.height = noteDiv.offsetHeight * 2;
+            spawnDrawingCtx = spawnCanvas.getContext('2d');
+            spawnDrawingCtx.scale(2, 2);
+            spawnDrawingCtx.lineCap = 'round';
+            spawnDrawingCtx.lineJoin = 'round';
+            spawnDrawingCtx.strokeStyle = currentPenColor;
+            spawnDrawingCtx.lineWidth = currentPenSize;
+          }
+          // Delay init until note is in DOM and has dimensions
+          requestAnimationFrame(() => { initSpawnCanvas(); });
 
           // Wire up spawned menu
           const spawnColorBtn = spawnDropdown.querySelector('.spawn-color-btn');
           const spawnColorSub = spawnDropdown.querySelector('.color-submenu');
           const spawnSwatches = spawnDropdown.querySelectorAll('.color-swatch');
           const spawnColorIcon = spawnDropdown.querySelector('.color-icon');
+          const spawnDrawBtn = spawnDropdown.querySelector('.spawn-draw-btn');
 
           spawnMenuBtn.addEventListener('mousedown', (e) => e.preventDefault());
           spawnDropdown.addEventListener('mousedown', (e) => e.preventDefault());
@@ -1674,12 +1771,52 @@
               const stops = svgNode.querySelectorAll('stop');
               theme.gradient.forEach((c, i) => { if (stops[i]) stops[i].setAttribute('stop-color', c); });
               spawnColorIcon.style.background = colorIconColors[ck];
+              // Clear drawing when color changes
+              if (spawnDrawingCtx) {
+                spawnDrawingCtx.clearRect(0, 0, spawnCanvas.width, spawnCanvas.height);
+              }
               spawnSwatches.forEach(s => s.classList.remove('active'));
               sw.classList.add('active');
               spawnDropdown.classList.remove('open');
               spawnMenuBtn.classList.remove('active');
               spawnColorSub.classList.remove('open');
             });
+          });
+
+          // Wire up Draw button for spawned note
+          spawnDrawBtn.addEventListener('click', () => {
+            spawnDropdown.classList.remove('open');
+            spawnMenuBtn.classList.remove('active');
+
+            // Close any other note's drawing mode
+            if (activeDrawingNote && activeDrawingNote !== newWrapper) {
+              closeActiveDrawingMode();
+            }
+
+            // Init canvas if needed
+            if (!spawnDrawingCtx) initSpawnCanvas();
+
+            // Save state for cancel
+            const savedData = spawnDrawingCtx.getImageData(0, 0, spawnCanvas.width, spawnCanvas.height);
+
+            // Set as active drawing note
+            activeDrawingNote = newWrapper;
+            activeDrawingCanvas = spawnCanvas;
+            activeDrawingCtx = spawnDrawingCtx;
+            activeSavedImageData = savedData;
+
+            // Lift note flat
+            newWrapper.dispatchEvent(new Event('note:lift'));
+            ta.blur();
+            newWrapper.classList.add('flat');
+
+            // Enable drawing mode
+            document.body.classList.add('drawing-mode-active');
+            newWrapper.classList.add('drawing-mode');
+
+            // Sync toolbar pen settings to this canvas
+            spawnDrawingCtx.strokeStyle = currentPenColor;
+            spawnDrawingCtx.lineWidth = currentPenSize;
           });
 
           // Add shadow layer (same as original note)
@@ -1707,7 +1844,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = 'test v6';
+      if (tv) tv.textContent = 'test v7';
     }
     </script>
   </body>

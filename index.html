@@ -724,7 +724,7 @@
             noteShadow.src = './assets/paper-stuff/shadow-layer.svg';
             noteWrapper.classList.remove('flat');
             const current = noteWrapper.style.transform || '';
-            noteWrapper.style.transform = current.replace(/scale\([^)]*\)/g, '').trim();
+            noteWrapper.style.transform = current.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
             focusOverlay.classList.remove('active');
             langPicker2.classList.remove('hidden');
           }
@@ -1309,6 +1309,6 @@
         });
       })();
     </script>
-    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 165</span></div>
+    <div class="build-hover-area"><a href="mailto:ram@agentmail.to" class="footer-link"><i class="hgi-stroke hgi-mail-02" style="margin-right: 4px; font-size: 10px;"></i>Email Us</a> · <span class="build-number">Build 166</span></div>
   </body>
 </html>

@@ -640,7 +640,7 @@ body {
 .wallet-buttons {
   text-align: center;
   position: relative;
-  min-height: 44px;
+  height: 44px;
   width: 100%;
 }
 
@@ -821,6 +821,7 @@ body {
     align-items: center;
     gap: 10px;
     width: 100%;
+    height: auto;
   }
 
   .wallet-btn-link {
@@ -883,6 +884,10 @@ body {
   .wallet-btn-link#apple-wallet-btn.qr-open {
     max-height: 300px;
     z-index: 30;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
   }
   .wallet-qr {
     display: flex;

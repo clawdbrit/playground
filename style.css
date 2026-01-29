@@ -942,3 +942,14 @@ body {
   color: rgba(0,0,0,0.5);
   user-select: none;
 }
+
+.footer-link {
+  font-size: 11px;
+  color: rgba(0,0,0,0.5);
+  text-decoration: none;
+  transition: color .15s ease;
+}
+
+.footer-link:hover {
+  color: rgba(0,0,0,0.7);
+}

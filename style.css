@@ -854,22 +854,28 @@ body {
 .wallet-btn-link {
   flex-direction: column;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
+  background: #000;
+  box-shadow: 0 0 0 1px rgba(0,0,0,1);
+}
+
+.wallet-btn-link img {
+  height: 40px;
+  width: auto;
+  display: block;
 }
 
 .wallet-qr {
   display: none;
   justify-content: center;
   align-items: center;
-  background: #000;
-  padding: 12px;
-  border-radius: 0 0 8px 8px;
+  padding: 10px 10px 14px;
 }
 
 .wallet-qr svg {
-  width: 140px;
-  height: 140px;
-  border-radius: 4px;
+  width: 100%;
+  height: auto;
+  border-radius: 6px;
 }
 
 /* Footer */

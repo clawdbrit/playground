@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@300&family=Fraunces:wght@300&family=Cormorant+Garamond:wght@300&family=Noto+Serif+JP:wght@900&family=Noto+Serif+KR:wght@900&family=Noto+Serif+SC:wght@900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.hugeicons.com/font/hgi-stroke-rounded.css">
     <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js"></script>
-    <link rel="stylesheet" href="./style.css?v=9" />
+    <link rel="stylesheet" href="./style.css?v=10" />
     <!-- Hreflang alternate links for SEO -->
     <link rel="alternate" hreflang="en" href="https://walletmemo.com/" />
     <link rel="alternate" hreflang="es" href="https://walletmemo.com/?lang=es" />
@@ -192,6 +192,39 @@
           <button class="toolbar-btn done" id="done-drawing">Done</button>
         </div>
       </div>
+
+      <section id="changelog" class="changelog-section" style="display:none;">
+        <h2 class="changelog-title">Changelog</h2>
+        <div class="changelog-entries">
+          <div class="changelog-date-group">
+            <h3 class="changelog-date">January 29, 2026</h3>
+            <ul class="changelog-list">
+              <li><span class="cl-tag cl-new">✨ New</span> Full drawing mode on all spawned sticky notes (shared toolbar)</li>
+              <li><span class="cl-tag cl-new">✨ New</span> Menu button (⋮) with color change + draw on all notes</li>
+              <li><span class="cl-tag cl-new">✨ New</span> Tilt direction based on grab position (left/right)</li>
+              <li><span class="cl-tag cl-fix">🔧 Fix</span> Fixed grab cursor not showing on desktop</li>
+              <li><span class="cl-tag cl-fix">🔧 Fix</span> Fixed GitHub Pages deploy pipeline</li>
+              <li><span class="cl-tag cl-improve">⚡ Improvement</span> Increased drag zone height for easier grabbing</li>
+              <li><span class="cl-tag cl-design">🎨 Design</span> Switched title font to Cormorant Garamond 300</li>
+              <li><span class="cl-tag cl-design">🎨 Design</span> Uppercase Inter tagline with softer opacity</li>
+              <li><span class="cl-tag cl-new">✨ New</span> QR code pass-redirect endpoint for mobile scanning</li>
+              <li><span class="cl-tag cl-fix">🔧 Fix</span> Matched strip/background colors in Apple Wallet pass</li>
+              <li><span class="cl-tag cl-design">🎨 Design</span> Tinted logoText color in Apple Wallet pass</li>
+            </ul>
+          </div>
+          <div class="changelog-date-group">
+            <h3 class="changelog-date">January 28, 2026</h3>
+            <ul class="changelog-list">
+              <li><span class="cl-tag cl-new">✨ New</span> Multi-note system with drag-to-move</li>
+              <li><span class="cl-tag cl-new">✨ New</span> Drawing mode with pen colors, sizes, undo</li>
+              <li><span class="cl-tag cl-new">✨ New</span> Color changing (blue, yellow, pink)</li>
+              <li><span class="cl-tag cl-new">✨ New</span> Apple Wallet pass generation</li>
+              <li><span class="cl-tag cl-design">🎨 Design</span> Paper texture SVG with realistic shadows</li>
+              <li><span class="cl-tag cl-new">✨ New</span> i18n support (EN, ES, FR, DE, JP, KR, ZH)</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       <div class="wallet-wrapper">
         <div class="wallet-buttons">
@@ -1859,7 +1892,27 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = 'test v9';
+      if (tv) tv.textContent = 'test v10';
+
+      // Show changelog section
+      const cl = document.getElementById('changelog');
+      if (cl) cl.style.display = '';
+
+      // Add changelog link to footer
+      const footerArea = document.querySelector('.build-hover-area');
+      if (footerArea) {
+        const clLink = document.createElement('a');
+        clLink.href = '#changelog';
+        clLink.className = 'footer-link changelog-footer-link';
+        clLink.textContent = 'Changelog';
+        clLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.getElementById('changelog').scrollIntoView({ behavior: 'smooth' });
+        });
+        const dot = document.createTextNode(' · ');
+        footerArea.insertBefore(dot, footerArea.firstChild);
+        footerArea.insertBefore(clLink, footerArea.firstChild);
+      }
     }
     </script>
   </body>

@@ -1050,3 +1050,58 @@ body {
 .footer-link:hover {
   color: rgba(0,0,0,0.7);
 }
+
+/* Changelog */
+.changelog-section {
+  max-width: 700px;
+  margin: 60px auto 40px;
+  padding: 0 24px;
+  font-family: 'Inter', sans-serif;
+}
+.changelog-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 28px;
+  color: rgba(0,0,0,0.8);
+  margin-bottom: 32px;
+  text-align: center;
+}
+.changelog-date-group {
+  margin-bottom: 32px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+.changelog-date-group:last-child {
+  border-bottom: none;
+}
+.changelog-date {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 16px;
+}
+.changelog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.changelog-list li {
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(0,0,0,0.7);
+  padding: 4px 0;
+}
+.cl-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 6px;
+  white-space: nowrap;
+}
+.cl-new { background: rgba(99,102,241,0.08); color: rgba(99,102,241,0.8); }
+.cl-fix { background: rgba(245,158,11,0.08); color: rgba(180,120,10,0.85); }
+.cl-design { background: rgba(168,85,247,0.08); color: rgba(148,70,220,0.8); }
+.cl-improve { background: rgba(16,185,129,0.08); color: rgba(14,150,105,0.85); }

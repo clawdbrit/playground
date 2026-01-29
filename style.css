@@ -1006,7 +1006,12 @@ body {
   right: 0;
   text-align: center;
   font-size: 11px;
-  color: rgba(0,0,0,0.35);
+  color: rgba(0,0,0,0.4);
+}
+
+.build-hover-area .copyright {
+  font-size: 11px;
+  color: rgba(0,0,0,0.4);
 }
 
 @media (max-width: 600px) {
@@ -1029,14 +1034,6 @@ body {
   transition: color .15s ease;
 }
 
-.footer-link .mail-icon {
-  transition: fill .15s ease;
-}
-
 .footer-link:hover {
   color: rgba(0,0,0,0.7);
-}
-
-.footer-link:hover .mail-icon {
-  fill: currentColor;
 }

@@ -26,7 +26,6 @@
             async src="//gc.zgo.at/count.js"></script>
   </head>
   <body>
-    <div class="scroll-lock-overlay" id="scroll-lock-overlay"></div>
     <style>
       html { background: linear-gradient(to bottom, #fafafa, #e5e5e5); background-attachment: fixed; min-height: 100vh; scrollbar-gutter: stable; }
       html, body { overflow-x: hidden; }
@@ -267,28 +266,6 @@
           window.lastActiveNoteId = window.activeNoteId;
           window.activeNoteId = null;
         }
-      };
-      // Lock/unlock page scroll (mobile: prevents address bar + scroll issues)
-      // iOS Safari needs touchmove preventDefault to truly block scrolling
-      window._scrollLockY = 0;
-      window._scrollLockHandler = function(e) {
-        // Allow touch on drawing canvas and toolbar
-        if (e.target.closest('.note-drawing-layer') || e.target.closest('.drawing-toolbar') || e.target.closest('.note') || e.target.closest('textarea')) return;
-        e.preventDefault();
-      };
-      window.lockScroll = function() {
-        if (document.body.classList.contains('scroll-locked')) return;
-        window._scrollLockY = window.scrollY;
-        document.body.classList.add('scroll-locked');
-        document.body.style.top = `-${window._scrollLockY}px`;
-        document.addEventListener('touchmove', window._scrollLockHandler, { passive: false });
-      };
-      window.unlockScroll = function() {
-        if (!document.body.classList.contains('scroll-locked')) return;
-        document.body.classList.remove('scroll-locked');
-        document.body.style.top = '';
-        window.scrollTo(0, window._scrollLockY || 0);
-        document.removeEventListener('touchmove', window._scrollLockHandler);
       };
       window.getTargetNote = function() {
         var id = window.activeNoteId || window.lastActiveNoteId;
@@ -1082,7 +1059,6 @@
 
         textarea.addEventListener('focus', () => {
           setActiveNote('note-0');
-          lockScroll();
           if (!isFlat) {
             isFlat = true;
             animatePath(statePoints.curled, statePoints.flat);
@@ -1095,14 +1071,7 @@
             const isMobileView = window.innerWidth <= 600;
             const mobileScale = getComputedStyle(document.documentElement).getPropertyValue('--mobile-note-focus-scale') || '1.15';
             if (isMobileView) {
-              // Position note in visible area above keyboard
-              // Use visualViewport if available to account for keyboard
-              const vvh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-              const noteRect = noteWrapper.getBoundingClientRect();
-              const noteCenter = noteRect.top + noteRect.height / 2;
-              const targetY = vvh * 0.35; // aim for 35% down visible area
-              const offsetY = targetY - noteCenter;
-              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(' + offsetY + 'px)';
+              noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(' + mobileScale + ') translateY(-100px)';
             } else {
               noteWrapper.style.transform = (base ? base + ' ' : '') + 'scale(1.1)';
             }
@@ -1115,7 +1084,6 @@
           deactivateNote();
           // Don't close note when entering drawing mode
           if (isDrawingMode) return;
-          unlockScroll();
           if (isFlat) {
             isFlat = false;
             animatePath(statePoints.flat, statePoints.curled);
@@ -1227,13 +1195,13 @@
           drawingCtx.scale(2, 2);
           drawingCtx.lineCap = 'round';
           drawingCtx.lineJoin = 'round';
-          drawingCtx.strokeStyle = 'rgba(26, 26, 26, 0.45)';
-          drawingCtx.lineWidth = 2.5;
+          drawingCtx.strokeStyle = 'rgba(26, 26, 26, 0.7)';
+          drawingCtx.lineWidth = 3;
         }
         
-        // Pen settings — ballpoint pen: thin + semi-transparent so overlaps darken
-        window.currentPenColor = 'rgba(26, 26, 26, 0.45)';
-        window.currentPenSize = 2.5;
+        // Pen settings — ballpoint pen: slightly thinner + semi-transparent
+        window.currentPenColor = 'rgba(26, 26, 26, 0.7)';
+        window.currentPenSize = 3;
 
         initNoteDrawingLayer();
 
@@ -1254,16 +1222,7 @@
               activeDrawingCtx.putImageData(activeSavedImageData, 0, 0);
             }
             document.body.classList.remove('drawing-mode-active');
-            unlockScroll();
             activeDrawingNote.classList.remove('drawing-mode');
-            // Reset mobile draw-mode positioning
-            if (window.innerWidth <= 600) {
-              activeDrawingNote.style.position = '';
-              activeDrawingNote.style.top = '';
-              activeDrawingNote.style.left = '';
-              activeDrawingNote.style.transform = '';
-              activeDrawingNote.style.transformOrigin = '';
-            }
             activeDrawingNote.dispatchEvent(new Event('note:stick'));
             activeDrawingNote = null;
             activeDrawingCanvas = null;
@@ -1319,25 +1278,9 @@
           langPicker2.classList.add('hidden');
 
           // Enable drawing mode
-          lockScroll();
           document.body.classList.add('drawing-mode-active');
           noteWrapper.classList.add('drawing-mode');
           drawingToolbar.classList.add('visible');
-
-          // Center note on mobile in draw mode
-          if (window.innerWidth <= 600) {
-            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-            const toolbarH = 80; // approximate toolbar height
-            const availH = vh - toolbarH;
-            const noteH = noteWrapper.offsetHeight;
-            const scale = 1.15;
-            const targetTop = (availH - noteH * scale) / 2;
-            noteWrapper.style.position = 'fixed';
-            noteWrapper.style.top = targetTop + 'px';
-            noteWrapper.style.left = ((window.innerWidth - noteWrapper.offsetWidth * scale) / 2) + 'px';
-            noteWrapper.style.transform = 'scale(' + scale + ')';
-            noteWrapper.style.transformOrigin = 'top left';
-          }
 
           // Sync pen settings
           drawingCtx.strokeStyle = currentPenColor;
@@ -1345,14 +1288,10 @@
         });
 
         // Drawing on canvas - use event delegation via document for any active canvas
-        // Ballpoint pen: draw each stroke as one continuous path so semi-transparent
-        // strokes don't create dotted artifacts at segment joins.
-        let currentStrokePoints = [];
-        let preStrokeImageData = null;
-
         function handleDrawPointerDown(e) {
           const canvas = e.target.closest('.note-drawing-layer');
           if (!canvas || !isDrawingMode) return;
+          // Only draw on the active note's canvas
           if (activeDrawingCanvas && canvas !== activeDrawingCanvas) return;
           isDrawing = true;
           const ctx = activeDrawingCtx || drawingCtx;
@@ -1361,9 +1300,8 @@
           const scaleY = canvas.height / rect.height / 2;
           const x = (e.clientX - rect.left) * scaleX;
           const y = (e.clientY - rect.top) * scaleY;
-          // Save canvas state before this stroke so we can redraw cleanly
-          preStrokeImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          currentStrokePoints = [{x, y}];
+          ctx.beginPath();
+          ctx.moveTo(x, y);
         }
 
         function handleDrawPointerMove(e) {
@@ -1375,31 +1313,13 @@
           const scaleY = canvas.height / rect.height / 2;
           const x = (e.clientX - rect.left) * scaleX;
           const y = (e.clientY - rect.top) * scaleY;
-          currentStrokePoints.push({x, y});
-          // Restore pre-stroke state and redraw entire current stroke as one path
-          // This ensures semi-transparent strokes render uniformly (no dotted artifacts)
-          if (preStrokeImageData) {
-            ctx.putImageData(preStrokeImageData, 0, 0);
-          }
-          // putImageData resets transform, so re-apply the 2x scale
-          ctx.setTransform(2, 0, 0, 2, 0, 0);
-          ctx.lineCap = 'round';
-          ctx.lineJoin = 'round';
-          ctx.strokeStyle = currentPenColor;
-          ctx.lineWidth = currentPenSize;
-          ctx.beginPath();
-          ctx.moveTo(currentStrokePoints[0].x, currentStrokePoints[0].y);
-          for (let i = 1; i < currentStrokePoints.length; i++) {
-            ctx.lineTo(currentStrokePoints[i].x, currentStrokePoints[i].y);
-          }
+          ctx.lineTo(x, y);
           ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(x, y);
         }
 
         function handleDrawPointerUp() {
-          if (isDrawing) {
-            preStrokeImageData = null;
-            currentStrokePoints = [];
-          }
           isDrawing = false;
         }
 
@@ -1438,17 +1358,8 @@
           isDrawing = false;
           savedImageData = null;
           document.body.classList.remove('drawing-mode-active');
-          unlockScroll();
           targetWrapper.classList.remove('drawing-mode');
           drawingToolbar.classList.remove('visible');
-          // Reset mobile draw-mode positioning
-          if (window.innerWidth <= 600) {
-            targetWrapper.style.position = '';
-            targetWrapper.style.top = '';
-            targetWrapper.style.left = '';
-            targetWrapper.style.transform = '';
-            targetWrapper.style.transformOrigin = '';
-          }
 
           if (isOriginalNote) {
             // Original note: full close with animations
@@ -1510,7 +1421,7 @@
             document.querySelectorAll('.pen-color').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const rgb = btn.dataset.color;
-            currentPenColor = `rgba(${rgb}, 0.45)`;
+            currentPenColor = `rgba(${rgb}, 0.7)`;
             const ctx = activeDrawingCtx || drawingCtx;
             if (ctx) ctx.strokeStyle = currentPenColor;
             // Update current swatch color
@@ -1536,13 +1447,11 @@
           });
         });
 
-        // Handle window resize — preserve drawing data across resize
+        // Handle window resize — preserve drawing data
         window.addEventListener('resize', () => {
-          // Save current drawing before resize clears it
           const canvas = noteDrawingLayer;
           const oldData = drawingCtx ? canvas.toDataURL() : null;
           initNoteDrawingLayer();
-          // Restore drawing after resize
           if (oldData) {
             const img = new Image();
             img.onload = () => {
@@ -2034,24 +1943,8 @@
 
             // Enable drawing mode
             isDrawingMode = true;
-            lockScroll();
             document.body.classList.add('drawing-mode-active');
             newWrapper.classList.add('drawing-mode');
-
-            // Center note on mobile in draw mode
-            if (window.innerWidth <= 600) {
-              const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-              const toolbarH = 80;
-              const availH = vh - toolbarH;
-              const noteH = newWrapper.offsetHeight;
-              const scale = 1.15;
-              const targetTop = (availH - noteH * scale) / 2;
-              newWrapper.style.position = 'fixed';
-              newWrapper.style.top = targetTop + 'px';
-              newWrapper.style.left = ((window.innerWidth - newWrapper.offsetWidth * scale) / 2) + 'px';
-              newWrapper.style.transform = 'scale(' + scale + ')';
-              newWrapper.style.transformOrigin = 'top left';
-            }
 
             // Show toolbar
             const toolbar = document.getElementById('drawing-toolbar');
@@ -2108,7 +2001,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v44';
+      if (tv) tv.textContent = ' · test v45';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

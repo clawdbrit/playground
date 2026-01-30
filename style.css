@@ -196,7 +196,6 @@ body {
   left: 0;
   isolation: isolate;
   z-index: 2;
-  overflow: hidden;
 }
 
 /* note-version removed - using build-hover-area instead */
@@ -364,33 +363,6 @@ body {
 .note-wrapper.drawing-mode {
   transform: scale(1.15);
   z-index: 100;
-}
-
-/* Draw mode centering is handled via JS for mobile */
-
-/* Prevent scrolling on mobile during active note interaction */
-/* Uses a full-screen overlay approach for iOS Safari compatibility */
-body.scroll-locked {
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  touch-action: none;
-  -webkit-overflow-scrolling: none;
-}
-
-/* Invisible overlay to catch and block touch scroll events on iOS */
-.scroll-lock-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 49;
-  touch-action: none;
-  -webkit-overflow-scrolling: none;
-  pointer-events: none;
-}
-body.scroll-locked .scroll-lock-overlay {
-  display: block;
 }
 
 .note-wrapper.drawing-mode .note-drawing-layer {

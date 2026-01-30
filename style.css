@@ -169,6 +169,13 @@ body {
   background: linear-gradient(to bottom, rgba(132, 175, 221, 0) 0%, rgba(132, 175, 221, 0.4) 100%);
   filter: blur(14px);
   border-radius: 4px;
+  transition: opacity 0.4s ease;
+}
+
+/* Hide shadow when note is lifted (flat/focused), drawing, or writing */
+.note-wrapper.flat .note-shadow,
+.note-wrapper.drawing-mode .note-shadow {
+  opacity: 0;
 }
 
 /* Sticky note paper SVG */

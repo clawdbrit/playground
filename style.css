@@ -367,8 +367,18 @@ body {
   z-index: 100;
 }
 
-/* Prevent scrolling on mobile during draw mode */
-body.drawing-mode-active {
+@media (max-width: 600px) {
+  .note-wrapper.drawing-mode {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1.15);
+    z-index: 100;
+  }
+}
+
+/* Prevent scrolling on mobile during active note interaction */
+body.scroll-locked {
   overflow: hidden;
   position: fixed;
   width: 100%;

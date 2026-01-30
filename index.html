@@ -267,6 +267,20 @@
           window.activeNoteId = null;
         }
       };
+      // Lock/unlock page scroll (mobile: prevents address bar + scroll issues)
+      window._scrollLockY = 0;
+      window.lockScroll = function() {
+        if (document.body.classList.contains('scroll-locked')) return;
+        window._scrollLockY = window.scrollY;
+        document.body.classList.add('scroll-locked');
+        document.body.style.top = `-${window._scrollLockY}px`;
+      };
+      window.unlockScroll = function() {
+        if (!document.body.classList.contains('scroll-locked')) return;
+        document.body.classList.remove('scroll-locked');
+        document.body.style.top = '';
+        window.scrollTo(0, window._scrollLockY || 0);
+      };
       window.getTargetNote = function() {
         var id = window.activeNoteId || window.lastActiveNoteId;
         if (id && window.noteRegistry.has(id)) return window.noteRegistry.get(id);
@@ -1059,6 +1073,7 @@
 
         textarea.addEventListener('focus', () => {
           setActiveNote('note-0');
+          lockScroll();
           if (!isFlat) {
             isFlat = true;
             animatePath(statePoints.curled, statePoints.flat);
@@ -1084,6 +1099,7 @@
           deactivateNote();
           // Don't close note when entering drawing mode
           if (isDrawingMode) return;
+          unlockScroll();
           if (isFlat) {
             isFlat = false;
             animatePath(statePoints.flat, statePoints.curled);
@@ -1222,8 +1238,7 @@
               activeDrawingCtx.putImageData(activeSavedImageData, 0, 0);
             }
             document.body.classList.remove('drawing-mode-active');
-            document.body.style.top = '';
-            window.scrollTo(0, window._drawScrollY || 0);
+            unlockScroll();
             activeDrawingNote.classList.remove('drawing-mode');
             activeDrawingNote.dispatchEvent(new Event('note:stick'));
             activeDrawingNote = null;
@@ -1279,10 +1294,9 @@
           focusOverlay.classList.add('active');
           langPicker2.classList.add('hidden');
 
-          // Enable drawing mode — lock scroll on mobile
-          window._drawScrollY = window.scrollY;
+          // Enable drawing mode
+          lockScroll();
           document.body.classList.add('drawing-mode-active');
-          document.body.style.top = `-${window._drawScrollY}px`;
           noteWrapper.classList.add('drawing-mode');
           drawingToolbar.classList.add('visible');
 
@@ -1385,8 +1399,7 @@
           isDrawing = false;
           savedImageData = null;
           document.body.classList.remove('drawing-mode-active');
-          document.body.style.top = '';
-          window.scrollTo(0, window._drawScrollY || 0);
+          unlockScroll();
           targetWrapper.classList.remove('drawing-mode');
           drawingToolbar.classList.remove('visible');
 
@@ -2032,7 +2045,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v40';
+      if (tv) tv.textContent = ' · test v41';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

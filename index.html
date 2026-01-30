@@ -1256,6 +1256,14 @@
             document.body.classList.remove('drawing-mode-active');
             unlockScroll();
             activeDrawingNote.classList.remove('drawing-mode');
+            // Reset mobile draw-mode positioning
+            if (window.innerWidth <= 600) {
+              activeDrawingNote.style.position = '';
+              activeDrawingNote.style.top = '';
+              activeDrawingNote.style.left = '';
+              activeDrawingNote.style.transform = '';
+              activeDrawingNote.style.transformOrigin = '';
+            }
             activeDrawingNote.dispatchEvent(new Event('note:stick'));
             activeDrawingNote = null;
             activeDrawingCanvas = null;
@@ -1315,6 +1323,21 @@
           document.body.classList.add('drawing-mode-active');
           noteWrapper.classList.add('drawing-mode');
           drawingToolbar.classList.add('visible');
+
+          // Center note on mobile in draw mode
+          if (window.innerWidth <= 600) {
+            const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+            const toolbarH = 80; // approximate toolbar height
+            const availH = vh - toolbarH;
+            const noteH = noteWrapper.offsetHeight;
+            const scale = 1.15;
+            const targetTop = (availH - noteH * scale) / 2;
+            noteWrapper.style.position = 'fixed';
+            noteWrapper.style.top = targetTop + 'px';
+            noteWrapper.style.left = ((window.innerWidth - noteWrapper.offsetWidth * scale) / 2) + 'px';
+            noteWrapper.style.transform = 'scale(' + scale + ')';
+            noteWrapper.style.transformOrigin = 'top left';
+          }
 
           // Sync pen settings
           drawingCtx.strokeStyle = currentPenColor;
@@ -1418,6 +1441,14 @@
           unlockScroll();
           targetWrapper.classList.remove('drawing-mode');
           drawingToolbar.classList.remove('visible');
+          // Reset mobile draw-mode positioning
+          if (window.innerWidth <= 600) {
+            targetWrapper.style.position = '';
+            targetWrapper.style.top = '';
+            targetWrapper.style.left = '';
+            targetWrapper.style.transform = '';
+            targetWrapper.style.transformOrigin = '';
+          }
 
           if (isOriginalNote) {
             // Original note: full close with animations
@@ -2003,8 +2034,24 @@
 
             // Enable drawing mode
             isDrawingMode = true;
+            lockScroll();
             document.body.classList.add('drawing-mode-active');
             newWrapper.classList.add('drawing-mode');
+
+            // Center note on mobile in draw mode
+            if (window.innerWidth <= 600) {
+              const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+              const toolbarH = 80;
+              const availH = vh - toolbarH;
+              const noteH = newWrapper.offsetHeight;
+              const scale = 1.15;
+              const targetTop = (availH - noteH * scale) / 2;
+              newWrapper.style.position = 'fixed';
+              newWrapper.style.top = targetTop + 'px';
+              newWrapper.style.left = ((window.innerWidth - newWrapper.offsetWidth * scale) / 2) + 'px';
+              newWrapper.style.transform = 'scale(' + scale + ')';
+              newWrapper.style.transformOrigin = 'top left';
+            }
 
             // Show toolbar
             const toolbar = document.getElementById('drawing-toolbar');
@@ -2061,7 +2108,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v42';
+      if (tv) tv.textContent = ' · test v43';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

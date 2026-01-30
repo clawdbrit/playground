@@ -367,15 +367,7 @@ body {
   z-index: 100;
 }
 
-@media (max-width: 600px) {
-  .note-wrapper.drawing-mode {
-    position: fixed;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(1.15);
-    z-index: 100;
-  }
-}
+/* Draw mode centering is handled via JS for mobile */
 
 /* Prevent scrolling on mobile during active note interaction */
 /* Uses a full-screen overlay approach for iOS Safari compatibility */

@@ -1817,16 +1817,7 @@
         // Create the "add new note" button that sits behind the note
         const addBtn = document.createElement('div');
         addBtn.className = 'add-note-btn';
-        addBtn.innerHTML = `<svg class="plus-cutout" viewBox="0 0 260 260" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <mask id="plus-mask">
-              <rect width="260" height="260" rx="20" fill="white"/>
-              <rect x="124" y="100" width="12" height="60" rx="6" fill="black"/>
-              <rect x="100" y="124" width="60" height="12" rx="6" fill="black"/>
-            </mask>
-          </defs>
-          <rect class="bg" width="260" height="260" rx="20" fill="rgba(0,0,0,0.05)" mask="url(#plus-mask)"/>
-        </svg>`;
+        addBtn.innerHTML = '';
         addBtn.style.display = 'none';
         wrapper.parentElement.insertBefore(addBtn, wrapper);
 
@@ -2376,7 +2367,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v126';
+      if (tv) tv.textContent = ' · test v127';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

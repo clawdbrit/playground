@@ -873,9 +873,15 @@
           // Points: [M, L, C1, C2, C3(bottom-right), L(bottom-left), C1, C2, C3]
           // Sample key corners for polygon
           const tl = points[0], tr = points[1], br = points[4], bl = points[5];
-          const poly = [tl, tr, br, bl].map(p => 
-            `${(p[0]/vw*100).toFixed(1)}% ${(p[1]/vh*100).toFixed(1)}%`
-          ).join(', ');
+          // Inset by ~2px (as % of viewBox) to avoid bleeding past note edge
+          const inX = 2/vw*100, inY = 2/vh*100;
+          const poly = [tl, tr, br, bl].map((p, i) => {
+            const px = p[0]/vw*100, py = p[1]/vh*100;
+            // Nudge each corner inward
+            const dx = (i === 0 || i === 3) ? inX : -inX; // left corners right, right corners left
+            const dy = (i === 0 || i === 1) ? inY : -inY; // top corners down, bottom corners up
+            return `${(px + dx).toFixed(1)}% ${(py + dy).toFixed(1)}%`;
+          }).join(', ');
           dl.style.clipPath = `polygon(${poly})`;
         }
 

@@ -1776,7 +1776,8 @@
           const introShadow = wrapper.querySelector('.note-shadow');
           if (introShadow) introShadow.style.opacity = '0.3';
 
-          // After a brief pause, peel to normal curled state
+          // Peel to normal curled state after a beat
+          console.log('[intro] About to set timeout');
           setTimeout(() => {
             console.log('[intro] Starting peel animation');
             // Animate the SVG path: tightCurl → curled with peel easing
@@ -1809,8 +1810,7 @@
             }
 
             sessionStorage.setItem('wm-intro-seen', '1');
-          }, 600);
-        }
+          }, 800);
 
         // Add new note button
         const placeholders = [

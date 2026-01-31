@@ -1016,8 +1016,13 @@
           let noteAnimId = null;
           let noteGradAnimId = null;
 
-          const theme = colorThemes[colorKey];
-          const flatGrads = flatGradients[colorKey];
+          // Track current color — can be updated by color swatches
+          let currentColorKey = colorKey;
+          wrapper._getNoteColor = () => currentColorKey;
+          wrapper._setNoteColor = (ck) => { currentColorKey = ck; };
+
+          function getTheme() { return colorThemes[currentColorKey]; }
+          function getFlatGrads() { return flatGradients[currentColorKey]; }
 
           function animateNotePath(from, to, duration = 400, easeFn = easeOutCubic) {
             if (noteAnimId) cancelAnimationFrame(noteAnimId);
@@ -1035,6 +1040,8 @@
 
           function animateNoteGradient(toFlat, duration = 400, easeFn = easeOutCubic) {
             if (noteGradAnimId) cancelAnimationFrame(noteGradAnimId);
+            const theme = getTheme();
+            const flatGrads = getFlatGrads();
             const fromColors = (toFlat ? theme.gradient : flatGrads).map(hexToRgb);
             const toColors = (toFlat ? flatGrads : theme.gradient).map(hexToRgb);
             const startTime = performance.now();
@@ -1263,6 +1270,8 @@
             const colorKey = swatch.dataset.color;
             currentColor = colorKey;
             updateNoteColors(colorKey);
+            // Update animation color so lift/stick uses new color
+            if (noteWrapper._setNoteColor) noteWrapper._setNoteColor(colorKey);
             // Update registry
             var reg = window.noteRegistry.get('note-0');
             if (reg) reg.color = colorKey;
@@ -2081,6 +2090,8 @@
               spawnColor = ck;
               var reg = window.noteRegistry.get(spawnNoteId);
               if (reg) reg.color = ck;
+              // Update animation color so lift/stick uses new color
+              if (newWrapper._setNoteColor) newWrapper._setNoteColor(ck);
               // Clear drawing when color changes
               if (spawnDrawingCtx) {
                 spawnDrawingCtx.clearRect(0, 0, spawnCanvas.width, spawnCanvas.height);
@@ -2255,7 +2266,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v105';
+      if (tv) tv.textContent = ' · test v106';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

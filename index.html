@@ -882,8 +882,8 @@
         }
 
         // Sync drawing layer clip-path to current note shape
-        function syncDrawingClip(points) {
-          const dl = document.getElementById('note-drawing-layer');
+        function syncDrawingClip(points, targetLayer) {
+          const dl = targetLayer || document.getElementById('note-drawing-layer');
           if (!dl) return;
           // SVG viewBox is 287x270, map to percentages
           const vw = 287, vh = 270;
@@ -1049,6 +1049,9 @@
               const ep = easeFn(progress);
               const pts = lerpPoints(from, to, ep);
               shape.setAttribute('d', pointsToPath(pts));
+              // Sync drawing clip for this note's canvas
+              const dl = wrapper.querySelector('.note-drawing-layer');
+              if (dl) syncDrawingClip(pts, dl);
               if (progress < 1) noteAnimId = requestAnimationFrame(anim);
             }
             noteAnimId = requestAnimationFrame(anim);
@@ -2193,6 +2196,9 @@
             document.body.classList.add('drawing-mode-active');
             newWrapper.classList.add('drawing-mode');
 
+            // Apply clip-path to spawned canvas
+            syncDrawingClip(statePoints.flat, spawnCanvas);
+
             // Show toolbar positioned near this note
             positionToolbar(newWrapper);
             const toolbar = document.getElementById('drawing-toolbar');
@@ -2368,7 +2374,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v123';
+      if (tv) tv.textContent = ' · test v124';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

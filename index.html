@@ -1386,6 +1386,12 @@
           noteWrapper.classList.add('drawing-mode');
           drawingToolbar.classList.add('visible');
 
+          // Position toolbar just below the note
+          const noteRect = noteWrapper.getBoundingClientRect();
+          drawingToolbar.style.bottom = 'auto';
+          drawingToolbar.style.top = (noteRect.bottom + 12) + 'px';
+          drawingToolbar.style.left = (noteRect.left + noteRect.width / 2) + 'px';
+
           // Sync pen settings
           drawingCtx.strokeStyle = currentPenColor;
           drawingCtx.lineWidth = currentPenSize;

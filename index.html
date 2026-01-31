@@ -803,6 +803,18 @@
         // SVG path points for the two states (matching structure for smooth morphing)
         // Structure: [M, L, C1, C2, C3, L, C1, C2, C3]
         const statePoints = {
+          // Extra tight curl for intro animation — bottom-right curls up dramatically
+          tightCurl: [
+            [34.6016, 19.2695],    // M - start (same)
+            [250.102, 18.5996],    // L - top right (same)
+            [250.102, 18.5996],    // C1 (same)
+            [252.602, 35.0996],    // C2 - tighter
+            [270.602, 180.6],      // C3 - bottom right curls way up
+            [28.6016, 231.1],      // L - bottom left (same)
+            [36.6029, 66.5996],    // C1 (same)
+            [34.6016, 19.2695],    // C2 (same)
+            [34.6016, 19.2695]     // C3 (same)
+          ],
           curled: [
             [34.6016, 19.2695],    // M - start
             [250.102, 18.5996],    // L - top right
@@ -1739,6 +1751,33 @@
 
         makeDraggable(wrapper);
         updateShadowPosition(wrapper);
+
+        // ==========================================
+        // Peel-to-reveal intro animation (first visit only)
+        // ==========================================
+        if (!sessionStorage.getItem('wm-intro-seen')) {
+          // Start with tight curl
+          noteShape.setAttribute('d', pointsToPath(statePoints.tightCurl));
+
+          // Also start with lower opacity on the shadow for drama
+          const introShadow = wrapper.querySelector('.note-shadow');
+          if (introShadow) introShadow.style.opacity = '0.3';
+
+          // After a brief pause, peel to normal curled state
+          setTimeout(() => {
+            // Animate the SVG path: tightCurl → curled
+            animatePath(statePoints.tightCurl, statePoints.curled, 900);
+
+            // Fade shadow back in
+            if (introShadow) {
+              introShadow.style.transition = 'opacity 0.9s ease-out';
+              introShadow.style.opacity = '1';
+              setTimeout(() => { introShadow.style.transition = ''; }, 1000);
+            }
+
+            sessionStorage.setItem('wm-intro-seen', '1');
+          }, 600);
+        }
 
         // Add new note button
         const placeholders = [

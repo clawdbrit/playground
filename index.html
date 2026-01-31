@@ -107,6 +107,8 @@
           <g filter="url(#noteFilter)">
             <path id="note-shape" d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#noteGradient)"/>
           </g>
+          <!-- Subtle darker bottom edge line -->
+          <line id="note-bottom-edge" x1="30" y1="230" x2="256" y2="227.5" stroke-width="1.2" stroke-opacity="0.2" stroke="#7AB5D0"/>
           <defs>
             <filter id="noteFilter" x="0.00156212" y="-0.000391006" width="286.2" height="269.7" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
               <feFlood flood-opacity="0" result="BackgroundImageFix"/>
@@ -765,9 +767,22 @@
         };
 
         // Update note colors dynamically
+        // Darker bottom-edge colors per theme
+        const edgeColors = {
+          blue: '#7AB5D0',
+          yellow: '#C4A830',
+          pink: '#C89BA5'
+        };
+
         function updateNoteColors(colorKey) {
           const theme = colorThemes[colorKey];
           if (!theme) return;
+
+          // Update bottom edge line color
+          const edgeLine = document.getElementById('note-bottom-edge');
+          if (edgeLine && edgeColors[colorKey]) {
+            edgeLine.setAttribute('stroke', edgeColors[colorKey]);
+          }
 
           // Update color icon
           if (colorIcon) {
@@ -1795,88 +1810,7 @@
         makeDraggable(wrapper);
         updateShadowPosition(wrapper);
 
-        // ==========================================
-        // Peel-to-reveal intro animation (first visit only)
-        // ==========================================
-        if (true || !sessionStorage.getItem('wm-intro-seen')) {
-          // Start with tight curl (noteShape/statePoints are in an IIFE, re-query here)
-          const introNoteShape = document.getElementById('note-shape');
-          const introWrapper = document.getElementById('note-wrapper');
-          const introTightCurl = [
-            [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
-            [249.602, 49.0996], [255.0, 210.0],
-            [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
-          ];
-          const introCurled = [
-            [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
-            [249.602, 49.0996], [257.602, 228.6],
-            [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
-          ];
-          function introPointsToPath(pts) {
-            return `M${pts[0][0]} ${pts[0][1]} L${pts[1][0]} ${pts[1][1]} C${pts[2][0]} ${pts[2][1]} ${pts[3][0]} ${pts[3][1]} ${pts[4][0]} ${pts[4][1]} L${pts[5][0]} ${pts[5][1]} C${pts[6][0]} ${pts[6][1]} ${pts[7][0]} ${pts[7][1]} ${pts[8][0]} ${pts[8][1]} Z`;
-          }
-          function introLerp(from, to, t) {
-            return from.map((p, i) => [p[0] + (to[i][0] - p[0]) * t, p[1] + (to[i][1] - p[1]) * t]);
-          }
-          introNoteShape.setAttribute('d', introPointsToPath(introTightCurl));
-
-          const introShadow = introWrapper.querySelector('.note-shadow');
-          if (introShadow) introShadow.style.opacity = '0.3';
-
-          // Peel to normal curled state after a beat
-          console.log('[intro] About to set timeout');
-          setTimeout(() => {
-            console.log('[intro] Starting peel animation');
-            // Animate the SVG path: tightCurl → curled
-            const introStart = performance.now();
-            const introDuration = 1200;
-            let introAnimId = null;
-            // Peel-off easing: resist then pop
-            function introPeelEase(t) {
-              return t < 0.4 ? 0.15 * Math.pow(t / 0.4, 2) : 0.15 + 0.85 * Math.pow((t - 0.4) / 0.6, 0.5);
-            }
-            // Gradient color lerp: light/warm → original
-            const stop0 = document.getElementById('grad-stop-0');
-            const stop1 = document.getElementById('grad-stop-1');
-            function parseHex(hex) { return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
-            const lightColors = [parseHex(window._introLightStop0), parseHex(window._introLightStop1)];
-            const origColors  = [parseHex(window._introOrigStop0), parseHex(window._introOrigStop1)];
-            function lerpColor(from, to, t) {
-              const r = Math.round(from[0] + (to[0]-from[0])*t);
-              const g = Math.round(from[1] + (to[1]-from[1])*t);
-              const b = Math.round(from[2] + (to[2]-from[2])*t);
-              return '#' + [r,g,b].map(c => c.toString(16).padStart(2,'0')).join('');
-            }
-            function introAnimate(currentTime) {
-              const elapsed = currentTime - introStart;
-              const progress = Math.min(elapsed / introDuration, 1);
-              const ep = introPeelEase(progress);
-              const pts = introLerp(introTightCurl, introCurled, ep);
-              introNoteShape.setAttribute('d', introPointsToPath(pts));
-              // Fade gradient back to original
-              stop0.setAttribute('stop-color', lerpColor(lightColors[0], origColors[0], ep));
-              stop1.setAttribute('stop-color', lerpColor(lightColors[1], origColors[1], ep));
-              if (progress < 1) {
-                introAnimId = requestAnimationFrame(introAnimate);
-              }
-            }
-            introAnimId = requestAnimationFrame(introAnimate);
-
-            // Animate the wrapper back to normal (rotation)
-            introWrapper.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
-            introWrapper.style.transform = '';
-            setTimeout(() => { introWrapper.style.transition = ''; }, 1300);
-
-            // Fade shadow back in
-            if (introShadow) {
-              introShadow.style.transition = 'opacity 0.9s ease-out';
-              introShadow.style.opacity = '1';
-              setTimeout(() => { introShadow.style.transition = ''; }, 1000);
-            }
-
-            sessionStorage.setItem('wm-intro-seen', '1');
-          }, 200);
-        }
+        // (intro animation moved to standalone script block below)
 
         // Add new note button
         const placeholders = [
@@ -2196,10 +2130,80 @@
           addBtn.style.display = 'none';
         });
       })();
+
+    // ==========================================
+    // Peel-to-reveal intro animation (standalone — works on mobile + desktop)
+    // ==========================================
+    (function() {
+      if (true || !sessionStorage.getItem('wm-intro-seen')) {
+        const introNoteShape = document.getElementById('note-shape');
+        const introWrapper = document.getElementById('note-wrapper');
+        const introTightCurl = [
+          [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
+          [249.602, 49.0996], [255.0, 210.0],
+          [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
+        ];
+        const introCurled = [
+          [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
+          [249.602, 49.0996], [257.602, 228.6],
+          [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
+        ];
+        function introPointsToPath(pts) {
+          return `M${pts[0][0]} ${pts[0][1]} L${pts[1][0]} ${pts[1][1]} C${pts[2][0]} ${pts[2][1]} ${pts[3][0]} ${pts[3][1]} ${pts[4][0]} ${pts[4][1]} L${pts[5][0]} ${pts[5][1]} C${pts[6][0]} ${pts[6][1]} ${pts[7][0]} ${pts[7][1]} ${pts[8][0]} ${pts[8][1]} Z`;
+        }
+        function introLerp(from, to, t) {
+          return from.map((p, i) => [p[0] + (to[i][0] - p[0]) * t, p[1] + (to[i][1] - p[1]) * t]);
+        }
+        introNoteShape.setAttribute('d', introPointsToPath(introTightCurl));
+
+        const introShadow = introWrapper.querySelector('.note-shadow');
+        if (introShadow) introShadow.style.opacity = '0.3';
+
+        setTimeout(() => {
+          const introStart = performance.now();
+          const introDuration = 1200;
+          let introAnimId = null;
+          function introPeelEase(t) {
+            return t < 0.4 ? 0.15 * Math.pow(t / 0.4, 2) : 0.15 + 0.85 * Math.pow((t - 0.4) / 0.6, 0.5);
+          }
+          const stop0 = document.getElementById('grad-stop-0');
+          const stop1 = document.getElementById('grad-stop-1');
+          function parseHex(hex) { return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)]; }
+          const lightColors = [parseHex(window._introLightStop0 || '#DFF0FA'), parseHex(window._introLightStop1 || '#D0E8F4')];
+          const origColors  = [parseHex(window._introOrigStop0 || '#9DD5EE'), parseHex(window._introOrigStop1 || '#98C4DA')];
+          function lerpColor(from, to, t) {
+            return '#' + [0,1,2].map(i => Math.round(from[i] + (to[i]-from[i])*t).toString(16).padStart(2,'0')).join('');
+          }
+          function introAnimate(currentTime) {
+            const elapsed = currentTime - introStart;
+            const progress = Math.min(elapsed / introDuration, 1);
+            const ep = introPeelEase(progress);
+            const pts = introLerp(introTightCurl, introCurled, ep);
+            introNoteShape.setAttribute('d', introPointsToPath(pts));
+            stop0.setAttribute('stop-color', lerpColor(lightColors[0], origColors[0], ep));
+            stop1.setAttribute('stop-color', lerpColor(lightColors[1], origColors[1], ep));
+            if (progress < 1) introAnimId = requestAnimationFrame(introAnimate);
+          }
+          introAnimId = requestAnimationFrame(introAnimate);
+
+          introWrapper.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+          introWrapper.style.transform = '';
+          setTimeout(() => { introWrapper.style.transition = ''; }, 1300);
+
+          if (introShadow) {
+            introShadow.style.transition = 'opacity 0.9s ease-out';
+            introShadow.style.opacity = '1';
+            setTimeout(() => { introShadow.style.transition = ''; }, 1000);
+          }
+          sessionStorage.setItem('wm-intro-seen', '1');
+        }, 200);
+      }
+    })();
+
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v82';
+      if (tv) tv.textContent = ' · test v83';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

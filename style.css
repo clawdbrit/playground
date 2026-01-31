@@ -883,14 +883,41 @@ body {
     right: 12px;
   }
 
-  /* Drawing mode adjustments */
+  /* Drawing mode adjustments — center note vertically, zoom slightly */
+  .drawing-mode-active {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 99;
+  }
+
   .note-wrapper.drawing-mode {
-    transform: scale(1.08);
+    transform: scale(1.12);
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -55%) scale(1.12) !important;
+    z-index: 100 !important;
   }
 
   .drawing-mode-active .wallet-wrapper {
     opacity: 0;
     pointer-events: none;
+  }
+
+  /* Block overlay clicks in draw mode — must use toolbar to exit */
+  .drawing-mode-active .focus-overlay.active {
+    pointer-events: none;
+  }
+
+  /* Toolbar fixed at bottom center on mobile */
+  .drawing-toolbar.visible {
+    top: auto !important;
+    bottom: 40px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
   }
 }
 

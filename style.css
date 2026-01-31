@@ -168,6 +168,11 @@ body {
   transform: scale(1.08) translateY(-2px);
 }
 
+.note-wrapper.drawing-mode:hover,
+.note-wrapper.drawing-mode.flat:hover {
+  transform: scale(1.1);
+}
+
 /* Shadow layer - blurred rectangle behind note, gradient fades in from top */
 .note-shadow {
   position: absolute;

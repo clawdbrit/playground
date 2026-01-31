@@ -1162,6 +1162,15 @@
         // Focus/blur on textarea triggers the flat/curled animation
         const focusOverlay = document.getElementById('focus-overlay');
         const langPicker2 = document.getElementById('lang-picker');
+
+        // Click overlay to dismiss focused/drawing note
+        focusOverlay.addEventListener('click', () => {
+          if (isDrawingMode) return; // don't dismiss drawing mode from overlay
+          textarea.blur();
+          // Blur any spawned note textareas
+          document.querySelectorAll('.dragged-note .textarea').forEach(t => t.blur());
+        });
+
         // Custom events for external code (e.g., drag) to trigger flat/curl
         noteWrapper.addEventListener('note:lift', () => {
           if (!isFlat) {
@@ -2328,7 +2337,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v108';
+      if (tv) tv.textContent = ' · test v109';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

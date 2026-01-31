@@ -760,14 +760,19 @@ body {
   }
 
   .note-shadow {
-    top: 50px;
-    left: 30px;
-    width: 200px;
-    height: 160px;
+    top: 60px;
+    left: 20px;
+    width: 280px;
+    height: 260px;
+    filter: blur(28px);
   }
 
   .note-wrapper.flat .note-shadow {
-    opacity: 0;
+    top: 80px;
+    left: 15px;
+    width: 290px;
+    height: 270px;
+    filter: blur(44px);
   }
 
   /* Scale up bigger on mobile when clicked/focused - almost edge to edge */

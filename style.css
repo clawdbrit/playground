@@ -134,6 +134,7 @@ body {
   .note-wrapper:hover {
     transform: translateY(-2px);
   }
+  .note-wrapper.drawing-mode,
   .note-wrapper.drawing-mode:hover {
     transform: scale(1.1);
   }
@@ -215,6 +216,7 @@ body {
   left: 0;
   isolation: isolate;
   z-index: 2;
+  overflow: hidden;
 }
 
 /* note-version removed - using build-hover-area instead */
@@ -380,7 +382,7 @@ body {
 }
 
 .note-wrapper.drawing-mode {
-  transform: scale(1.15);
+  transform: scale(1.1);
   z-index: 100;
 }
 
@@ -587,7 +589,8 @@ body {
   height: 100%;
   pointer-events: none;
   z-index: 5;
-  clip-path: inset(5% 3% 4% 3% round 2px);
+  clip-path: inset(2% 2% 2% 2% round 2px);
+  overflow: hidden;
 }
 
 .textarea {

@@ -990,7 +990,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   position: absolute;
-  background: rgba(0,0,0,0.04);
+  background: rgba(0,0,0,0.1);
   margin-top: 70px;
 }
 
@@ -1008,7 +1008,7 @@ body {
 .add-note-btn .plus-icon::after {
   content: '';
   position: absolute;
-  background: rgba(0,0,0,0.25);
+  background: #ffffff;
   border-radius: 4px;
 }
 
@@ -1028,7 +1028,7 @@ body {
 
 .add-note-btn:hover .plus-icon::before,
 .add-note-btn:hover .plus-icon::after {
-  background: rgba(0,0,0,0.35);
+  background: #ffffff;
 }
 
 .dragged-note {

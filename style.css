@@ -1076,7 +1076,7 @@ body {
   font-size: 11px;
   color: rgba(0,0,0,0.5);
   letter-spacing: 0.5px;
-  word-spacing: 8px;
+  word-spacing: normal;
 }
 
 .build-hover-area .copyright {
@@ -1102,6 +1102,11 @@ body {
   color: rgba(0,0,0,0.5);
   text-decoration: none;
   transition: color .15s ease;
+  margin: 0 6px;
+}
+
+.build-hover-area .copyright {
+  margin: 0 6px;
 }
 
 .footer-link:hover {

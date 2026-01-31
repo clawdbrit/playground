@@ -1507,11 +1507,27 @@
           document.body.classList.remove('drawing-mode-active');
           targetWrapper.classList.remove('drawing-mode');
           drawingToolbar.classList.remove('visible');
-          // Restore placeholder on all textareas
+          // Check if canvas has drawing content
+          const activeCanvas = activeDrawingCanvas;
+          let hasDrawing = false;
+          if (activeCanvas) {
+            const ctx = activeCanvas.getContext('2d');
+            const px = ctx.getImageData(0, 0, activeCanvas.width, activeCanvas.height).data;
+            for (let i = 3; i < px.length; i += 4) {
+              if (px[i] > 0) { hasDrawing = true; break; }
+            }
+          }
+
+          // Restore placeholder — but hide it if there's a drawing and no typed text
           const memo2 = document.getElementById('memo');
           if (memo2) memo2.classList.remove('hide-for-drawing');
           const targetTa = targetWrapper.querySelector('.textarea');
-          if (targetTa) targetTa.classList.remove('hide-for-drawing');
+          if (targetTa) {
+            targetTa.classList.remove('hide-for-drawing');
+            if (hasDrawing && !targetTa.value.trim()) {
+              targetTa.placeholder = '';
+            }
+          }
 
           if (isOriginalNote) {
             // Original note: full close with animations
@@ -2344,7 +2360,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v118';
+      if (tv) tv.textContent = ' · test v119';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

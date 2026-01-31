@@ -1790,8 +1790,8 @@
           <defs>
             <mask id="plus-mask">
               <rect width="260" height="260" rx="20" fill="white"/>
-              <rect x="115" y="55" width="30" height="150" rx="15" fill="black"/>
-              <rect x="55" y="115" width="150" height="30" rx="15" fill="black"/>
+              <rect x="120" y="90" width="20" height="80" rx="10" fill="black"/>
+              <rect x="90" y="120" width="80" height="20" rx="10" fill="black"/>
             </mask>
           </defs>
           <rect class="bg" width="260" height="260" rx="20" fill="rgba(0,0,0,0.05)" mask="url(#plus-mask)"/>
@@ -2346,7 +2346,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v112';
+      if (tv) tv.textContent = ' · test v113';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

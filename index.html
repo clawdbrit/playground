@@ -1612,7 +1612,25 @@
 
             // Prepare pass on server (includes drawing), get token for QR
             try {
-              walletQr.innerHTML = '<div style="padding:16px;text-align:center;color:#888;font-size:13px;">Generating QR…</div>';
+              // Show cycling placeholder QR codes while loading
+              const placeholderTexts = ['walletmemo.com/loading', 'walletmemo.com/memo', 'walletmemo.com/pass'];
+              let placeholderIdx = 0;
+              function showPlaceholderQR() {
+                const pqr = qrcode(0, 'M');
+                pqr.addData(placeholderTexts[placeholderIdx % placeholderTexts.length]);
+                pqr.make();
+                const pImg = document.createElement('img');
+                pImg.src = pqr.createDataURL(4, 4);
+                pImg.style.cssText = 'width:100%;height:auto;display:block;opacity:0.35;transition:opacity 0.25s;';
+                const pInner = document.createElement('div');
+                pInner.style.cssText = 'background:#fff;border-radius:6px;padding:8px;width:100%;box-sizing:border-box;';
+                pInner.appendChild(pImg);
+                walletQr.innerHTML = '';
+                walletQr.appendChild(pInner);
+                placeholderIdx++;
+              }
+              showPlaceholderQR();
+              const placeholderInterval = setInterval(showPlaceholderQR, 400);
               appleWalletBtn.classList.add('qr-open');
               
               const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
@@ -1636,10 +1654,12 @@
               const qrInner = document.createElement('div');
               qrInner.style.cssText = 'background:#fff;border-radius:6px;padding:8px;width:100%;box-sizing:border-box;';
               qrInner.appendChild(img);
+              clearInterval(placeholderInterval);
               walletQr.innerHTML = '';
               walletQr.appendChild(qrInner);
               qrVisible = true;
             } catch (err) {
+              clearInterval(placeholderInterval);
               console.error('QR generation failed:', err);
               walletQr.innerHTML = '';
               appleWalletBtn.classList.remove('qr-open');
@@ -2189,7 +2209,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v84';
+      if (tv) tv.textContent = ' · test v85';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }

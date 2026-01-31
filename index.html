@@ -1392,6 +1392,12 @@
           drawingToolbar.style.top = (noteRect.bottom + 12) + 'px';
           drawingToolbar.style.left = (noteRect.left + noteRect.width / 2) + 'px';
 
+          // Hide placeholder text if textarea is empty
+          const memo = document.getElementById('memo');
+          if (memo && !memo.value.trim()) {
+            memo.classList.add('hide-for-drawing');
+          }
+
           // Sync pen settings
           drawingCtx.strokeStyle = currentPenColor;
           drawingCtx.lineWidth = currentPenSize;
@@ -1470,6 +1476,8 @@
           document.body.classList.remove('drawing-mode-active');
           targetWrapper.classList.remove('drawing-mode');
           drawingToolbar.classList.remove('visible');
+          const memo2 = document.getElementById('memo');
+          if (memo2) memo2.classList.remove('hide-for-drawing');
 
           if (isOriginalNote) {
             // Original note: full close with animations

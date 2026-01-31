@@ -831,6 +831,25 @@
           return 1 - Math.pow(1 - t, 3);
         }
 
+        // Update shadow position based on note's screen position
+        // Light source is at viewport center — shadow shifts away from center
+        function updateShadowPosition(wrapper) {
+          const shadow = wrapper.querySelector('.note-shadow');
+          if (!shadow) return;
+          const rect = wrapper.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          const vw = window.innerWidth / 2;
+          const vh = window.innerHeight / 2;
+          // -1 to 1 range, how far from center
+          const dx = (cx - vw) / vw;
+          const dy = (cy - vh) / vh;
+          // Max shift: 12px horizontal, 8px vertical
+          const shiftX = dx * 12;
+          const shiftY = dy * 8;
+          shadow.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+        }
+
         // "Peel off" easing — resists at first then pops free
         function easePeelOff(t) {
           return t < 0.4
@@ -1678,6 +1697,7 @@
             offsetX = origX + dx;
             offsetY = origY + dy;
             el.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(1.03) rotate(${tiltDeg}deg)`;
+            updateShadowPosition(el);
           });
 
           document.addEventListener('mouseup', () => {
@@ -1691,6 +1711,7 @@
             el.classList.remove('flat');
             el.dispatchEvent(new Event('note:stick'));
             el.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+            updateShadowPosition(el);
             const ta = el.querySelector('textarea');
             if (ta) ta.blur();
             // Suppress the click event that fires after mouseup
@@ -1704,6 +1725,7 @@
         }
 
         makeDraggable(wrapper);
+        updateShadowPosition(wrapper);
 
         // Add new note button
         const placeholders = [
@@ -2026,7 +2048,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v60';
+      if (tv) tv.textContent = ' · test v61';
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');

@@ -901,7 +901,17 @@
           // Max shift: 20px horizontal, 14px vertical
           const shiftX = dx * 20;
           const shiftY = dy * 14;
+          // Top-right = sharper + darker, bottom-left = softer + lighter
+          // Combine dx and dy: top-right is dx>0, dy<0 → factor goes negative
+          const cornerFactor = (dx - dy) / 2; // -1 (bottom-left) to +1 (top-right)
+          const isLifted = wrapper.classList.contains('flat') || wrapper.classList.contains('drawing-mode');
+          const baseBlur = isLifted ? 52 : 30;
+          const blurAdjust = cornerFactor * -6; // top-right: less blur (-6), bottom-left: more (+6)
+          const opacityAdjust = cornerFactor * 0.12; // top-right: darker (+0.12)
+          const blur = Math.max(10, baseBlur + blurAdjust);
           shadow.style.transform = `translate(${shiftX}px, ${shiftY}px)`;
+          shadow.style.filter = `blur(${blur}px)`;
+          shadow.style.opacity = Math.min(1, Math.max(0.2, 1 + opacityAdjust));
         }
 
         // "Peel off" easing — resists at first then pops free

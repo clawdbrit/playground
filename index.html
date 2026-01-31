@@ -158,12 +158,11 @@
           if (!sessionStorage.getItem('wm-intro-seen')) {
             console.log('[intro] Setting tight curl');
             document.getElementById('note-shape').setAttribute('d',
-              'M34.6016 19.2695 L250.102 18.5996 C250.102 18.5996 260.602 30 285 100 L28.6016 231.1 C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695 Z'
+              'M34.6016 19.2695 L250.102 18.5996 C250.102 18.5996 249.602 42 262 195 L28.6016 231.1 C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695 Z'
             );
-            // Also visually tilt the whole note as if it's peeling off the wall
+            // Slight tilt as if corner is peeling
             var nw = document.getElementById('note-wrapper');
-            nw.style.transform = 'rotate(3deg) scale(0.97)';
-            nw.style.opacity = '0.85';
+            nw.style.transform = 'rotate(1deg)';
             nw.style.transition = 'none';
           }
         </script>
@@ -817,17 +816,17 @@
         // SVG path points for the two states (matching structure for smooth morphing)
         // Structure: [M, L, C1, C2, C3, L, C1, C2, C3]
         const statePoints = {
-          // Extra tight curl for intro animation — bottom-right folds way up
+          // Slightly tighter curl for intro — bottom-right corner lifted
           tightCurl: [
-            [34.6016, 19.2695],    // M - start
-            [250.102, 18.5996],    // L - top right
-            [250.102, 18.5996],    // C1
-            [260.602, 30.0],       // C2 - very tight curve
-            [285.0, 100.0],        // C3 - bottom right folded WAY up
-            [28.6016, 231.1],      // L - bottom left
-            [36.6029, 66.5996],    // C1
-            [34.6016, 19.2695],    // C2
-            [34.6016, 19.2695]     // C3
+            [34.6016, 19.2695],    // M - start (same)
+            [250.102, 18.5996],    // L - top right (same)
+            [250.102, 18.5996],    // C1 (same)
+            [249.602, 42.0],       // C2 - slightly tighter curve
+            [262.0, 195.0],        // C3 - bottom right lifted up ~35px
+            [28.6016, 231.1],      // L - bottom left (same)
+            [36.6029, 66.5996],    // C1 (same)
+            [34.6016, 19.2695],    // C2 (same)
+            [34.6016, 19.2695]     // C3 (same)
           ],
           curled: [
             [34.6016, 19.2695],    // M - start

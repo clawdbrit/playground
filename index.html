@@ -1769,38 +1769,58 @@
         // Peel-to-reveal intro animation (first visit only)
         // ==========================================
         if (!sessionStorage.getItem('wm-intro-seen')) {
-          // Start with tight curl
-          noteShape.setAttribute('d', pointsToPath(statePoints.tightCurl));
+          // Start with tight curl (noteShape/statePoints are in an IIFE, re-query here)
+          const introNoteShape = document.getElementById('note-shape');
+          const introWrapper = document.getElementById('note-wrapper');
+          const introTightCurl = [
+            [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
+            [249.602, 42.0], [262.0, 195.0],
+            [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
+          ];
+          const introCurled = [
+            [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
+            [249.602, 49.0996], [257.602, 228.6],
+            [28.6016, 231.1], [36.6029, 66.5996], [34.6016, 19.2695], [34.6016, 19.2695]
+          ];
+          function introPointsToPath(pts) {
+            return `M${pts[0][0]} ${pts[0][1]} L${pts[1][0]} ${pts[1][1]} C${pts[2][0]} ${pts[2][1]} ${pts[3][0]} ${pts[3][1]} ${pts[4][0]} ${pts[4][1]} L${pts[5][0]} ${pts[5][1]} C${pts[6][0]} ${pts[6][1]} ${pts[7][0]} ${pts[7][1]} ${pts[8][0]} ${pts[8][1]} Z`;
+          }
+          function introLerp(from, to, t) {
+            return from.map((p, i) => [p[0] + (to[i][0] - p[0]) * t, p[1] + (to[i][1] - p[1]) * t]);
+          }
+          introNoteShape.setAttribute('d', introPointsToPath(introTightCurl));
 
-          // Also start with lower opacity on the shadow for drama
-          const introShadow = wrapper.querySelector('.note-shadow');
+          const introShadow = introWrapper.querySelector('.note-shadow');
           if (introShadow) introShadow.style.opacity = '0.3';
 
           // Peel to normal curled state after a beat
           console.log('[intro] About to set timeout');
           setTimeout(() => {
             console.log('[intro] Starting peel animation');
-            // Animate the SVG path: tightCurl → curled with peel easing
-            if (animationId) cancelAnimationFrame(animationId);
+            // Animate the SVG path: tightCurl → curled
             const introStart = performance.now();
             const introDuration = 1200;
+            let introAnimId = null;
+            // Peel-off easing: resist then pop
+            function introPeelEase(t) {
+              return t < 0.4 ? 0.15 * Math.pow(t / 0.4, 2) : 0.15 + 0.85 * Math.pow((t - 0.4) / 0.6, 0.5);
+            }
             function introAnimate(currentTime) {
               const elapsed = currentTime - introStart;
               const progress = Math.min(elapsed / introDuration, 1);
-              const easedProgress = easePeelOff(progress);
-              const currentPoints = lerpPoints(statePoints.tightCurl, statePoints.curled, easedProgress);
-              noteShape.setAttribute('d', pointsToPath(currentPoints));
+              const ep = introPeelEase(progress);
+              const pts = introLerp(introTightCurl, introCurled, ep);
+              introNoteShape.setAttribute('d', introPointsToPath(pts));
               if (progress < 1) {
-                animationId = requestAnimationFrame(introAnimate);
+                introAnimId = requestAnimationFrame(introAnimate);
               }
             }
-            animationId = requestAnimationFrame(introAnimate);
+            introAnimId = requestAnimationFrame(introAnimate);
 
-            // Animate the wrapper back to normal (rotation + opacity)
-            noteWrapper.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease-out';
-            noteWrapper.style.transform = '';
-            noteWrapper.style.opacity = '1';
-            setTimeout(() => { noteWrapper.style.transition = ''; }, 1300);
+            // Animate the wrapper back to normal (rotation)
+            introWrapper.style.transition = 'transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)';
+            introWrapper.style.transform = '';
+            setTimeout(() => { introWrapper.style.transition = ''; }, 1300);
 
             // Fade shadow back in
             if (introShadow) {

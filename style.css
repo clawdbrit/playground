@@ -386,14 +386,9 @@ body {
   overflow: hidden;
 }
 
-.drawing-mode-active .wallet-wrapper {
+.drawing-mode-active .wallet-wrapper > *:not(.build-hover-area) {
   opacity: 0;
   pointer-events: none;
-}
-
-.drawing-mode-active .wallet-wrapper .build-hover-area {
-  opacity: 1;
-  pointer-events: auto;
 }
 
 .note-wrapper.drawing-mode {
@@ -413,8 +408,9 @@ body {
 }
 
 .note-wrapper.drawing-mode .note-menu-btn {
-  opacity: 0;
-  pointer-events: none;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  display: none !important;
 }
 
 .note-wrapper.drawing-mode .textarea.hide-for-drawing {

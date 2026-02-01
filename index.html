@@ -2413,13 +2413,14 @@
       if (savedLang2) applyLanguage(savedLang2);
     }
 
-    // Save drawing state before navigating away
+    // Save ALL notes state before navigating away
     function saveNoteState() {
       const state = [];
       window.noteRegistry.forEach((reg, id) => {
         const wrapper = reg.wrapper;
         const canvas = wrapper.querySelector('.note-drawing-layer');
         const textarea = wrapper.querySelector('.textarea');
+        const rect = wrapper.getBoundingClientRect();
         state.push({
           id: id,
           color: reg.color,
@@ -2427,39 +2428,63 @@
           text: textarea ? textarea.value : '',
           left: wrapper.style.left || '',
           top: wrapper.style.top || '',
+          transform: wrapper.style.transform || '',
         });
       });
       sessionStorage.setItem('wm-note-state', JSON.stringify(state));
     }
 
-    // Restore drawing state on load
+    // Restore ALL notes state on load
     (function restoreNoteState() {
       const saved = sessionStorage.getItem('wm-note-state');
       if (!saved) return;
       sessionStorage.removeItem('wm-note-state');
       try {
         const state = JSON.parse(saved);
-        state.forEach(s => {
-          if (!s.drawing) return;
-          const reg = window.noteRegistry.get(s.id);
-          if (!reg) return;
-          const canvas = reg.wrapper.querySelector('.note-drawing-layer');
-          if (!canvas) return;
-          const ctx = canvas.getContext('2d');
-          const img = new Image();
-          img.onload = function() {
-            ctx.save();
-            ctx.setTransform(1, 0, 0, 1, 0, 0); // reset 2x scale
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-          };
-          img.src = s.drawing;
-          // Restore text
-          const textarea = reg.wrapper.querySelector('.textarea');
-          if (textarea && s.text) textarea.value = s.text;
-        });
-      } catch(e) {}
+        // First, spawn extra notes if needed (note-0 already exists)
+        const extraNotes = state.filter(s => s.id !== 'note-0');
+        const addBtn = document.querySelector('.add-note-btn');
+        extraNotes.forEach(() => { if (addBtn) addBtn.click(); });
+
+        // Wait a tick for spawned notes to initialize
+        setTimeout(() => {
+          state.forEach(s => {
+            const reg = window.noteRegistry.get(s.id);
+            if (!reg) return;
+            const wrapper = reg.wrapper;
+            const canvas = wrapper.querySelector('.note-drawing-layer');
+            const textarea = wrapper.querySelector('.textarea');
+
+            // Restore drawing
+            if (s.drawing && canvas) {
+              const ctx = canvas.getContext('2d');
+              const img = new Image();
+              img.onload = function() {
+                ctx.save();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
+              };
+              img.src = s.drawing;
+            }
+            // Restore text
+            if (textarea && s.text) textarea.value = s.text;
+            // Restore position
+            if (s.left) wrapper.style.left = s.left;
+            if (s.top) wrapper.style.top = s.top;
+            if (s.transform) wrapper.style.transform = s.transform;
+
+            // Restore color if different
+            if (s.color && reg.color !== s.color && window.noteRegistry.get(s.id)) {
+              // Find and click the color swatch if available
+              const dropdown = wrapper.querySelector('.note-dropdown');
+              const swatch = dropdown ? dropdown.querySelector(`[data-color="${s.color}"]`) : null;
+              if (swatch) swatch.click();
+            }
+          });
+        }, 100);
+      } catch(e) { console.warn('Note restore failed:', e); }
     })();
 
     // Page transition: slide out left when clicking changelog

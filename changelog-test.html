@@ -305,6 +305,7 @@
     <script>
     // Decorative note drag + shape + color animation
     (function() {
+      const tightCurlPath = "M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 255 210L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z";
       const curledPath = "M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z";
       const flatPath = "M29 18L258 18C258 18 258 125 258 232L29 232C29 125 29 18 29 18Z";
       const curledGradients = {
@@ -341,6 +342,59 @@
         if (note.classList.contains('yellow')) return 'yellow';
         return 'pink';
       }
+      // Peel-in intro animation with stagger
+      const lightGradients = {
+        blue:   ['#DFF0FA','#DFF0FA','#DFF0FA','#E4F2FB','#E8F5FC','#ECF7FD'],
+        yellow: ['#F7EA9C','#F7EA9C','#F7EA9C','#F8EDA6','#F9F0B0','#FAF3BA'],
+        pink:   ['#F8DEE3','#F8DEE3','#F8DEE3','#F9E3E7','#FAE8EB','#FBEDEF'],
+      };
+      const allNotes = document.querySelectorAll('.deco-note');
+      allNotes.forEach(note => {
+        const path = note.querySelector('.deco-paper path');
+        const shadow = note.querySelector('.deco-shadow');
+        const gradStops = Array.from(note.querySelectorAll('linearGradient stop'));
+        const colorKey = getColorKey(note);
+        if (path) path.setAttribute('d', tightCurlPath);
+        if (shadow) shadow.style.opacity = '0.3';
+        gradStops.forEach((stop, i) => { if (lightGradients[colorKey][i]) stop.setAttribute('stop-color', lightGradients[colorKey][i]); });
+        note.style.opacity = '0';
+        note.style.transform = 'perspective(600px) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) rotate(var(--rz, 0deg)) scale(0.92)';
+      });
+      function peelEase(t) {
+        return t < 0.4 ? 0.15 * Math.pow(t / 0.4, 2) : 0.15 + 0.85 * Math.pow((t - 0.4) / 0.6, 0.5);
+      }
+      allNotes.forEach((note, index) => {
+        const path = note.querySelector('.deco-paper path');
+        const shadow = note.querySelector('.deco-shadow');
+        const gradStops = Array.from(note.querySelectorAll('linearGradient stop'));
+        const colorKey = getColorKey(note);
+        const lightC = lightGradients[colorKey].map(hexToRgb);
+        const normalC = curledGradients[colorKey].map(hexToRgb);
+        const tightPts = tightCurlPath.match(/-?[\d.]+/g).map(Number);
+        const curledPts = curledPath.match(/-?[\d.]+/g).map(Number);
+        setTimeout(() => {
+          note.style.opacity = '1';
+          note.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-out';
+          note.style.transform = '';
+          if (shadow) { shadow.style.transition = 'opacity 0.8s ease-out'; shadow.style.opacity = '1'; }
+          const start = performance.now(); const duration = 1000;
+          function tick(now) {
+            const t = Math.min((now - start) / duration, 1); const ep = peelEase(t);
+            if (path) {
+              const lerped = tightPts.map((v, i) => v + (curledPts[i] - v) * ep);
+              path.setAttribute('d', `M${lerped[0]} ${lerped[1]}L${lerped[2]} ${lerped[3]}C${lerped[4]} ${lerped[5]} ${lerped[6]} ${lerped[7]} ${lerped[8]} ${lerped[9]}L${lerped[10]} ${lerped[11]}C${lerped[12]} ${lerped[13]} ${lerped[14]} ${lerped[15]} ${lerped[16]} ${lerped[17]}Z`);
+            }
+            gradStops.forEach((stop, i) => {
+              const from = lightC[i], to = normalC[i];
+              stop.setAttribute('stop-color', rgbToHex(lerpColor(from, to, ep)));
+            });
+            if (t < 1) requestAnimationFrame(tick);
+            else { note.style.transition = 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)'; if (shadow) shadow.style.transition = ''; }
+          }
+          requestAnimationFrame(tick);
+        }, 300 + index * 250);
+      });
+
       document.querySelectorAll('.deco-note').forEach(note => {
         const svg = note.querySelector('.deco-paper');
         const path = svg ? svg.querySelector('path') : null;

@@ -358,7 +358,7 @@
         if (shadow) shadow.style.opacity = '0.3';
         gradStops.forEach((stop, i) => { if (lightGradients[colorKey][i]) stop.setAttribute('stop-color', lightGradients[colorKey][i]); });
         note.style.opacity = '0';
-        note.style.transform = 'perspective(600px) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) rotate(var(--rz, 0deg)) scale(0.92)';
+        
       });
       function peelEase(t) {
         return t < 0.4 ? 0.15 * Math.pow(t / 0.4, 2) : 0.15 + 0.85 * Math.pow((t - 0.4) / 0.6, 0.5);
@@ -374,8 +374,8 @@
         const curledPts = curledPath.match(/-?[\d.]+/g).map(Number);
         setTimeout(() => {
           note.style.opacity = '1';
-          note.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease-out';
-          note.style.transform = '';
+          note.style.transition = 'opacity 0.4s ease-out';
+          
           if (shadow) { shadow.style.transition = 'opacity 0.8s ease-out'; shadow.style.opacity = '1'; }
           const start = performance.now(); const duration = 1000;
           function tick(now) {

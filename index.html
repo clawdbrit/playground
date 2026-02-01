@@ -2376,7 +2376,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v161';
+      if (tv) tv.textContent = ' · test v162';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.visibility = 'visible'; }
@@ -2418,8 +2418,6 @@
 
     // Save ALL notes state before navigating away
     function saveNoteState() {
-      // Blur all textareas first to ensure notes are in curled state
-      document.querySelectorAll('.textarea').forEach(t => t.blur());
       const state = [];
       window.noteRegistry.forEach((reg, id) => {
         const wrapper = reg.wrapper;
@@ -2445,6 +2443,7 @@
       const _addBtn = document.querySelector('.add-note-btn');
       const saveData = { notes: state, addBtnVisible: _addBtn && _addBtn.style.display !== 'none' };
       sessionStorage.setItem('wm-note-state', JSON.stringify(saveData));
+      debugLog('saved:' + state.length + 'notes,' + state.map(s => s.id + ':' + (s.text ? s.text.substring(0,10) : 'empty') + ',draw:' + (s.drawing ? s.drawing.length : 0)).join(';'));
     }
 
     // Restore ALL notes state on load

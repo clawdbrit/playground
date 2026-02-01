@@ -116,10 +116,16 @@
         position: absolute;
         width: 180px;
         height: 170px;
-        pointer-events: none;
+        pointer-events: auto;
         user-select: none;
         -webkit-user-select: none;
-        transition: transform 0.25s ease-out;
+        cursor: grab;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .deco-note.is-dragging {
+        cursor: grabbing;
+        z-index: 100;
+        transition: none;
       }
       .deco-note .deco-shadow {
         position: absolute;
@@ -173,33 +179,18 @@
         text-align: center;
       }
 
-      /* Perspective tilts */
-      .deco-note.tilt-left {
-        transform: perspective(600px) rotateY(3deg) rotateX(-1deg);
+      /* Perspective tilts — each note gets a unique angle via inline --ry and --rx */
+      .deco-note {
+        transform: perspective(600px) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) rotate(var(--rz, 0deg));
       }
-      .deco-note.tilt-right {
-        transform: perspective(600px) rotateY(-3deg) rotateX(-1deg);
-      }
-      .deco-note.tilt-left-2 {
-        transform: perspective(600px) rotateY(2deg) rotateX(1deg);
-      }
-      .deco-note.tilt-right-2 {
-        transform: perspective(600px) rotateY(-2deg) rotateX(1deg);
-      }
-
       @media (hover: hover) {
-        .deco-note.tilt-left:hover {
-          transform: perspective(600px) rotateY(3deg) rotateX(-1deg) translateY(-3px);
+        .deco-note:not(.is-dragging):hover {
+          transform: perspective(600px) rotateY(var(--ry, 0deg)) rotateX(var(--rx, 0deg)) rotate(var(--rz, 0deg)) translateY(-4px);
         }
-        .deco-note.tilt-right:hover {
-          transform: perspective(600px) rotateY(-3deg) rotateX(-1deg) translateY(-3px);
-        }
-        .deco-note.tilt-left-2:hover {
-          transform: perspective(600px) rotateY(2deg) rotateX(1deg) translateY(-3px);
-        }
-        .deco-note.tilt-right-2:hover {
-          transform: perspective(600px) rotateY(-2deg) rotateX(1deg) translateY(-3px);
-        }
+      }
+      /* Dragging state: flat square, no perspective tilt */
+      .deco-note.is-dragging {
+        transform: scale(1.08) !important;
       }
 
       /* Position notes on left and right sides */
@@ -245,7 +236,7 @@
     <!-- Decorative sticky notes (left & right of content) -->
     <div class="deco-notes-container">
       <!-- Left side notes -->
-      <div class="deco-note blue tilt-left left-1">
+      <div class="deco-note blue left-1" style="--ry:4deg;--rx:-1.5deg;--rz:-2deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df1)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg1)"/></g>
@@ -265,7 +256,7 @@
         <div class="deco-text">remember to update the readme ✏️</div>
       </div>
 
-      <div class="deco-note yellow tilt-right right-1">
+      <div class="deco-note yellow right-1" style="--ry:-5deg;--rx:1deg;--rz:1.5deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df2)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg2)"/></g>
@@ -285,7 +276,7 @@
         <div class="deco-text">ship it! 🚀</div>
       </div>
 
-      <div class="deco-note pink tilt-left-2 left-2">
+      <div class="deco-note pink left-2" style="--ry:3deg;--rx:2deg;--rz:3deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df3)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg3)"/></g>
@@ -306,7 +297,7 @@
       </div>
 
       <!-- Right side notes -->
-      <div class="deco-note blue tilt-right-2 right-2">
+      <div class="deco-note blue right-2" style="--ry:-3.5deg;--rx:-2deg;--rz:-1deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df4)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg4)"/></g>
@@ -326,7 +317,7 @@
         <div class="deco-text">bugs are features in disguise 🐛</div>
       </div>
 
-      <div class="deco-note yellow tilt-left left-3">
+      <div class="deco-note yellow left-3" style="--ry:5.5deg;--rx:0.5deg;--rz:-3.5deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df5)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg5)"/></g>
@@ -346,7 +337,7 @@
         <div class="deco-text">v2 ideas go here 💡</div>
       </div>
 
-      <div class="deco-note pink tilt-right right-3">
+      <div class="deco-note pink right-3" style="--ry:-4.5deg;--rx:1.5deg;--rz:2.5deg">
         <div class="deco-shadow"></div>
         <svg class="deco-paper" width="287" height="270" viewBox="0 0 287 270" fill="none" xmlns="http://www.w3.org/2000/svg">
           <g filter="url(#df6)"><path d="M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z" fill="url(#dg6)"/></g>
@@ -366,6 +357,74 @@
         <div class="deco-text">almost perfect ✨</div>
       </div>
     </div>
+
+    <script>
+    // Decorative note drag + shape animation
+    (function() {
+      const curledPath = "M34.6016 19.2695L250.102 18.5996C250.102 18.5996 249.602 49.0996 257.602 228.6L28.6016 231.1C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695Z";
+      const flatPath = "M29 18L258 18C258 18 258 125 258 232L29 232C29 125 29 18 29 18Z";
+
+      document.querySelectorAll('.deco-note').forEach(note => {
+        const svg = note.querySelector('.deco-paper');
+        const path = svg ? svg.querySelector('path') : null;
+        const shadow = note.querySelector('.deco-shadow');
+        let isDragging = false;
+        let startX, startY, origLeft, origTop;
+
+        function onDown(e) {
+          e.preventDefault();
+          isDragging = true;
+          note.classList.add('is-dragging');
+          const touch = e.touches ? e.touches[0] : e;
+          const rect = note.parentElement.getBoundingClientRect();
+          startX = touch.clientX;
+          startY = touch.clientY;
+          origLeft = note.offsetLeft;
+          origTop = note.offsetTop;
+          // Animate to flat/square shape
+          if (path) path.setAttribute('d', flatPath);
+          // Expand shadow for lifted look
+          if (shadow) {
+            shadow.style.transition = 'all 0.3s ease';
+            shadow.style.filter = 'blur(28px)';
+            shadow.style.opacity = '0.9';
+            shadow.style.top = '45px';
+          }
+        }
+
+        function onMove(e) {
+          if (!isDragging) return;
+          e.preventDefault();
+          const touch = e.touches ? e.touches[0] : e;
+          const dx = touch.clientX - startX;
+          const dy = touch.clientY - startY;
+          note.style.left = (origLeft + dx) + 'px';
+          note.style.top = (origTop + dy) + 'px';
+          note.style.right = 'auto';
+        }
+
+        function onUp() {
+          if (!isDragging) return;
+          isDragging = false;
+          note.classList.remove('is-dragging');
+          // Animate back to curled shape
+          if (path) path.setAttribute('d', curledPath);
+          if (shadow) {
+            shadow.style.filter = '';
+            shadow.style.opacity = '';
+            shadow.style.top = '';
+          }
+        }
+
+        note.addEventListener('mousedown', onDown);
+        note.addEventListener('touchstart', onDown, { passive: false });
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchend', onUp);
+      });
+    })();
+    </script>
 
     <div class="page-content">
     <a href="./" class="back-link" id="back-link">Wallet Memo</a>

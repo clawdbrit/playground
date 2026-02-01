@@ -161,7 +161,7 @@
         </svg>
         <script>
           // Peel-to-reveal: immediately set tight curl + visual state before first paint
-          if (true || !sessionStorage.getItem('wm-intro-seen')) {
+          if (!sessionStorage.getItem('wm-note-state') && (true || !sessionStorage.getItem('wm-intro-seen'))) {
             console.log('[intro] Setting tight curl');
             document.getElementById('note-shape').setAttribute('d',
               'M34.6016 19.2695 L250.102 18.5996 C250.102 18.5996 249.602 49.0996 255 210 L28.6016 231.1 C36.6029 66.5996 34.6016 19.2695 34.6016 19.2695 Z'
@@ -2305,6 +2305,8 @@
     // Peel-to-reveal intro animation (standalone — works on mobile + desktop)
     // ==========================================
     (function() {
+      // Skip intro if we're restoring notes from a changelog round-trip
+      if (sessionStorage.getItem('wm-note-state')) return;
       if (true || !sessionStorage.getItem('wm-intro-seen')) {
         const introNoteShape = document.getElementById('note-shape');
         const introWrapper = document.getElementById('note-wrapper');
@@ -2373,7 +2375,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v151';
+      if (tv) tv.textContent = ' · test v152';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }
@@ -2446,7 +2448,7 @@
         const addBtn = document.querySelector('.add-note-btn');
         extraNotes.forEach(() => { if (addBtn) addBtn.click(); });
 
-        // Wait for spawned notes to initialize
+        // Wait for spawned notes to initialize, then restore everything
         setTimeout(() => {
           state.forEach(s => {
             const reg = window.noteRegistry.get(s.id);
@@ -2455,39 +2457,51 @@
             const canvas = wrapper.querySelector('.note-drawing-layer');
             const textarea = wrapper.querySelector('.textarea');
 
-            // Restore drawing
-            if (s.drawing && canvas) {
-              const ctx = canvas.getContext('2d');
-              const img = new Image();
-              img.onload = function() {
-                ctx.save();
-                ctx.setTransform(1, 0, 0, 1, 0, 0);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                ctx.restore();
-              };
-              img.src = s.drawing;
-            }
-            // Restore text
-            if (textarea && s.text) textarea.value = s.text;
-            // Restore position (stored as transform: translate(Xpx, Ypx))
-            if (s.transform) {
-              wrapper.style.transition = 'none';
-              wrapper.style.transform = s.transform;
-              // Force reflow then re-enable transitions
-              wrapper.offsetHeight;
-              setTimeout(() => { wrapper.style.transition = ''; }, 50);
-            }
-
-            // Restore color if different
+            // Restore color FIRST (before drawing, so gradient is correct)
             if (s.color && reg.color !== s.color) {
               const dropdown = wrapper.querySelector('.note-dropdown');
               const swatch = dropdown ? dropdown.querySelector(`[data-color="${s.color}"]`) : null;
-              if (swatch) swatch.click();
+              if (swatch) {
+                wrapper.style.transition = 'none';
+                swatch.click();
+              }
             }
+
+            // Restore position — kill all transitions/animations first
+            wrapper.style.transition = 'none';
+            wrapper.style.animation = 'none';
+            if (s.transform) {
+              wrapper.style.transform = s.transform;
+            }
+            wrapper.offsetHeight; // force reflow
+
+            // Restore text
+            if (textarea && s.text) textarea.value = s.text;
+
+            // Restore drawing (slight delay to ensure canvas is sized)
+            if (s.drawing && canvas) {
+              setTimeout(() => {
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = function() {
+                  ctx.save();
+                  ctx.setTransform(1, 0, 0, 1, 0, 0);
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                  ctx.restore();
+                };
+                img.src = s.drawing;
+              }, 50);
+            }
+
+            // Re-enable transitions after restore
+            setTimeout(() => {
+              wrapper.style.transition = '';
+              wrapper.style.animation = '';
+            }, 100);
           });
           window._restoringNotes = false;
-        }, 150);
+        }, 200);
       } catch(e) { console.warn('Note restore failed:', e); }
     })();
 

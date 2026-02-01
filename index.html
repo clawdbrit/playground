@@ -2413,12 +2413,59 @@
       if (savedLang2) applyLanguage(savedLang2);
     }
 
+    // Save drawing state before navigating away
+    function saveNoteState() {
+      const state = [];
+      window.noteRegistry.forEach((reg, id) => {
+        const wrapper = reg.wrapper;
+        const canvas = wrapper.querySelector('.note-drawing-layer');
+        const textarea = wrapper.querySelector('.textarea');
+        state.push({
+          id: id,
+          color: reg.color,
+          drawing: canvas ? canvas.toDataURL('image/png') : null,
+          text: textarea ? textarea.value : '',
+          left: wrapper.style.left || '',
+          top: wrapper.style.top || '',
+        });
+      });
+      sessionStorage.setItem('wm-note-state', JSON.stringify(state));
+    }
+
+    // Restore drawing state on load
+    (function restoreNoteState() {
+      const saved = sessionStorage.getItem('wm-note-state');
+      if (!saved) return;
+      sessionStorage.removeItem('wm-note-state');
+      try {
+        const state = JSON.parse(saved);
+        state.forEach(s => {
+          if (!s.drawing) return;
+          const reg = window.noteRegistry.get(s.id);
+          if (!reg) return;
+          const canvas = reg.wrapper.querySelector('.note-drawing-layer');
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+          img.onload = function() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+          };
+          img.src = s.drawing;
+          // Restore text
+          const textarea = reg.wrapper.querySelector('.textarea');
+          if (textarea && s.text) textarea.value = s.text;
+        });
+      } catch(e) {}
+    })();
+
     // Page transition: slide out left when clicking changelog
     document.addEventListener('click', (e) => {
       const link = e.target.closest('.changelog-footer-link');
       if (!link) return;
       e.preventDefault();
       const href = link.href;
+      saveNoteState();
       sessionStorage.setItem('page-transition', 'forward');
       document.documentElement.classList.remove('page-slide-in-left');
       document.documentElement.classList.add('page-slide-out-left');

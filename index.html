@@ -2255,7 +2255,7 @@
           initNoteAnimations(newWrapper, color, noteCounter, noteStops);
 
           // Peel-in animation for spawned note (faster than intro)
-          {
+          if (!window._restoringNotes) {
             const spawnShape = svgNode.querySelector('path');
             const tightCurl = [
               [34.6016, 19.2695], [250.102, 18.5996], [250.102, 18.5996],
@@ -2373,7 +2373,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v150';
+      if (tv) tv.textContent = ' · test v151';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }
@@ -2420,14 +2420,11 @@
         const wrapper = reg.wrapper;
         const canvas = wrapper.querySelector('.note-drawing-layer');
         const textarea = wrapper.querySelector('.textarea');
-        const rect = wrapper.getBoundingClientRect();
         state.push({
           id: id,
           color: reg.color,
           drawing: canvas ? canvas.toDataURL('image/png') : null,
           text: textarea ? textarea.value : '',
-          left: wrapper.style.left || '',
-          top: wrapper.style.top || '',
           transform: wrapper.style.transform || '',
         });
       });
@@ -2441,12 +2438,15 @@
       sessionStorage.removeItem('wm-note-state');
       try {
         const state = JSON.parse(saved);
-        // First, spawn extra notes if needed (note-0 already exists)
+        // Mark that we're restoring so spawned notes skip peel animation
+        window._restoringNotes = true;
+
+        // Spawn extra notes if needed (note-0 already exists)
         const extraNotes = state.filter(s => s.id !== 'note-0');
         const addBtn = document.querySelector('.add-note-btn');
         extraNotes.forEach(() => { if (addBtn) addBtn.click(); });
 
-        // Wait a tick for spawned notes to initialize
+        // Wait for spawned notes to initialize
         setTimeout(() => {
           state.forEach(s => {
             const reg = window.noteRegistry.get(s.id);
@@ -2470,20 +2470,24 @@
             }
             // Restore text
             if (textarea && s.text) textarea.value = s.text;
-            // Restore position
-            if (s.left) wrapper.style.left = s.left;
-            if (s.top) wrapper.style.top = s.top;
-            if (s.transform) wrapper.style.transform = s.transform;
+            // Restore position (stored as transform: translate(Xpx, Ypx))
+            if (s.transform) {
+              wrapper.style.transition = 'none';
+              wrapper.style.transform = s.transform;
+              // Force reflow then re-enable transitions
+              wrapper.offsetHeight;
+              setTimeout(() => { wrapper.style.transition = ''; }, 50);
+            }
 
             // Restore color if different
-            if (s.color && reg.color !== s.color && window.noteRegistry.get(s.id)) {
-              // Find and click the color swatch if available
+            if (s.color && reg.color !== s.color) {
               const dropdown = wrapper.querySelector('.note-dropdown');
               const swatch = dropdown ? dropdown.querySelector(`[data-color="${s.color}"]`) : null;
               if (swatch) swatch.click();
             }
           });
-        }, 100);
+          window._restoringNotes = false;
+        }, 150);
       } catch(e) { console.warn('Note restore failed:', e); }
     })();
 

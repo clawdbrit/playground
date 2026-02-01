@@ -2376,7 +2376,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v163';
+      if (tv) tv.textContent = ' · test v164';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.visibility = 'visible'; }
@@ -2417,6 +2417,20 @@
     }
 
     // Save ALL notes state before navigating away
+    // Debug: show restore info on page
+    window._debugRestore = [];
+    function debugLog(msg) {
+      window._debugRestore.push(msg);
+      const el = document.getElementById('debug-info');
+      if (el) el.textContent = window._debugRestore.join(' | ');
+    }
+    (function() {
+      const d = document.createElement('div');
+      d.id = 'debug-info';
+      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font:12px monospace;padding:8px;z-index:99999;word-wrap:break-word;max-height:120px;overflow:auto;';
+      document.body.appendChild(d);
+    })();
+
     function saveNoteState() {
       const state = [];
       window.noteRegistry.forEach((reg, id) => {
@@ -2583,21 +2597,6 @@
           }, 500);
         }, 200);
       } catch(e) { console.warn('Note restore failed:', e); }
-    })();
-
-    // Debug: show restore info on page
-    window._debugRestore = [];
-    function debugLog(msg) {
-      window._debugRestore.push(msg);
-      const el = document.getElementById('debug-info');
-      if (el) el.textContent = window._debugRestore.join(' | ');
-    }
-    // Add debug element
-    (function() {
-      const d = document.createElement('div');
-      d.id = 'debug-info';
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font:12px monospace;padding:8px;z-index:99999;word-wrap:break-word;max-height:120px;overflow:auto;';
-      document.body.appendChild(d);
     })();
 
     // Handle bfcache restore (mobile Safari back button)

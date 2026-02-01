@@ -2376,7 +2376,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v160';
+      if (tv) tv.textContent = ' · test v161';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.visibility = 'visible'; }
@@ -2450,13 +2450,14 @@
     // Restore ALL notes state on load
     (function restoreNoteState() {
       const saved = sessionStorage.getItem('wm-note-state');
-      if (!saved) return;
+      if (!saved) { debugLog('no-saved-state'); return; }
       sessionStorage.removeItem('wm-note-state');
       try {
         const raw = JSON.parse(saved);
         // Support both old array format and new object format
         const state = Array.isArray(raw) ? raw : raw.notes;
         const addBtnVisible = Array.isArray(raw) ? false : raw.addBtnVisible;
+        debugLog('restore:' + state.length + ' notes');
         // Mark that we're restoring so spawned notes skip peel animation
         window._restoringNotes = true;
 
@@ -2467,10 +2468,10 @@
 
         // Wait for spawned notes to initialize, then restore everything
         setTimeout(() => {
-          console.log('[restore] Registry:', [...window.noteRegistry.keys()], 'State ids:', state.map(s => s.id));
+          debugLog('reg:' + [...window.noteRegistry.keys()].join(','));
           state.forEach(s => {
             const reg = window.noteRegistry.get(s.id);
-            if (!reg) { console.warn('[restore] Missing registry entry for', s.id); return; }
+            if (!reg) { debugLog('MISS:' + s.id); return; }
             const wrapper = reg.wrapper;
             const canvas = wrapper.querySelector('.note-drawing-layer');
             const textarea = wrapper.querySelector('.textarea');
@@ -2495,6 +2496,9 @@
                 .replace(/translateY\([^)]*\)/g, '')
                 .trim();
               wrapper.style.transform = cleanTransform || '';
+              debugLog(s.id + ':t="' + cleanTransform.substring(0,40) + '"');
+            } else {
+              debugLog(s.id + ':t=none');
             }
             wrapper.offsetHeight; // force reflow
 
@@ -2529,6 +2533,7 @@
           });
           // Reset note-0 to curled state (may have been flat when saved)
           const note0Wrapper = document.getElementById('note-wrapper');
+          debugLog('n0flat:' + (note0Wrapper ? note0Wrapper.classList.contains('flat') : 'null'));
           if (note0Wrapper) {
             note0Wrapper.classList.remove('flat');
             window.isFlat = false;
@@ -2581,9 +2586,24 @@
       } catch(e) { console.warn('Note restore failed:', e); }
     })();
 
+    // Debug: show restore info on page
+    window._debugRestore = [];
+    function debugLog(msg) {
+      window._debugRestore.push(msg);
+      const el = document.getElementById('debug-info');
+      if (el) el.textContent = window._debugRestore.join(' | ');
+    }
+    // Add debug element
+    (function() {
+      const d = document.createElement('div');
+      d.id = 'debug-info';
+      d.style.cssText = 'position:fixed;bottom:60px;left:0;right:0;background:rgba(0,0,0,0.8);color:#0f0;font:10px monospace;padding:4px 8px;z-index:99999;word-wrap:break-word;max-height:80px;overflow:auto;';
+      document.body.appendChild(d);
+    })();
+
     // Handle bfcache restore (mobile Safari back button)
     window.addEventListener('pageshow', (e) => {
-      if (!e.persisted) return;
+      if (!e.persisted) { debugLog('pageshow:fresh'); return; }
       // Page was restored from bfcache — reset all notes to curled state
       // Remove slide-out animation class
       document.documentElement.classList.remove('page-slide-out-left');

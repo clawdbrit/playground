@@ -2376,7 +2376,7 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v159';
+      if (tv) tv.textContent = ' · test v160';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
       if (footer) { footer.style.visibility = 'visible'; }
@@ -2418,17 +2418,27 @@
 
     // Save ALL notes state before navigating away
     function saveNoteState() {
+      // Blur all textareas first to ensure notes are in curled state
+      document.querySelectorAll('.textarea').forEach(t => t.blur());
       const state = [];
       window.noteRegistry.forEach((reg, id) => {
         const wrapper = reg.wrapper;
         const canvas = wrapper.querySelector('.note-drawing-layer');
         const textarea = wrapper.querySelector('.textarea');
+        // Strip flat-mode transforms from saved state
+        var savedTransform = wrapper.style.transform || '';
+        if (wrapper.classList.contains('flat')) {
+          savedTransform = savedTransform
+            .replace(/scale\([^)]*\)/g, '')
+            .replace(/translateY\([^)]*\)/g, '')
+            .trim();
+        }
         state.push({
           id: id,
           color: reg.color,
           drawing: canvas ? canvas.toDataURL('image/png') : null,
           text: textarea ? textarea.value : '',
-          transform: wrapper.style.transform || '',
+          transform: savedTransform,
         });
       });
       // Save add-button visibility
@@ -2551,14 +2561,15 @@
 
           // Blur any accidentally focused textareas, then clear restore flag
           document.querySelectorAll('.textarea').forEach(t => t.blur());
-          // After drawings load, hide placeholder on notes with drawing content
+          // After drawings load, hide placeholder on notes with significant drawing content
           setTimeout(() => {
             document.querySelectorAll('.note-drawing-layer').forEach(c => {
               const ctx = c.getContext('2d');
               const px = ctx.getImageData(0, 0, c.width, c.height).data;
-              let hasDraw = false;
-              for (let i = 3; i < px.length; i += 4) { if (px[i] > 0) { hasDraw = true; break; } }
-              if (hasDraw) {
+              let drawPixels = 0;
+              for (let i = 3; i < px.length; i += 4) { if (px[i] > 0) drawPixels++; }
+              // Need at least 50 non-transparent pixels to count as a real drawing
+              if (drawPixels >= 50) {
                 const wrapper = c.closest('.note-wrapper, .dragged-note');
                 const ta = wrapper ? wrapper.querySelector('.textarea') : null;
                 if (ta && !ta.value.trim()) ta.placeholder = '';
@@ -2626,20 +2637,6 @@
         dn.style.transform = cur2.replace(/scale\([^)]*\)/g, '').replace(/translateY\([^)]*\)/g, '').trim();
       });
 
-      // Hide placeholder on notes with drawings
-      setTimeout(() => {
-        document.querySelectorAll('.note-drawing-layer').forEach(c => {
-          const ctx = c.getContext('2d');
-          const px = ctx.getImageData(0, 0, c.width, c.height).data;
-          let hasDraw = false;
-          for (let i = 3; i < px.length; i += 4) { if (px[i] > 0) { hasDraw = true; break; } }
-          if (hasDraw) {
-            const wrapper = c.closest('.note-wrapper, .dragged-note');
-            const ta = wrapper ? wrapper.querySelector('.textarea') : null;
-            if (ta && !ta.value.trim()) ta.placeholder = '';
-          }
-        });
-      }, 100);
     });
 
     // Page transition: slide out left when clicking changelog

@@ -2375,10 +2375,10 @@
     // Show test version on test site
     if (location.hostname.includes('clawdbrit')) {
       const tv = document.getElementById('test-version');
-      if (tv) tv.textContent = ' · test v153';
+      if (tv) tv.textContent = ' · test v154';
       // Make footer always visible on test site
       const footer = document.querySelector('.build-hover-area');
-      if (footer) { footer.style.opacity = '1'; footer.style.visibility = 'visible'; }
+      if (footer) { footer.style.visibility = 'visible'; }
 
       // Add changelog link to footer (test → test changelog)
       const footerArea = document.querySelector('.build-hover-area');
@@ -2431,7 +2431,8 @@
         });
       });
       // Save add-button visibility
-      const saveData = { notes: state, addBtnVisible: addBtn && addBtn.style.display !== 'none' };
+      const _addBtn = document.querySelector('.add-note-btn');
+      const saveData = { notes: state, addBtnVisible: _addBtn && _addBtn.style.display !== 'none' };
       sessionStorage.setItem('wm-note-state', JSON.stringify(saveData));
     }
 

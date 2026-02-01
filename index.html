@@ -65,6 +65,10 @@
       if (sessionStorage.getItem('page-transition') === 'back') {
         document.documentElement.classList.add('page-slide-in-left');
         sessionStorage.removeItem('page-transition');
+        // Remove class after animation so it doesn't interfere with draw mode
+        setTimeout(function() {
+          document.documentElement.classList.remove('page-slide-in-left');
+        }, 500);
       }
     </script>
     <!-- Language picker (outside page-content so it doesn't slide) -->

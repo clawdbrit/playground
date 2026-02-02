@@ -908,8 +908,7 @@ body {
   }
 
   .drawing-mode-active .hero-text {
-    opacity: 0;
-    pointer-events: none;
+    display: none !important;
   }
 
   /* Block overlay clicks in draw mode — must use toolbar to exit */

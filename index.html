@@ -65,9 +65,11 @@
       if (sessionStorage.getItem('page-transition') === 'back') {
         document.documentElement.classList.add('page-slide-in-left');
         sessionStorage.removeItem('page-transition');
-        // Remove class after animation so it doesn't interfere with draw mode
+        // Remove class and clear inline styles after animation so it doesn't interfere with fixed positioning in Safari
         setTimeout(function() {
           document.documentElement.classList.remove('page-slide-in-left');
+          var pc = document.querySelector('.page-content');
+          if (pc) { pc.style.animation = ''; pc.style.transform = ''; pc.style.opacity = ''; }
         }, 500);
       }
     </script>
@@ -2505,6 +2507,24 @@
       } catch(e) { console.warn('Note restore failed:', e); }
     })();
 
+    // Safari bfcache fix: reset notes to curled state when page is restored via back button
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        // Page was restored from bfcache — reset all notes to curled state
+        document.querySelectorAll('.note-wrapper').forEach(function(wrapper) {
+          wrapper.classList.remove('flat', 'drawing-mode');
+          wrapper.style.transform = '';
+          wrapper.style.transition = 'none';
+          wrapper.offsetHeight; // force reflow
+          wrapper.style.transition = '';
+        });
+        // Also clear any lingering page transition classes
+        document.documentElement.classList.remove('page-slide-out-left', 'page-slide-in-left');
+        document.querySelector('.page-content').style.animation = '';
+        document.querySelector('.page-content').style.transform = '';
+      }
+    });
+
     // Page transition: slide out left when clicking changelog
     document.addEventListener('click', (e) => {
       const link = e.target.closest('.changelog-footer-link');
@@ -2515,7 +2535,13 @@
       sessionStorage.setItem('page-transition', 'forward');
       document.documentElement.classList.remove('page-slide-in-left');
       document.documentElement.classList.add('page-slide-out-left');
-      setTimeout(() => { window.location.href = href; }, 300);
+      setTimeout(() => {
+        // Clean up animation residue before navigating (Safari fix)
+        document.documentElement.classList.remove('page-slide-out-left');
+        var pc = document.querySelector('.page-content');
+        if (pc) { pc.style.animation = ''; pc.style.transform = ''; pc.style.opacity = ''; }
+        window.location.href = href;
+      }, 300);
     });
     </script>
     </div><!-- /page-content -->

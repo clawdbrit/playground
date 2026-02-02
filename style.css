@@ -99,6 +99,8 @@ body {
   max-width: 340px;
   position: relative;
   z-index: 10;
+  perspective: 800px;
+  -webkit-perspective: 800px;
 }
 
 .focus-overlay {
@@ -131,7 +133,9 @@ body {
   margin-top: 8px;
   user-select: none;
   -webkit-user-select: none;
-  transform: perspective(800px) rotateY(1.5deg) rotateX(-0.5deg);
+  transform: rotateY(1.5deg) rotateX(-0.5deg);
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
 }
 
 .note-wrapper.can-grab {
@@ -159,7 +163,7 @@ body {
 
 @media (max-width: 600px) {
   .note-wrapper {
-    transform: perspective(800px) rotateY(1.5deg) rotateX(-0.5deg) scale(var(--mobile-note-scale, 1.1));
+    transform: rotateY(1.5deg) rotateX(-0.5deg) scale(var(--mobile-note-scale, 1.1));
   }
   .note-wrapper.flat {
     transform: scale(var(--mobile-note-focus-scale, 1.15)) translateY(-100px);
@@ -635,12 +639,12 @@ body {
   overflow: hidden;
   position: relative;
   z-index: 1;
-  transform: perspective(800px) rotateX(3deg);
+  transform: rotateX(3deg);
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .note-wrapper.flat .textarea {
-  transform: perspective(800px) rotateX(0deg);
+  transform: rotateX(0deg);
 }
 
 .textarea::placeholder {

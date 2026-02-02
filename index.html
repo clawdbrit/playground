@@ -2507,21 +2507,40 @@
       } catch(e) { console.warn('Note restore failed:', e); }
     })();
 
-    // Safari bfcache fix: reset notes to curled state when page is restored via back button
+    // Safari bfcache fix: clean up page transition state when restored via back button
     window.addEventListener('pageshow', function(event) {
       if (event.persisted) {
-        // Page was restored from bfcache — reset all notes to curled state
-        document.querySelectorAll('.note-wrapper').forEach(function(wrapper) {
-          wrapper.classList.remove('flat', 'drawing-mode');
-          wrapper.style.transform = '';
-          wrapper.style.transition = 'none';
-          wrapper.offsetHeight; // force reflow
-          wrapper.style.transition = '';
-        });
-        // Also clear any lingering page transition classes
+        // Page was restored from bfcache — clean up transition artifacts
+        // Clear any lingering page transition classes and inline styles
         document.documentElement.classList.remove('page-slide-out-left', 'page-slide-in-left');
-        document.querySelector('.page-content').style.animation = '';
-        document.querySelector('.page-content').style.transform = '';
+        var pc = document.querySelector('.page-content');
+        if (pc) { pc.style.animation = ''; pc.style.transform = ''; pc.style.opacity = ''; }
+
+        // Close any open drawing mode (toolbar won't work properly after bfcache)
+        var activeDrawing = document.querySelector('.note-wrapper.drawing-mode');
+        if (activeDrawing) {
+          activeDrawing.classList.remove('drawing-mode');
+          var toolbar = document.getElementById('drawing-toolbar');
+          if (toolbar) toolbar.classList.remove('visible');
+          document.body.classList.remove('drawing-mode-active');
+        }
+
+        // Ensure notes in flat state get properly curled back
+        document.querySelectorAll('.note-wrapper.flat').forEach(function(wrapper) {
+          wrapper.classList.remove('flat');
+          wrapper.dispatchEvent(new Event('note:stick'));
+        });
+
+        // Re-show add button if notes have been moved (have transforms)
+        var addBtn = document.querySelector('.add-note-btn');
+        if (addBtn) {
+          var anyMoved = document.querySelectorAll('.note-wrapper[style*="translate"]');
+          if (anyMoved.length > 0) addBtn.style.display = 'flex';
+        }
+
+        // Ensure focus overlay is cleared
+        var overlay = document.querySelector('.focus-overlay');
+        if (overlay) overlay.classList.remove('active');
       }
     });
 

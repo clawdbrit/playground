@@ -2527,10 +2527,16 @@
 
         // Ensure notes in flat state get properly curled back
         document.querySelectorAll('.note-wrapper').forEach(function(wrapper) {
-          // Remove flat state
-          wrapper.classList.remove('flat');
-          // Dispatch stick event for animation system
+          // Dispatch stick event for animation system (animates SVG path + gradient)
           wrapper.dispatchEvent(new Event('note:stick'));
+          // Remove flat/drawing classes
+          wrapper.classList.remove('flat', 'drawing-mode');
+          // Clear inline transform that includes scale/translateY from flat state
+          var currentTransform = wrapper.style.transform || '';
+          wrapper.style.transform = currentTransform
+            .replace(/scale\([^)]*\)/g, '')
+            .replace(/translateY\([^)]*\)/g, '')
+            .trim();
           // Force-hide any textarea placeholder that was hidden for drawing
           var textarea = wrapper.querySelector('.textarea');
           if (textarea) textarea.classList.remove('hide-for-drawing');

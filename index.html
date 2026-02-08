@@ -2412,19 +2412,12 @@
     }
 
     // Save ALL notes state before navigating away
-    // Debug: show restore info on page
+    // Debug logging (console only)
     window._debugRestore = [];
     function debugLog(msg) {
       window._debugRestore.push(msg);
-      const el = document.getElementById('debug-info');
-      if (el) el.textContent = window._debugRestore.join(' | ');
+      console.debug('[walletmemo]', msg);
     }
-    (function() {
-      const d = document.createElement('div');
-      d.id = 'debug-info';
-      d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.9);color:#0f0;font:12px monospace;padding:8px;z-index:99999;word-wrap:break-word;max-height:120px;overflow:auto;';
-      document.body.appendChild(d);
-    })();
 
     function saveNoteState() {
       const state = [];

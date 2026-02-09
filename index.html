@@ -1771,24 +1771,23 @@
           appleWalletBtn.style.pointerEvents = 'none';
           
           try {
-            const response = await fetch(`${BACKEND_URL}/api/generate-pass`, {
+            // Use prepare→redirect flow (Safari can't open .pkpass from blob URLs)
+            const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 text: text,
-                color: noteColor,
-                drawingDataUrl: drawingDataUrl
+                color: noteColor
               })
             });
             
-            if (!response.ok) {
-              const error = await response.json();
+            if (!prepRes.ok) {
+              const error = await prepRes.json();
               throw new Error(error.error || 'Failed to generate pass');
             }
             
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            window.location.href = url;
+            const { token } = await prepRes.json();
+            window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
             
           } catch (error) {
             console.error('Error:', error);

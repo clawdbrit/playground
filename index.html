@@ -1365,7 +1365,8 @@
           wrapper: noteWrapper,
           color: currentColor,
           getText: function() { return textarea.value; },
-          getDrawing: function() { return noteDrawingLayer.toDataURL('image/png'); }
+          getDrawing: function() { return noteDrawingLayer.toDataURL('image/png'); },
+          getDrawingCanvas: function() { return noteDrawingLayer; }
         });
         window.lastActiveNoteId = 'note-0';
 
@@ -1693,10 +1694,27 @@
           // Get note content from active/last active note via registry
           const targetNote = window.getTargetNote();
           const text = targetNote ? targetNote.getText() : document.getElementById('memo').value;
-          const drawingDataUrl = targetNote ? targetNote.getDrawing() : noteDrawingLayer.toDataURL('image/png');
           const noteColor = targetNote ? targetNote.color : currentColor;
+          const drawCanvas = targetNote ? (targetNote.getDrawingCanvas ? targetNote.getDrawingCanvas() : null) : noteDrawingLayer;
 
           const BACKEND_URL = 'https://wallet-worker.38briton.workers.dev';
+
+          // Render strip: background color + drawing composited via canvas-to-canvas (no Image decode)
+          let stripBlob = null;
+          try {
+            const STRIP_W = 1125, STRIP_H = 1032;
+            const FC = { blue: '#9dd5ee', yellow: '#e2d060', pink: '#e4b8c0' };
+            const sc = document.createElement('canvas');
+            sc.width = STRIP_W; sc.height = STRIP_H;
+            const sx = sc.getContext('2d');
+            sx.fillStyle = FC[noteColor] || FC.blue;
+            sx.fillRect(0, 0, STRIP_W, STRIP_H);
+            if (drawCanvas && drawCanvas.width > 0 && drawCanvas.height > 0) {
+              const scale = STRIP_W / drawCanvas.width;
+              sx.drawImage(drawCanvas, 0, 0, STRIP_W, drawCanvas.height * scale);
+            }
+            stripBlob = await new Promise(r => sc.toBlob(r, 'image/png'));
+          } catch(e) { console.warn('Strip render skipped:', e); }
 
           if (!isMobile()) {
             // Desktop: toggle QR code inside the button
@@ -1730,10 +1748,13 @@
               const placeholderInterval = setInterval(showPlaceholderQR, 400);
               appleWalletBtn.classList.add('qr-open');
               
+              const dFormData = new FormData();
+              dFormData.append('text', text);
+              dFormData.append('color', noteColor);
+              if (stripBlob) dFormData.append('strip', stripBlob, 'strip.png');
               const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, color: noteColor, drawingDataUrl })
+                body: dFormData
               });
               const { token } = await prepRes.json();
               const passUrl = `${BACKEND_URL}/api/download-pass/${token}`;
@@ -1772,13 +1793,13 @@
           
           try {
             // Use prepare→redirect flow (Safari can't open .pkpass from blob URLs)
+            const formData = new FormData();
+            formData.append('text', text);
+            formData.append('color', noteColor);
+            if (stripBlob) formData.append('strip', stripBlob, 'strip.png');
             const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                text: text,
-                color: noteColor
-              })
+              body: formData
             });
             
             if (!prepRes.ok) {
@@ -2234,7 +2255,8 @@
             wrapper: newWrapper,
             color: spawnColor,
             getText: function() { return ta.value; },
-            getDrawing: function() { return spawnCanvas.toDataURL('image/png'); }
+            getDrawing: function() { return spawnCanvas.toDataURL('image/png'); },
+            getDrawingCanvas: function() { return spawnCanvas; }
           });
 
           // Track active note on spawned textarea focus/blur

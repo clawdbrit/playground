@@ -1854,23 +1854,9 @@
           appleWalletBtn.style.pointerEvents = 'none';
 
           try {
-            // Use prepareâ†'redirect flow (Safari can't open .pkpass from blob URLs)
-            const formData = new FormData();
-            formData.append('text', text);
-            formData.append('color', noteColor);
-            if (stripBlob) formData.append('strip', stripBlob, 'strip.png');
-            const prepRes = await fetch(`${BACKEND_URL}/api/prepare-pass`, {
-              method: 'POST',
-              body: formData
-            });
-
-            if (!prepRes.ok) {
-              const error = await prepRes.json();
-              throw new Error(error.error || 'Failed to generate pass');
-            }
-
-            const { token } = await prepRes.json();
-            window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
+            // Single-request pass generation via pass-redirect (no KV, no replication lag)
+            const passText = btoa(unescape(encodeURIComponent(text || '')));
+            window.location.href = `${BACKEND_URL}/api/pass-redirect?t=${encodeURIComponent(passText)}&c=${encodeURIComponent(noteColor)}`;
 
             // -- Wallet confirmation: note falls off wall, comes back if dismissed --
             (function() {

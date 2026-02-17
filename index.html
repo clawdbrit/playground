@@ -1759,7 +1759,7 @@
           const noteColor = targetNote ? targetNote.color : currentColor;
           const drawCanvas = targetNote ? (targetNote.getDrawingCanvas ? targetNote.getDrawingCanvas() : null) : noteDrawingLayer;
 
-          const BACKEND_URL = 'https://wallet-worker.38briton.workers.dev';
+          const BACKEND_URL = 'https://wallet-api.britonbaker.com';
 
           // Render strip: background color + drawing composited via canvas-to-canvas (no Image decode)
           let stripBlob = null;

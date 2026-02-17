@@ -1174,16 +1174,16 @@ body {
    ========================================== */
 .wallet-added-pill {
   position: fixed;
-  top: 16px;
+  top: calc(env(safe-area-inset-top, 16px) + 56px);
   left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: #1a1a1a;
+  transform: translateX(-50%) translateY(-100px);
+  background: #16a34a;
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 0.2px;
-  padding: 9px 14px 9px 18px;
-  border-radius: 24px;
+  padding: 10px 16px 10px 20px;
+  border-radius: 26px;
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -1191,7 +1191,7 @@ body {
   z-index: 9999;
   opacity: 0;
   pointer-events: none;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 24px rgba(22,163,74,0.35);
 }
 
 .wallet-added-pill.pop-in {
@@ -1202,8 +1202,8 @@ body {
 .wallet-added-pill .pill-dismiss {
   background: none;
   border: none;
-  color: rgba(255,255,255,0.6);
-  font-size: 15px;
+  color: rgba(255,255,255,0.7);
+  font-size: 17px;
   line-height: 1;
   cursor: pointer;
   padding: 0 2px;
@@ -1215,18 +1215,19 @@ body {
 }
 
 @keyframes walletToastDrop {
-  from { transform: translateX(-50%) translateY(-80px); opacity: 0; }
-  to   { transform: translateX(-50%) translateY(0);     opacity: 1; }
+  from { transform: translateX(-50%) translateY(-100px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0);      opacity: 1; }
 }
 
-/* Note exit: flies into wallet (shrink + fade) */
+/* Note exit: lifts off wall then falls away */
 @keyframes noteWalletExit {
-  0%   { transform: scale(1);   opacity: 1; }
-  40%  { transform: scale(1.04); opacity: 1; }
-  100% { transform: scale(0.5); opacity: 0; }
+  0%   { transform: scale(1)    rotate(0deg)  translateY(0);    opacity: 1; }
+  18%  { transform: scale(1.06) rotate(-2deg) translateY(-18px); opacity: 1; } /* lifts off */
+  100% { transform: scale(0.9)  rotate(-5deg) translateY(110vh); opacity: 0; } /* falls away */
 }
 .note-wrapper.note-wallet-exit {
-  animation: noteWalletExit 0.42s cubic-bezier(0.4, 0, 0.8, 0.6) forwards;
+  animation: noteWalletExit 0.55s cubic-bezier(0.4, 0, 1, 0.8) forwards;
+  transform-origin: 50% 20%;   /* rotate from top-center like peeling off wall */
   pointer-events: none;
 }
 

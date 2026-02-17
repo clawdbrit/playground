@@ -1889,13 +1889,8 @@
                 var pill = document.createElement('div');
                 pill.className = 'wallet-added-pill';
 
-                var check = document.createElement('span');
-                check.textContent = '✓';
-                check.style.color = '#22c55e';
-                pill.appendChild(check);
-
                 var label = document.createElement('span');
-                label.textContent = ' Added to Wallet';
+                label.textContent = '✓  Added to Wallet';
                 pill.appendChild(label);
 
                 var xBtn = document.createElement('button');
@@ -1936,9 +1931,11 @@
                   nw.classList.remove('note-wallet-exit');
                   nw.style.transform = '';
 
-                  // Show the + button
+                  // Show the + button — inherit note's position so it lands in the same spot
                   if (addBtn) {
                     addBtn.style.display = 'flex';
+                    addBtn.style.left = nw.style.left || '';
+                    addBtn.style.top  = nw.style.top  || '';
 
                     // One-time interceptor: + tap restores fresh note-0
                     function onRestartClick(e) {

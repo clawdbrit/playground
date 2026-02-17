@@ -1872,10 +1872,10 @@
             const { token } = await prepRes.json();
             window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
 
-            // ── ✓ Added toast + fresh-note slide-in ──────────────────────────
+            // ── ✓ Added toast + note flies into wallet ────────────────────────
             (function() {
-              function dismissPill(pill, autoDismissTimer) {
-                clearTimeout(autoDismissTimer);
+              function dismissPill(pill, timer) {
+                clearTimeout(timer);
                 pill.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 requestAnimationFrame(function() {
                   pill.style.opacity = '0';
@@ -1884,13 +1884,18 @@
                 });
               }
 
-              // 1. Toast: drop in from top after 3.5s (after Apple Wallet sheet is dismissed)
+              // 1. Toast: drop in from top after 3.5s (after Apple Wallet sheet dismissed)
               setTimeout(function() {
                 var pill = document.createElement('div');
                 pill.className = 'wallet-added-pill';
 
+                var check = document.createElement('span');
+                check.textContent = '✓';
+                check.style.color = '#22c55e';
+                pill.appendChild(check);
+
                 var label = document.createElement('span');
-                label.textContent = '✓ Added to Wallet';
+                label.textContent = ' Added to Wallet';
                 pill.appendChild(label);
 
                 var xBtn = document.createElement('button');
@@ -1900,43 +1905,82 @@
                 pill.appendChild(xBtn);
 
                 document.body.appendChild(pill);
-
                 requestAnimationFrame(function() {
                   requestAnimationFrame(function() { pill.classList.add('pop-in'); });
                 });
 
-                // Auto-dismiss after 5s
                 var autoDismissTimer = setTimeout(function() {
                   dismissPill(pill, autoDismissTimer);
                 }, 5000);
-
-                // X button dismisses immediately
                 xBtn.addEventListener('click', function() {
                   dismissPill(pill, autoDismissTimer);
                 });
               }, 3500);
 
-              // 2. Clear note text + slide-in animation after 1s
-              setTimeout(function() {
-                var targetNote = window.getTargetNote();
-                var ta = targetNote && targetNote.wrapper
-                  ? targetNote.wrapper.querySelector('textarea')
-                  : document.getElementById('memo');
+              // 2. Note flies into wallet, + button appears
+              var targetNote = window.getTargetNote();
+              var nw = (targetNote && targetNote.wrapper)
+                ? targetNote.wrapper
+                : document.getElementById('note-wrapper');
+              var addBtn = document.querySelector('.add-note-btn');
+
+              if (nw) {
+                // Clear textarea now (before exit animation)
+                var ta = nw.querySelector('textarea');
                 if (ta) ta.value = '';
-                var nw = targetNote && targetNote.wrapper
-                  ? targetNote.wrapper
-                  : document.getElementById('note-wrapper');
-                if (!nw) return;
-                nw.classList.remove('note-land-in');
-                requestAnimationFrame(function() {
-                  requestAnimationFrame(function() {
-                    nw.classList.add('note-land-in');
-                    nw.addEventListener('animationend', function() {
-                      nw.classList.remove('note-land-in');
-                    }, { once: true });
-                  });
-                });
-              }, 1000);
+
+                // Fly-out animation
+                nw.classList.add('note-wallet-exit');
+                setTimeout(function() {
+                  nw.style.display = 'none';
+                  nw.classList.remove('note-wallet-exit');
+                  nw.style.transform = '';
+
+                  // Show the + button
+                  if (addBtn) {
+                    addBtn.style.display = 'flex';
+
+                    // One-time interceptor: + tap restores fresh note-0
+                    function onRestartClick(e) {
+                      e.stopImmediatePropagation();
+                      addBtn.removeEventListener('click', onRestartClick, true);
+                      addBtn.style.display = 'none';
+
+                      var note0 = document.getElementById('note-wrapper');
+                      if (!note0) return;
+
+                      // Clear drawing canvas
+                      var canvas = note0.querySelector('.note-drawing-layer');
+                      if (canvas) {
+                        var ctx = canvas.getContext('2d');
+                        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+                      }
+
+                      // Reset to curled state
+                      note0.dispatchEvent(new Event('note:stick'));
+                      note0.classList.remove('flat', 'drawing-mode', 'note-wallet-exit');
+                      var cur = note0.style.transform || '';
+                      note0.style.transform = cur
+                        .replace(/scale\([^)]*\)/g, '')
+                        .replace(/translateY\([^)]*\)/g, '')
+                        .trim();
+
+                      // Show + land-in animation
+                      note0.style.display = '';
+                      note0.classList.remove('note-land-in');
+                      requestAnimationFrame(function() {
+                        requestAnimationFrame(function() {
+                          note0.classList.add('note-land-in');
+                          note0.addEventListener('animationend', function() {
+                            note0.classList.remove('note-land-in');
+                          }, { once: true });
+                        });
+                      });
+                    }
+                    addBtn.addEventListener('click', onRestartClick, true);
+                  }
+                }, 450);
+              }
             })();
             // ─────────────────────────────────────────────────────────────────
 

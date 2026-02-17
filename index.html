@@ -1927,15 +1927,19 @@
                 // Fly-out animation
                 nw.classList.add('note-wallet-exit');
                 setTimeout(function() {
-                  nw.style.display = 'none';
+                  // visibility:hidden keeps layout space so offsetLeft/Top stay accurate
+                  nw.style.visibility = 'hidden';
+                  nw.style.pointerEvents = 'none';
                   nw.classList.remove('note-wallet-exit');
                   nw.style.transform = '';
 
-                  // Show the + button — inherit note's position so it lands in the same spot
+                  // Show the + button, centered exactly where the note sits
                   if (addBtn) {
+                    var btnSize = 200;
+                    addBtn.style.left   = (nw.offsetLeft + (nw.offsetWidth  - btnSize) / 2) + 'px';
+                    addBtn.style.top    = (nw.offsetTop  + (nw.offsetHeight - btnSize) / 2) + 'px';
+                    addBtn.style.margin = '0';
                     addBtn.style.display = 'flex';
-                    addBtn.style.left = nw.style.left || '';
-                    addBtn.style.top  = nw.style.top  || '';
 
                     // One-time interceptor: + tap restores fresh note-0
                     function onRestartClick(e) {
@@ -1963,7 +1967,8 @@
                         .trim();
 
                       // Show + land-in animation
-                      note0.style.display = '';
+                      note0.style.visibility = '';
+                      note0.style.pointerEvents = '';
                       note0.classList.remove('note-land-in');
                       requestAnimationFrame(function() {
                         requestAnimationFrame(function() {

@@ -1871,7 +1871,51 @@
             
             const { token } = await prepRes.json();
             window.location.href = `${BACKEND_URL}/api/download-pass/${token}`;
-            
+
+            // ── ✓ Added confirmation pill + fresh-note slide-in ──────────────
+            (function() {
+              // 1. Pill: spring in above wallet button
+              var walletButtons = document.querySelector('.wallet-buttons');
+              var pill = document.createElement('div');
+              pill.className = 'wallet-added-pill';
+              pill.textContent = '✓ Added';
+              walletButtons.appendChild(pill);
+              requestAnimationFrame(function() {
+                requestAnimationFrame(function() { pill.classList.add('pop-in'); });
+              });
+              // Fade out pill after 2.5 s
+              setTimeout(function() {
+                pill.style.transition = 'opacity 0.35s ease';
+                requestAnimationFrame(function() {
+                  pill.style.opacity = '0';
+                  setTimeout(function() { pill.remove(); }, 400);
+                });
+              }, 2500);
+
+              // 2. Clear note text + slide-in animation after 1 s
+              setTimeout(function() {
+                var targetNote = window.getTargetNote();
+                var ta = targetNote && targetNote.wrapper
+                  ? targetNote.wrapper.querySelector('textarea')
+                  : document.getElementById('memo');
+                if (ta) ta.value = '';
+                var nw = targetNote && targetNote.wrapper
+                  ? targetNote.wrapper
+                  : document.getElementById('note-wrapper');
+                if (!nw) return;
+                nw.classList.remove('note-land-in');
+                requestAnimationFrame(function() {
+                  requestAnimationFrame(function() {
+                    nw.classList.add('note-land-in');
+                    nw.addEventListener('animationend', function() {
+                      nw.classList.remove('note-land-in');
+                    }, { once: true });
+                  });
+                });
+              }, 1000);
+            })();
+            // ─────────────────────────────────────────────────────────────────
+
           } catch (error) {
             console.error('Error:', error);
             walletMsg.textContent = error.message.includes('fetch') 

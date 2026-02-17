@@ -1168,3 +1168,47 @@ body {
 .cl-fix { background: rgba(245,158,11,0.08); color: rgba(180,120,10,0.85); }
 .cl-design { background: rgba(168,85,247,0.08); color: rgba(148,70,220,0.8); }
 .cl-improve { background: rgba(16,185,129,0.08); color: rgba(14,150,105,0.85); }
+
+/* ==========================================
+   Wallet "✓ Added" confirmation pill
+   ========================================== */
+.wallet-added-pill {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 200;
+  opacity: 0;
+}
+
+.wallet-added-pill.pop-in {
+  animation: walletPillSpring 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes walletPillSpring {
+  from { transform: translateX(-50%) scale(0); opacity: 0; }
+  to   { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* Note "land in" after wallet add.
+   Uses the standalone `translate` property so it composes with
+   the existing `transform: scale(...)` without conflict. */
+@keyframes noteLandIn {
+  0%   { translate: 0 22px; opacity: 0; }
+  60%  { translate: 0 -7px; opacity: 1; }
+  80%  { translate: 0  3px; }
+  100% { translate: 0  0px; opacity: 1; }
+}
+
+.note-wrapper.note-land-in {
+  animation: noteLandIn 0.5s ease-out;
+}

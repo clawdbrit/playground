@@ -1936,13 +1936,17 @@
                   nw.classList.remove('note-wallet-exit');
                   nw.style.transform = '';
 
-                  restartBtn.style.width        = cs.width;
-                  restartBtn.style.height       = cs.height;
+                  // Smaller button: 160px square, centered
+                  restartBtn.style.width        = '160px';
+                  restartBtn.style.height       = '160px';
                   restartBtn.style.marginBottom = cs.marginBottom;
+                  restartBtn.style.marginLeft   = 'auto';
+                  restartBtn.style.marginRight  = 'auto';
                   restartBtn.style.display      = 'flex';
-                  requestAnimationFrame(function() {
-                    requestAnimationFrame(function() { restartBtn.style.opacity = '1'; });
-                  });
+                  // Fade in when the toast appears (3.5s), not immediately
+                  setTimeout(function() {
+                    restartBtn.style.opacity = '1';
+                  }, 3500);
 
                   restartBtn.addEventListener('click', function onRestart() {
                     restartBtn.removeEventListener('click', onRestart);

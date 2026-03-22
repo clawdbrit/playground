@@ -247,6 +247,37 @@
     transition: color 0.2s;
   }
 
+  /* ── CODE SNIPPET ── */
+  .code-block {
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 56px;
+    font-size: 13px;
+    line-height: 1.9;
+    overflow-x: auto;
+  }
+
+  .code-block .selector { color: #60c0f0; }
+  .code-block .brace    { color: #555; }
+  .code-block .prop     { color: #888; padding-left: 20px; display: block; }
+  .code-block .prop-name  { color: #c080f0; }
+  .code-block .prop-val   { color: #f0c060; }
+  .code-block .prop-val.content-val { color: #60c0f0; }
+  .code-block .prop-val.padding-val { color: #90d060; }
+  .code-block .prop-val.border-val  { color: #f0a040; }
+  .code-block .prop-val.margin-val  { color: #c080f0; }
+  .code-block .comment  { color: #333; padding-left: 20px; display: block; }
+
+  .code-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #444;
+    margin-bottom: 12px;
+  }
+
   /* ── NEXT STEPS ── */
   .next-steps {
     border-top: 1px solid #1e1e1e;
@@ -433,6 +464,23 @@
     </div>
   </div>
 
+  <!-- CODE SNIPPET -->
+  <div class="section">
+    <div class="code-label">What this looks like in CSS</div>
+    <div class="code-block" id="code-output">
+      <span class="selector">.my-element</span> <span class="brace">{</span>
+      <span class="prop"><span class="prop-name">box-sizing</span>: <span class="prop-val" id="code-sizing">border-box</span>;</span>
+      <span class="prop"><span class="prop-name">width</span>:      <span class="prop-val content-val" id="code-width">120px</span>;</span>
+      <span class="prop"><span class="prop-name">height</span>:     <span class="prop-val content-val" id="code-height">72px</span>;</span>
+      <span class="prop"><span class="prop-name">padding</span>:    <span class="prop-val padding-val" id="code-padding">20px</span>;</span>
+      <span class="prop"><span class="prop-name">border</span>:     <span class="prop-val border-val" id="code-border">4px solid #something</span>;</span>
+      <span class="prop"><span class="prop-name">margin</span>:     <span class="prop-val margin-val" id="code-margin">24px</span>;</span>
+      <span class="brace">}</span>
+      <br>
+      <span class="comment" id="code-comment">/* rendered width: 120px (border-box — padding+border eat into the width) */</span>
+    </div>
+  </div>
+
   <!-- WHY IT MATTERS -->
   <div class="section">
     <div class="section-label">Why it matters</div>
@@ -546,6 +594,23 @@
     document.getElementById('r-padding').textContent = '+' + padding * 2;
     document.getElementById('r-border').textContent  = '+' + border * 2;
     document.getElementById('r-total').textContent   = marginW + 'px';
+
+    // Update code snippet
+    document.getElementById('code-sizing').textContent  = boxSizing;
+    document.getElementById('code-width').textContent   = contentW + 'px';
+    document.getElementById('code-height').textContent  = contentH + 'px';
+    document.getElementById('code-padding').textContent = padding + 'px';
+    document.getElementById('code-border').textContent  = border + 'px solid #e0a040';
+    document.getElementById('code-margin').textContent  = margin + 'px';
+
+    // Comment explaining rendered size
+    const renderedSize = boxSizing === 'border-box'
+      ? contentW
+      : borderW;
+    const explanation = boxSizing === 'border-box'
+      ? `/* rendered width: ${renderedSize}px (border-box — padding+border eat into the width) */`
+      : `/* rendered width: ${renderedSize}px (content-box — ${contentW} + ${padding*2} padding + ${border*2} border) */`;
+    document.getElementById('code-comment').textContent = explanation;
   }
 
   update();

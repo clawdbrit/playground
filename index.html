@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Box Model — RAM Learns</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .breadcrumb {
+    font-size: 12px;
+    color: #555;
+    margin-bottom: 32px;
+    letter-spacing: 0.05em;
+  }
+
+  .breadcrumb span { color: #888; }
+
+  h1 {
+    font-size: 28px;
+    font-weight: normal;
+    color: #fff;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 48px;
+  }
+
+  /* ── CONCEPT SECTION ── */
+  .section {
+    margin-bottom: 56px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #444;
+    margin-bottom: 16px;
+  }
+
+  p {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #aaa;
+    margin-bottom: 16px;
+  }
+
+  code {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 13px;
+    color: #f0c060;
+  }
+
+  /* ── INTERACTIVE DEMO ── */
+  .demo {
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 56px;
+  }
+
+  .demo-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #444;
+    margin-bottom: 24px;
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .control-group label {
+    display: block;
+    font-size: 12px;
+    margin-bottom: 6px;
+    letter-spacing: 0.05em;
+  }
+
+  .control-group label .val {
+    float: right;
+    font-size: 12px;
+  }
+
+  input[type=range] {
+    width: 100%;
+    accent-color: #f0c060;
+    cursor: pointer;
+  }
+
+  /* color codes per layer */
+  .lbl-content { color: #60c0f0; }
+  .lbl-padding { color: #90d060; }
+  .lbl-border  { color: #f0a040; }
+  .lbl-margin  { color: #c080f0; }
+
+  /* ── BOX VISUALIZER ── */
+  .visualizer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 280px;
+    position: relative;
+  }
+
+  .box-margin {
+    background: rgba(192, 128, 240, 0.12);
+    border: 2px dashed rgba(192, 128, 240, 0.4);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+
+  .box-border {
+    background: rgba(240, 160, 64, 0.18);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+
+  .box-padding {
+    background: rgba(144, 208, 96, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.15s ease;
+  }
+
+  .box-content {
+    background: rgba(96, 192, 240, 0.25);
+    border: 1px solid rgba(96, 192, 240, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #60c0f0;
+    letter-spacing: 0.05em;
+    transition: all 0.15s ease;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  /* layer labels */
+  .layer-label {
+    position: absolute;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .margin-label  { top: 4px; left: 6px; color: #c080f0; }
+  .border-label  { top: 4px; left: 6px; color: #f0a040; }
+  .padding-label { top: 4px; left: 6px; color: #90d060; }
+
+  /* ── SIZE READOUT ── */
+  .readout {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .readout-item {
+    background: #0d0d0d;
+    border: 1px solid #1e1e1e;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .readout-label { color: #555; margin-bottom: 4px; }
+  .readout-value { font-size: 16px; }
+
+  /* ── BOX SIZING TOGGLE ── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .toggle-label {
+    font-size: 12px;
+    color: #666;
+  }
+
+  .toggle-btn {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #888;
+    padding: 6px 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.1s;
+  }
+
+  .toggle-btn.active {
+    background: #f0c060;
+    border-color: #f0c060;
+    color: #0d0d0d;
+  }
+
+  .sizing-note {
+    font-size: 12px;
+    color: #555;
+    margin-top: 12px;
+    line-height: 1.6;
+    min-height: 40px;
+    transition: color 0.2s;
+  }
+
+  /* ── NEXT STEPS ── */
+  .next-steps {
+    border-top: 1px solid #1e1e1e;
+    padding-top: 40px;
+    margin-top: 16px;
+  }
+
+  .next-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #444;
+    margin-bottom: 20px;
+  }
+
+  .branches {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .branches { grid-template-columns: 1fr; }
+    .controls { grid-template-columns: 1fr; }
+    .readout { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .branch {
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    text-decoration: none;
+    display: block;
+  }
+
+  .branch:hover {
+    border-color: #333;
+    background: #161616;
+  }
+
+  .branch-arrow {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .branch-title {
+    font-size: 13px;
+    color: #ccc;
+    margin-bottom: 6px;
+  }
+
+  .branch-desc {
+    font-size: 12px;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .coming-soon {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .coming-soon:hover {
+    border-color: #1e1e1e;
+    background: #111;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #555;
+    padding: 2px 7px;
+    border-radius: 2px;
+    margin-top: 8px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .tag.ready { border-color: #3a3a1a; color: #a0a040; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumb">
+    RAM Learns / CSS / <span>The Box Model</span>
+  </div>
+
+  <h1>The Box Model</h1>
+  <p class="subtitle">Every element on a page is a box. This is what that box is made of.</p>
+
+  <!-- CONCEPT -->
+  <div class="section">
+    <div class="section-label">The concept</div>
+    <p>
+      When the browser renders an element, it wraps it in four nested layers:
+      <code class="lbl-content">content</code>,
+      <code class="lbl-padding">padding</code>,
+      <code class="lbl-border">border</code>, and
+      <code class="lbl-margin">margin</code>.
+      They're always there, even if they're zero.
+    </p>
+    <p>
+      <strong style="color:#e0e0e0">Content</strong> is the actual stuff — text, image, whatever's inside.
+      <strong style="color:#e0e0e0">Padding</strong> is the breathing room between the content and the border — it's inside the element, so it inherits background color.
+      <strong style="color:#e0e0e0">Border</strong> wraps the padding. You can see it.
+      <strong style="color:#e0e0e0">Margin</strong> is space outside the element — it pushes other things away. It's always transparent.
+    </p>
+    <p>
+      The confusing part: <code>width</code> and <code>height</code> in CSS don't always mean the same thing depending on a property called <code>box-sizing</code>. Drag the sliders below and watch what happens.
+    </p>
+  </div>
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-title">Interactive demo — drag to adjust</div>
+
+    <div class="toggle-row">
+      <span class="toggle-label">box-sizing:</span>
+      <button class="toggle-btn" id="btn-content" onclick="setBoxSizing('content-box')">content-box</button>
+      <button class="toggle-btn active" id="btn-border" onclick="setBoxSizing('border-box')">border-box</button>
+    </div>
+
+    <div id="sizing-note" class="sizing-note">
+      <strong style="color:#ccc">border-box</strong> — width/height includes padding + border. What you set is what you get. This is what <code>* { box-sizing: border-box }</code> does.
+    </div>
+
+    <br>
+
+    <div class="controls">
+      <div class="control-group">
+        <label class="lbl-content">Content <span class="val" id="val-content">120px</span></label>
+        <input type="range" id="sl-content" min="40" max="200" value="120" oninput="update()">
+      </div>
+      <div class="control-group">
+        <label class="lbl-padding">Padding <span class="val" id="val-padding">20px</span></label>
+        <input type="range" id="sl-padding" min="0" max="60" value="20" oninput="update()">
+      </div>
+      <div class="control-group">
+        <label class="lbl-border">Border <span class="val" id="val-border">4px</span></label>
+        <input type="range" id="sl-border" min="0" max="20" value="4" oninput="update()">
+      </div>
+      <div class="control-group">
+        <label class="lbl-margin">Margin <span class="val" id="val-margin">24px</span></label>
+        <input type="range" id="sl-margin" min="0" max="60" value="24" oninput="update()">
+      </div>
+    </div>
+
+    <div class="visualizer">
+      <div class="box-margin" id="box-margin">
+        <span class="layer-label margin-label">margin</span>
+        <div class="box-border" id="box-border">
+          <span class="layer-label border-label">border</span>
+          <div class="box-padding" id="box-padding">
+            <span class="layer-label padding-label">padding</span>
+            <div class="box-content" id="box-content">content</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="readout">
+      <div class="readout-item">
+        <div class="readout-label lbl-content">content</div>
+        <div class="readout-value lbl-content" id="r-content">—</div>
+      </div>
+      <div class="readout-item">
+        <div class="readout-label lbl-padding">+padding</div>
+        <div class="readout-value lbl-padding" id="r-padding">—</div>
+      </div>
+      <div class="readout-item">
+        <div class="readout-label lbl-border">+border</div>
+        <div class="readout-value lbl-border" id="r-border">—</div>
+      </div>
+      <div class="readout-item">
+        <div class="readout-label lbl-margin">total w/margin</div>
+        <div class="readout-value lbl-margin" id="r-total">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHY IT MATTERS -->
+  <div class="section">
+    <div class="section-label">Why it matters</div>
+    <p>
+      This is why your layouts break in weird ways. You set <code>width: 100%</code> on an input, add some padding, and suddenly it overflows its container. That's <code>content-box</code> biting you — the padding gets added <em>on top of</em> the width.
+    </p>
+    <p>
+      It's also why almost every CSS reset starts with <code>* &#123; box-sizing: border-box &#125;</code>. With border-box, padding and border eat into the width you set instead of expanding it. Your math works like you'd expect.
+    </p>
+    <p>
+      Margins don't get included in <code>width</code> either way — they live outside the element entirely. And they have a quirk: <strong style="color:#e0e0e0">vertical margins collapse</strong>. Two stacked elements with <code>margin-bottom: 20px</code> and <code>margin-top: 20px</code> don't give you 40px of space — they give you 20px, because the larger one wins.
+    </p>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="next-steps">
+    <div class="next-label">Where to go next</div>
+    <div class="branches">
+      <div class="branch coming-soon">
+        <div class="branch-arrow">🌊</div>
+        <div class="branch-title">The Cascade</div>
+        <div class="branch-desc">How CSS rules compete and which ones win — specificity, inheritance, order.</div>
+        <span class="tag">coming soon</span>
+      </div>
+      <div class="branch coming-soon">
+        <div class="branch-arrow">📐</div>
+        <div class="branch-title">Normal Flow</div>
+        <div class="branch-desc">Block vs inline. How elements stack and flow before you add any layout.</div>
+        <span class="tag">coming soon</span>
+      </div>
+      <div class="branch coming-soon">
+        <div class="branch-arrow">🖥️</div>
+        <div class="branch-title">How the Browser Paints</div>
+        <div class="branch-desc">Layout → paint → composite. What the browser actually does with your CSS.</div>
+        <span class="tag">coming soon</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let boxSizing = 'border-box';
+
+  function setBoxSizing(val) {
+    boxSizing = val;
+    document.getElementById('btn-content').classList.toggle('active', val === 'content-box');
+    document.getElementById('btn-border').classList.toggle('active', val === 'border-box');
+
+    const note = document.getElementById('sizing-note');
+    if (val === 'border-box') {
+      note.innerHTML = '<strong style="color:#ccc">border-box</strong> — width/height includes padding + border. What you set is what you get. This is what <code>* { box-sizing: border-box }</code> does.';
+    } else {
+      note.innerHTML = '<strong style="color:#ccc">content-box</strong> — width/height applies to the <em>content only</em>. Padding and border get added on top. The browser default — and the source of many layout headaches.';
+    }
+    update();
+  }
+
+  function update() {
+    const content = +document.getElementById('sl-content').value;
+    const padding = +document.getElementById('sl-padding').value;
+    const border  = +document.getElementById('sl-border').value;
+    const margin  = +document.getElementById('sl-margin').value;
+
+    document.getElementById('val-content').textContent = content + 'px';
+    document.getElementById('val-padding').textContent = padding + 'px';
+    document.getElementById('val-border').textContent  = border  + 'px';
+    document.getElementById('val-margin').textContent  = margin  + 'px';
+
+    // content box size
+    const contentW = content;
+    const contentH = Math.round(content * 0.6);
+
+    // padding box
+    const padW = contentW + padding * 2;
+    const padH = contentH + padding * 2;
+
+    // border box (visual rendered size)
+    const borderW = padW + border * 2;
+    const borderH = padH + border * 2;
+
+    // margin box
+    const marginW = borderW + margin * 2;
+    const marginH = borderH + margin * 2;
+
+    // Apply to DOM
+    const bc = document.getElementById('box-content');
+    bc.style.width  = contentW + 'px';
+    bc.style.height = contentH + 'px';
+
+    const bp = document.getElementById('box-padding');
+    bp.style.padding = padding + 'px';
+
+    const bb = document.getElementById('box-border');
+    bb.style.border = border + 'px solid rgba(240,160,64,0.6)';
+
+    const bm = document.getElementById('box-margin');
+    bm.style.padding = margin + 'px';
+
+    // Readout
+    let renderedW, renderedNote;
+    if (boxSizing === 'border-box') {
+      renderedW = content; // content is treated as the total border-box width
+      renderedNote = content + 'px';
+    } else {
+      renderedW = borderW;
+      renderedNote = borderW + 'px';
+    }
+
+    document.getElementById('r-content').textContent = contentW + '×' + contentH;
+    document.getElementById('r-padding').textContent = '+' + padding * 2;
+    document.getElementById('r-border').textContent  = '+' + border * 2;
+    document.getElementById('r-total').textContent   = marginW + 'px';
+  }
+
+  update();
+</script>
+</body>
+</html>

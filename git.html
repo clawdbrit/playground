@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Branches — RAM Learns</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0d0d0d;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  .breadcrumb { font-size: 12px; color: #555; margin-bottom: 32px; letter-spacing: 0.05em; }
+  .breadcrumb span { color: #888; }
+
+  h1 { font-size: 28px; font-weight: normal; color: #fff; margin-bottom: 8px; letter-spacing: -0.02em; }
+  .subtitle { color: #666; font-size: 14px; margin-bottom: 48px; }
+
+  .section { margin-bottom: 52px; }
+  .section-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #444; margin-bottom: 16px; }
+
+  p { font-size: 15px; line-height: 1.8; color: #aaa; margin-bottom: 14px; }
+  code { background: #1a1a1a; border: 1px solid #2a2a2a; padding: 2px 6px; border-radius: 3px; font-size: 13px; color: #f0c060; }
+  strong { color: #ddd; }
+
+  /* ── DEMO PANEL ── */
+  .demo {
+    background: #111;
+    border: 1px solid #1e1e1e;
+    border-radius: 8px;
+    padding: 28px;
+    margin-bottom: 52px;
+  }
+
+  .demo-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #444; margin-bottom: 20px; }
+
+  /* Branch graph canvas */
+  #graph-canvas {
+    width: 100%;
+    height: 220px;
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  /* Controls */
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .btn {
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #aaa;
+    padding: 8px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.12s;
+    letter-spacing: 0.04em;
+  }
+
+  .btn:hover { border-color: #444; color: #ddd; }
+  .btn.primary { border-color: #f0c060; color: #f0c060; }
+  .btn.primary:hover { background: #f0c060; color: #0d0d0d; }
+  .btn.danger { border-color: #f06060; color: #f06060; }
+  .btn.danger:hover { background: #f06060; color: #0d0d0d; }
+
+  /* Terminal log */
+  .terminal {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 5px;
+    padding: 14px 18px;
+    font-size: 12px;
+    line-height: 1.8;
+    min-height: 80px;
+    max-height: 160px;
+    overflow-y: auto;
+  }
+
+  .terminal .line { display: block; }
+  .terminal .cmd  { color: #60c0f0; }
+  .terminal .out  { color: #666; }
+  .terminal .ok   { color: #90d060; }
+  .terminal .warn { color: #f0a040; }
+  .terminal .cur  { color: #f0c060; }
+
+  /* State bar */
+  .state-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .state-item { font-size: 12px; color: #555; }
+  .state-item span { color: #ddd; }
+  .state-item .branch-name { padding: 1px 8px; border-radius: 3px; font-size: 12px; }
+
+  /* Branch legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Code output */
+  .code-block {
+    background: #0a0a0a;
+    border: 1px solid #1e1e1e;
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin-bottom: 52px;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+
+  .code-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #444; margin-bottom: 12px; }
+  .hl-cmd    { color: #60c0f0; }
+  .hl-branch { color: #90d060; }
+  .hl-commit { color: #f0c060; }
+  .hl-remote { color: #c080f0; }
+  .hl-dim    { color: #444; }
+
+  /* Next steps */
+  .next-steps { border-top: 1px solid #1e1e1e; padding-top: 40px; }
+  .next-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: #444; margin-bottom: 20px; }
+  .branches-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 600px) { .branches-grid { grid-template-columns: 1fr; } }
+
+  .branch-card {
+    background: #111; border: 1px solid #1e1e1e; border-radius: 6px;
+    padding: 16px; text-decoration: none; display: block;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .branch-card:hover { border-color: #333; background: #161616; }
+  .branch-card.dim { opacity: 0.4; pointer-events: none; }
+
+  .bc-arrow { font-size: 18px; margin-bottom: 8px; }
+  .bc-title { font-size: 13px; color: #ccc; margin-bottom: 6px; }
+  .bc-desc { font-size: 12px; color: #555; line-height: 1.5; }
+  .tag { display: inline-block; font-size: 10px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #555; padding: 2px 7px; border-radius: 2px; margin-top: 8px; letter-spacing: 0.06em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="breadcrumb">RAM Learns / Git / <span>Branches & Commits</span></div>
+
+  <h1>Git Branches & Commits</h1>
+  <p class="subtitle">How commits stay isolated, and what branching actually looks like.</p>
+
+  <!-- CONCEPT -->
+  <div class="section">
+    <div class="section-label">The concept</div>
+    <p>
+      A <strong>commit</strong> is a snapshot of your project at a moment in time — not just the changed file, the whole state. Git stores these as a chain: each commit knows which one came before it.
+    </p>
+    <p>
+      A <strong>branch</strong> is just a pointer to a commit. When you make a new commit, that pointer moves forward. Other branches don't move — they stay where they are. That's the whole thing.
+    </p>
+    <p>
+      <strong>You're always on exactly one branch.</strong> When you commit, only that branch advances. Use the buttons below to build out a repo and watch the graph update.
+    </p>
+  </div>
+
+  <!-- DEMO -->
+  <div class="demo">
+    <div class="demo-title">Interactive demo — build a repo</div>
+
+    <div class="state-bar">
+      <div class="state-item">Current branch: <span id="cur-branch-display">—</span></div>
+      <div class="state-item">Commits: <span id="commit-count">0</span></div>
+      <div class="state-item" id="local-ahead-display" style="display:none">Local ahead of GitHub: <span id="local-ahead">0</span></div>
+    </div>
+
+    <div class="legend" id="legend"></div>
+
+    <canvas id="graph-canvas"></canvas>
+
+    <div class="btn-row">
+      <button class="btn primary" onclick="doCommit()">git commit</button>
+      <button class="btn" onclick="doCheckout('main')">checkout main</button>
+      <button class="btn" onclick="doCheckout('feature-a')">checkout feature-a</button>
+      <button class="btn" onclick="doCheckout('feature-b')">checkout feature-b</button>
+      <button class="btn" onclick="doPush()">git push</button>
+      <button class="btn" onclick="doMerge()">merge → main</button>
+      <button class="btn danger" onclick="doReset()">reset</button>
+    </div>
+
+    <div class="terminal" id="terminal">
+      <span class="line out">// click buttons to simulate git commands</span>
+    </div>
+  </div>
+
+  <!-- LIVE CODE -->
+  <div class="section">
+    <div class="code-label">What the commands look like</div>
+    <div class="code-block" id="code-panel">
+      <span class="hl-dim"># you're on main, just initialized</span><br>
+      <span class="hl-cmd">git init</span><br>
+      <br>
+      <span class="hl-dim"># make a commit on main</span><br>
+      <span class="hl-cmd">git add .</span><br>
+      <span class="hl-cmd">git commit</span> <span class="hl-commit">-m "first commit"</span><br>
+      <br>
+      <span class="hl-dim"># branch off and do some work</span><br>
+      <span class="hl-cmd">git checkout</span> <span class="hl-branch">-b feature-a</span><br>
+      <span class="hl-cmd">git commit</span> <span class="hl-commit">-m "add feature"</span><br>
+      <br>
+      <span class="hl-dim"># push to github</span><br>
+      <span class="hl-cmd">git push</span> <span class="hl-remote">origin feature-a</span><br>
+      <br>
+      <span class="hl-dim"># merge back into main when ready</span><br>
+      <span class="hl-cmd">git checkout</span> <span class="hl-branch">main</span><br>
+      <span class="hl-cmd">git merge</span> <span class="hl-branch">feature-a</span>
+    </div>
+  </div>
+
+  <!-- WHY IT MATTERS -->
+  <div class="section">
+    <div class="section-label">Why it matters</div>
+    <p>
+      The key insight: <strong>your local repo and GitHub are two separate copies.</strong> Until you push, GitHub has no idea what you've done. You can commit freely, experiment, even blow things up — it's all local. Push only when you're ready.
+    </p>
+    <p>
+      Branches let multiple things happen in parallel without interfering. <code>main</code> stays clean and working. You build in <code>feature-a</code>. When it's ready, you merge it back. If it's a disaster, you just delete the branch — <code>main</code> never knew.
+    </p>
+    <p>
+      <strong>Switching branches snaps your files.</strong> When you <code>git checkout feature-b</code>, the actual files on disk change to match that branch. It feels like magic. Git is swapping out your whole file system state in milliseconds.
+    </p>
+  </div>
+
+  <!-- NEXT STEPS -->
+  <div class="next-steps">
+    <div class="next-label">Where to go next</div>
+    <div class="branches-grid">
+      <div class="branch-card dim">
+        <div class="bc-arrow">⚔️</div>
+        <div class="bc-title">Merge Conflicts</div>
+        <div class="bc-desc">What happens when two branches change the same line. How to resolve them.</div>
+        <span class="tag">coming soon</span>
+      </div>
+      <div class="branch-card dim">
+        <div class="bc-arrow">🔄</div>
+        <div class="bc-title">Rebase vs Merge</div>
+        <div class="bc-desc">Two ways to integrate branches. Different history, different tradeoffs.</div>
+        <span class="tag">coming soon</span>
+      </div>
+      <div class="branch-card dim">
+        <div class="bc-arrow">🌐</div>
+        <div class="bc-title">Remote & PRs</div>
+        <div class="bc-desc">How pull requests work. What happens between push and merge on GitHub.</div>
+        <span class="tag">coming soon</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── STATE ──
+const BRANCH_COLORS = {
+  'main':      '#60c0f0',
+  'feature-a': '#90d060',
+  'feature-b': '#f0a040',
+};
+
+const BRANCH_Y = {
+  'main':      0.25,
+  'feature-a': 0.55,
+  'feature-b': 0.80,
+};
+
+let state = {
+  currentBranch: 'main',
+  commits: [],       // { id, branch, msg, x (set during draw), pushed }
+  branchHeads: { main: null, 'feature-a': null, 'feature-b': null },
+  branchOrigins: { 'feature-a': null, 'feature-b': null },
+  pushedHeads: { main: null, 'feature-a': null, 'feature-b': null },
+  commitCounter: 0,
+  msgCounter: { main: 0, 'feature-a': 0, 'feature-b': 0 },
+};
+
+const MESSAGES = {
+  'main':      ['initial commit', 'update readme', 'fix typo', 'bump version', 'cleanup', 'hotfix'],
+  'feature-a': ['start feature-a', 'wip: feature-a', 'finish feature-a', 'polish feature-a'],
+  'feature-b': ['start feature-b', 'wip: feature-b', 'finish feature-b'],
+};
+
+function nextMsg(branch) {
+  const msgs = MESSAGES[branch];
+  const i = state.msgCounter[branch] % msgs.length;
+  state.msgCounter[branch]++;
+  return msgs[i];
+}
+
+// ── TERMINAL ──
+function log(type, text) {
+  const t = document.getElementById('terminal');
+  const line = document.createElement('span');
+  line.className = 'line ' + type;
+  line.textContent = text;
+  t.appendChild(line);
+  t.scrollTop = t.scrollHeight;
+}
+
+// ── ACTIONS ──
+function doCommit() {
+  const b = state.currentBranch;
+  const msg = nextMsg(b);
+  const id = ++state.commitCounter;
+  const commit = { id, branch: b, msg, pushed: false };
+  state.commits.push(commit);
+  state.branchHeads[b] = commit;
+  log('cmd', `$ git commit -m "${msg}"`);
+  log('ok',  `  [${b} ${String(id).padStart(7,'0')}] ${msg}`);
+  updateState();
+  draw();
+}
+
+function doCheckout(branch) {
+  if (state.currentBranch === branch) {
+    log('warn', `  already on '${branch}'`);
+    return;
+  }
+  // If checking out a feature branch and it has no origin yet, branch from current head
+  if (branch !== 'main' && !state.branchOrigins[branch]) {
+    state.branchOrigins[branch] = state.branchHeads['main'];
+  }
+  state.currentBranch = branch;
+  log('cmd', `$ git checkout ${branch}`);
+  log('ok',  `  switched to branch '${branch}'`);
+  updateState();
+  draw();
+}
+
+function doPush() {
+  const b = state.currentBranch;
+  const head = state.branchHeads[b];
+  if (!head) {
+    log('warn', `  nothing to push on '${b}'`);
+    return;
+  }
+  if (state.pushedHeads[b] === head) {
+    log('warn', `  everything up-to-date`);
+    return;
+  }
+  state.pushedHeads[b] = head;
+  // mark commits as pushed
+  for (const c of state.commits) {
+    if (c.branch === b) c.pushed = true;
+  }
+  log('cmd', `$ git push origin ${b}`);
+  log('ok',  `  → ${b} updated on GitHub`);
+  updateState();
+  draw();
+}
+
+function doMerge() {
+  const b = state.currentBranch;
+  if (b === 'main') {
+    log('warn', `  can't merge main into itself — checkout a feature branch first`);
+    return;
+  }
+  const head = state.branchHeads[b];
+  if (!head) {
+    log('warn', `  nothing on ${b} to merge`);
+    return;
+  }
+  // Simulate merge commit on main
+  const id = ++state.commitCounter;
+  const commit = { id, branch: 'main', msg: `merge ${b} → main`, pushed: false, merge: true };
+  state.commits.push(commit);
+  state.branchHeads['main'] = commit;
+  log('cmd', `$ git checkout main && git merge ${b}`);
+  log('ok',  `  merge commit: '${commit.msg}'`);
+  state.currentBranch = 'main';
+  updateState();
+  draw();
+}
+
+function doReset() {
+  state = {
+    currentBranch: 'main',
+    commits: [],
+    branchHeads: { main: null, 'feature-a': null, 'feature-b': null },
+    branchOrigins: { 'feature-a': null, 'feature-b': null },
+    pushedHeads: { main: null, 'feature-a': null, 'feature-b': null },
+    commitCounter: 0,
+    msgCounter: { main: 0, 'feature-a': 0, 'feature-b': 0 },
+  };
+  document.getElementById('terminal').innerHTML = '<span class="line out">// reset — start fresh</span>';
+  updateState();
+  draw();
+}
+
+// ── STATE DISPLAY ──
+function updateState() {
+  const cb = state.currentBranch;
+  const color = BRANCH_COLORS[cb];
+  document.getElementById('cur-branch-display').innerHTML =
+    `<span class="branch-name" style="background:${color}22;border:1px solid ${color}55;color:${color}">${cb}</span>`;
+  document.getElementById('commit-count').textContent = state.commits.length;
+
+  // local ahead
+  const head = state.branchHeads[cb];
+  const pushedHead = state.pushedHeads[cb];
+  let ahead = 0;
+  if (head && head !== pushedHead) {
+    for (const c of state.commits) {
+      if (c.branch === cb && !c.pushed) ahead++;
+    }
+  }
+  const aheadEl = document.getElementById('local-ahead-display');
+  if (ahead > 0) {
+    aheadEl.style.display = '';
+    document.getElementById('local-ahead').textContent = ahead;
+  } else {
+    aheadEl.style.display = 'none';
+  }
+
+  // legend
+  const legend = document.getElementById('legend');
+  legend.innerHTML = '';
+  const activeBranches = ['main', 'feature-a', 'feature-b'].filter(b =>
+    state.branchHeads[b] || state.currentBranch === b
+  );
+  for (const b of activeBranches) {
+    const c = BRANCH_COLORS[b];
+    const item = document.createElement('div');
+    item.className = 'legend-item';
+    item.innerHTML = `<div class="legend-dot" style="background:${c}"></div>${b}${b === cb ? ' ← you are here' : ''}`;
+    item.style.color = b === cb ? '#ccc' : '#555';
+    legend.appendChild(item);
+  }
+}
+
+// ── DRAW ──
+function draw() {
+  const canvas = document.getElementById('graph-canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth;
+  const H = canvas.offsetHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  ctx.clearRect(0, 0, W, H);
+
+  if (state.commits.length === 0) {
+    ctx.fillStyle = '#333';
+    ctx.font = '12px Courier New';
+    ctx.textAlign = 'center';
+    ctx.fillText('no commits yet — click "git commit" to start', W/2, H/2);
+    return;
+  }
+
+  const R = 10;
+  const PAD_LEFT = 40;
+  const PAD_RIGHT = 40;
+  const STEP = Math.min(80, (W - PAD_LEFT - PAD_RIGHT) / Math.max(state.commits.length, 1));
+
+  // Assign x positions
+  const branchX = { main: PAD_LEFT, 'feature-a': PAD_LEFT, 'feature-b': PAD_LEFT };
+  const commitPos = {};
+
+  for (let i = 0; i < state.commits.length; i++) {
+    const c = state.commits[i];
+    const x = PAD_LEFT + i * STEP;
+    const y = H * BRANCH_Y[c.branch];
+    commitPos[c.id] = { x, y };
+  }
+
+  // Draw branch lines first
+  for (const branch of ['main', 'feature-a', 'feature-b']) {
+    const branchCommits = state.commits.filter(c => c.branch === branch);
+    if (branchCommits.length < 1) continue;
+
+    const color = BRANCH_COLORS[branch];
+    ctx.strokeStyle = color + '55';
+    ctx.lineWidth = 2;
+
+    // Line from origin to first commit on this branch
+    if (branch !== 'main' && state.branchOrigins[branch]) {
+      const origin = commitPos[state.branchOrigins[branch].id];
+      const first  = commitPos[branchCommits[0].id];
+      if (origin && first) {
+        ctx.beginPath();
+        ctx.moveTo(origin.x, origin.y);
+        ctx.bezierCurveTo(
+          origin.x + (first.x - origin.x) * 0.6, origin.y,
+          first.x - (first.x - origin.x) * 0.3, first.y,
+          first.x, first.y
+        );
+        ctx.stroke();
+      }
+    }
+
+    // Lines between consecutive commits on this branch
+    for (let i = 1; i < branchCommits.length; i++) {
+      const a = commitPos[branchCommits[i-1].id];
+      const b2 = commitPos[branchCommits[i].id];
+      if (!a || !b2) continue;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b2.x, b2.y);
+      ctx.stroke();
+    }
+
+    // Line to merge if exists
+    const mergeCommit = state.commits.find(c => c.merge && c.branch === 'main' &&
+      state.commits.indexOf(c) > state.commits.indexOf(branchCommits[branchCommits.length-1]));
+    if (mergeCommit && branch !== 'main') {
+      const last = commitPos[branchCommits[branchCommits.length-1].id];
+      const mergePos = commitPos[mergeCommit.id];
+      if (last && mergePos) {
+        ctx.strokeStyle = color + '44';
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.bezierCurveTo(
+          last.x + (mergePos.x - last.x) * 0.5, last.y,
+          mergePos.x - (mergePos.x - last.x) * 0.3, mergePos.y,
+          mergePos.x, mergePos.y
+        );
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+
+  // Draw commits
+  for (const c of state.commits) {
+    const pos = commitPos[c.id];
+    if (!pos) continue;
+    const color = BRANCH_COLORS[c.branch];
+
+    // Pushed ring
+    if (c.pushed) {
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, R + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = color + '40';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+
+    // Dot
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, R, 0, Math.PI * 2);
+    ctx.fillStyle = c.pushed ? color : '#0d0d0d';
+    ctx.fill();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Merge indicator
+    if (c.merge) {
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, R - 3, 0, Math.PI * 2);
+      ctx.strokeStyle = color + 'aa';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    // Label
+    ctx.fillStyle = '#555';
+    ctx.font = '10px Courier New';
+    ctx.textAlign = 'center';
+    const labelY = pos.y < H * 0.5 ? pos.y - R - 6 : pos.y + R + 14;
+    ctx.fillText(c.msg.length > 14 ? c.msg.slice(0, 13) + '…' : c.msg, pos.x, labelY);
+  }
+
+  // HEAD pointer (current branch head)
+  const head = state.branchHeads[state.currentBranch];
+  if (head && commitPos[head.id]) {
+    const pos = commitPos[head.id];
+    const color = BRANCH_COLORS[state.currentBranch];
+    ctx.fillStyle = color;
+    ctx.font = 'bold 11px Courier New';
+    ctx.textAlign = 'left';
+    ctx.fillText('HEAD', pos.x + R + 6, pos.y + 4);
+  }
+}
+
+// Init
+window.addEventListener('resize', draw);
+updateState();
+draw();
+</script>
+</body>
+</html>
